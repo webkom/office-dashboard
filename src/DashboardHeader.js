@@ -4,6 +4,9 @@ import { withStyles  } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import lightLogo from './static/abakus_logo_black.png';
+import darkLogo from './static/abakus_logo_white.png';
+import webkomBall from './static/webkom.png';
 
 const styles = {
   root: {
@@ -12,22 +15,28 @@ const styles = {
   grow: {
     flexGrow: 1,
   },
-  menuButton: {
-    marginLeft: -12,
-    marginRight: 20,
-  },
+    toolbar: {
+        justifyContent: 'center',
+        flex: '1 1 auto',
+        textAlign: 'center',
+        padding: 20
+    },
+    logo: {
+        height: '50px',
+    },
+    webkom: {
+        height: '60px',
+    }
 };
 
 const DashboardHeader = (props) => {
-  const { classes, title } = props;
+  const { classes } = props;
 
   return (
     <AppBar position="static">
-	<Toolbar>
-	  <Typography variant="h6" color="inherit" className={classes.grow}>
-          {title}
-	  </Typography>
-	</Toolbar>
+        <Toolbar className={classes.toolbar}>
+          <img className={classes.logo} src={darkLogo} />
+        </Toolbar>
     </AppBar>
   );
 }
