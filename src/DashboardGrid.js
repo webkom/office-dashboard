@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faBeer } from '@fortawesome/free-solid-svg-icons';
 import ErrorBoundary from './ErrorBoundary';
 import DashboardHeader from './DashboardHeader';
 import DashboardContent from './DashboardContent';
@@ -24,7 +24,7 @@ const styles = theme => ({
     background: theme.palette.primary.light,
     color: theme.palette.text.secondary
   },
-  heartIcon: {
+  beerIcon: {
     color: theme.palette.secondary.dark
   },
   madeByLove: {
@@ -63,8 +63,8 @@ export class DashboardGrid extends Component {
             </Paper>
             <p className={classes.madeByLove}>
               laget med{' '}
-              <FontAwesomeIcon className={classes.heartIcon} icon={faHeart} />{' '}
-              av <a href="https://github.com/webkom">webkom</a>
+              <FontAwesomeIcon className={classes.beerIcon} icon={faBeer} /> av{' '}
+              <a href="https://github.com/webkom">webkom</a>
             </p>
           </Grid>
         </Grid>
