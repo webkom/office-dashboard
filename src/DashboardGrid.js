@@ -5,6 +5,7 @@ import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import ErrorBoundary from './ErrorBoundary';
 import DashboardHeader from './DashboardHeader';
 import DashboardContent from './DashboardContent';
 import DashboardSnackbar, { notify } from './DashboardSnackbar';
@@ -55,8 +56,10 @@ export class DashboardGrid extends Component {
           <Grid item xs={11}>
             <DashboardHeader />
             <Paper className={classes.paper} square>
-              <DashboardContent onError={this.handleError} />
-              <DashboardSnackbar />
+              <ErrorBoundary onError={this.handleError}>
+                <DashboardContent onError={this.handleError} />
+                <DashboardSnackbar />
+              </ErrorBoundary>
             </Paper>
             <p className={classes.madeByLove}>
               laget med{' '}

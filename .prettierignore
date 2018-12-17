@@ -2,6 +2,7 @@ flow-typed
 .DS_Store
 node_modules
 npm-debug.log
+build
 src/serviceWorker.js
 public/bundle.js
 public/bundle.css
