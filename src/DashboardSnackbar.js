@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import Button from '@material-ui/core/Button';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
 import InfoIcon from '@material-ui/icons/Info';
@@ -20,34 +19,34 @@ const variantIcon = {
   success: CheckCircleIcon,
   warning: WarningIcon,
   error: ErrorIcon,
-  info: InfoIcon,
+  info: InfoIcon
 };
 
 const styles1 = theme => ({
   success: {
-    backgroundColor: green[600],
+    backgroundColor: green[600]
   },
   error: {
-    backgroundColor: theme.palette.error.dark,
+    backgroundColor: theme.palette.error.dark
   },
   info: {
-    backgroundColor: theme.palette.primary.dark,
+    backgroundColor: theme.palette.primary.dark
   },
   warning: {
-    backgroundColor: amber[700],
+    backgroundColor: amber[700]
   },
   icon: {
-    fontSize: 20,
+    fontSize: 20
   },
   iconVariant: {
     opacity: 0.9,
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing.unit
   },
   message: {
     color: '#fff',
     display: 'flex',
-    alignItems: 'center',
-  },
+    alignItems: 'center'
+  }
 });
 
 function DashboardSnackbarContent(props) {
@@ -73,7 +72,7 @@ function DashboardSnackbarContent(props) {
           onClick={onClose}
         >
           <CloseIcon className={classes.icon} />
-        </IconButton>,
+        </IconButton>
       ]}
       {...other}
     />
@@ -85,31 +84,30 @@ DashboardSnackbarContent.propTypes = {
   className: PropTypes.string,
   message: PropTypes.node,
   onClose: PropTypes.func,
-  variant: PropTypes.oneOf(['success', 'warning', 'error', 'info']).isRequired,
+  variant: PropTypes.oneOf(['success', 'warning', 'error', 'info']).isRequired
 };
 
-const DashboardSnackbarContentWrapper = withStyles(styles1)(DashboardSnackbarContent);
+const DashboardSnackbarContentWrapper = withStyles(styles1)(
+  DashboardSnackbarContent
+);
 
 const styles2 = theme => ({
   margin: {
-    margin: theme.spacing.unit,
-  },
+    margin: theme.spacing.unit
+  }
 });
 
 class DashboardSnackbar extends React.Component {
-    queue = [];
+  queue = [];
 
   state = {
-    open: true,
-      messageInfo: {
-          message: "Hello world",
-          variant: "info"
-      },
+    open: false,
+    messageInfo: {}
   };
 
-    componentDidMount() {
-        notifyFn = this.notify;
-    }
+  componentDidMount() {
+    notifyFn = this.notify;
+  }
 
   handleClick = () => {
     this.setState({ open: true });
@@ -123,37 +121,34 @@ class DashboardSnackbar extends React.Component {
     this.setState({ open: false });
   };
 
-
   handleExited = () => {
     this.processQueue();
   };
 
-    notify = (message, variant) => {
-        this.queue.push({
-            message,
-            variant,
-            key: new Date().getTime(),
-        });
+  notify = (message, variant) => {
+    this.queue.push({
+      message,
+      variant,
+      key: new Date().getTime()
+    });
 
-        if (this.state.open) {
-            this.setState({ open: false })
-        } else {
-            this.processQueue();
-        }
+    if (this.state.open) {
+      this.setState({ open: false });
+    } else {
+      this.processQueue();
     }
+  };
 
-    processQueue = () => {
-        if (this.queue.length > 0) {
-          this.setState({
-            messageInfo: this.queue.shift(),
-            open: true,
-          });
-        }
-      };
-
+  processQueue = () => {
+    if (this.queue.length > 0) {
+      this.setState({
+        messageInfo: this.queue.shift(),
+        open: true
+      });
+    }
+  };
 
   render() {
-    const { classes } = this.props;
     const { messageInfo } = this.state;
 
     return (
@@ -162,7 +157,7 @@ class DashboardSnackbar extends React.Component {
           key={messageInfo.key}
           anchorOrigin={{
             vertical: 'bottom',
-            horizontal: 'left',
+            horizontal: 'left'
           }}
           open={this.state.open}
           autoHideDuration={10000}
@@ -181,11 +176,11 @@ class DashboardSnackbar extends React.Component {
 }
 
 DashboardSnackbar.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
-export function notify(message, variant="info") {
-    notifyFn(message, variant);
+export function notify(message, variant = 'info') {
+  notifyFn(message, variant);
 }
 
 export default withStyles(styles2)(DashboardSnackbar);
