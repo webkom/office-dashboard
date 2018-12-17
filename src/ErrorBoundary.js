@@ -20,6 +20,8 @@ class ErrorBoundary extends React.Component {
       setInterval(function() {
         window.location.reload();
       }, 30000);
+      // TODO: Create an error popup
+      return "Oh noes! Reloading in 30 seconds.";
     }
     return this.props.children;
   }
