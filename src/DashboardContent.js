@@ -128,7 +128,7 @@ export default withStyles(styles)(
       method: 'GET',
       mode: 'cors',
       url: PRESENCE_URL,
-      refreshInterval: 30000
+      refreshInterval: 60000
     }
   }))(DashboardContent)
 );
