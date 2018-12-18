@@ -126,6 +126,9 @@ class DashboardSnackbar extends React.Component {
   };
 
   notify = (message, variant) => {
+    if (this.queue.length > 0 && this.queue[0].message === message) {
+      return;
+    }
     this.queue.push({
       message,
       variant,

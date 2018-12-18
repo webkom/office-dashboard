@@ -56,10 +56,10 @@ export class DashboardGrid extends Component {
           <Grid item xs={11}>
             <DashboardHeader />
             <Paper className={classes.paper} square>
-              <ErrorBoundary onError={this.handleError}>
-                <DashboardContent onError={this.handleError} />
-                <DashboardSnackbar />
+              <ErrorBoundary onError={this.handleError.bind(this)}>
+                <DashboardContent />
               </ErrorBoundary>
+              <DashboardSnackbar />
             </Paper>
             <p className={classes.madeByLove}>
               laget med{' '}

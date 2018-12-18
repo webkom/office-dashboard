@@ -1,5 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFrown } from '@fortawesome/free-solid-svg-icons';
+
+const styles = theme => ({
+  frownIcon: {
+    color: theme.palette.secondary.dark
+  }
+});
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -15,13 +24,21 @@ class ErrorBoundary extends React.Component {
   }
 
   render() {
+    const { classes } = this.props;
     if (this.state.hasError) {
       // Sleep for 30 seconds before reloading the page
       setInterval(function() {
         window.location.reload();
       }, 30000);
-      // TODO: Create an error popup
-      return "Oh noes! Reloading in 30 seconds.";
+      return (
+        <div>
+          <h1>
+            Oh noes!{' '}
+            <FontAwesomeIcon className={classes.frownIcon} icon={faFrown} />
+          </h1>
+          <p>Det skjedde noe feil, refresher om 30 sekunder.</p>
+        </div>
+      );
     }
     return this.props.children;
   }
@@ -33,8 +50,7 @@ ErrorBoundary.propTypes = {
     PropTypes.arrayOf(PropTypes.node),
     PropTypes.node
   ]).isRequired,
-  presenceFetch: PropTypes.object.isRequired,
   onError: PropTypes.func.isRequired
 };
 
-export default ErrorBoundary;
+export default withStyles(styles)(ErrorBoundary);

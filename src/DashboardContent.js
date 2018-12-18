@@ -45,20 +45,18 @@ const styles = theme => ({
 
 export class DashboardContent extends Component {
   state = {
-    isLoading: true
+    isLoading: true,
+    members: []
   };
 
   componentDidUpdate(prevProps) {
     const { presenceFetch } = this.props;
-    if (!this.state.isLoading && presenceFetch.pending) {
+    const { isLoading, members } = this.state;
+    if (!isLoading && presenceFetch.pending) {
       this.setState({ isLoading: true });
-    } else if (presenceFetch.rejected) {
-      this.props.onError(presenceFetch.reason);
-      this.setState({ isLoading: false });
-    } else if (
-      presenceFetch.fulfilled &&
-      this.state.members !== presenceFetch.value
-    ) {
+    } else if (isLoading && presenceFetch.rejected) {
+      throw presenceFetch.reason.message;
+    } else if (presenceFetch.fulfilled && members !== presenceFetch.value) {
       this.setState({
         members: presenceFetch.value,
         isLoading: false
@@ -118,8 +116,7 @@ export class DashboardContent extends Component {
 
 DashboardContent.propTypes = {
   classes: PropTypes.object.isRequired,
-  presenceFetch: PropTypes.object.isRequired,
-  onError: PropTypes.func.isRequired
+  presenceFetch: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(
