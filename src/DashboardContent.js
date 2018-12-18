@@ -3,30 +3,21 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-refetch';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import classNames from 'classnames';
-import Table from '@material-ui/core/Table';
-import TableHead from '@material-ui/core/TableHead';
-import TableBody from '@material-ui/core/TableBody';
-import TableFooter from '@material-ui/core/TableFooter';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
+import withWidth from '@material-ui/core/withWidth';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 import * as moment from 'moment';
 import 'moment-with-locales-es6';
 import 'moment/locale/nb';
 import 'moment-duration-format';
 import { PRESENCE_URL } from './config';
-import MemberRow from './MemberRow';
+import DashboardListHeader from './DashboardListHeader';
+import MemberItem from './MemberItem';
 
 const styles = theme => ({
   tableFooter: {
     textAlign: 'center',
     paddingBottom: 0
-  },
-  cell: {
-    padding: 10,
-    textAlign: 'center',
-    letterSpacing: 3,
-    textTransform: 'uppercase'
   },
   leftAlign: {
     textAlign: 'left'
@@ -37,9 +28,15 @@ const styles = theme => ({
   loading: {
     color: theme.palette.secondary.dark
   },
+  footer: {
+    justifyContent: 'center'
+  },
   footerInfo: {
     marginBottom: 0,
-    textAlign: 'center'
+    fontSize: '1rem',
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '0.6rem'
+    }
   }
 });
 
@@ -66,50 +63,27 @@ export class DashboardContent extends Component {
 
   render() {
     const { classes } = this.props;
-    const { isLoading, members } = this.state;
+    const { isLoading, width, members } = this.state;
 
     if (isLoading) {
       return <CircularProgress className={classes.loading} size={'12vh'} />;
     }
 
     return (
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell />
-            <TableCell />
-            <TableCell className={classNames(classes.cell, classes.leftAlign)}>
-              Github
-            </TableCell>
-            <TableCell className={classNames(classes.cell, classes.leftAlign)}>
-              Antall kanner
-            </TableCell>
-            <TableCell className={classNames(classes.cell, classes.rightAlign)}>
-              Kontortid i dag
-            </TableCell>
-            <TableCell className={classNames(classes.cell, classes.rightAlign)}>
-              Sist sett
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {members.map(member => (
-            <MemberRow key={member.slack} member={member} />
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell className={classes.tableFooter} colSpan={6}>
-              <p className={classes.footerInfo}>
-                Data sist hentet{' '}
-                {moment()
-                  .locale(moment.locale('nb'))
-                  .format()}
-              </p>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+      <List>
+        {width === 'xs' && <DashboardListHeader />}
+        {members.map(member => (
+          <MemberItem key={member.slack} member={member} />
+        ))}
+        <ListItem className={classes.footer}>
+          <p className={classes.footerInfo}>
+            Data sist hentet{' '}
+            {moment()
+              .locale(moment.locale('nb'))
+              .format()}
+          </p>
+        </ListItem>
+      </List>
     );
   }
 }
@@ -119,13 +93,15 @@ DashboardContent.propTypes = {
   presenceFetch: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(
-  connect(props => ({
-    presenceFetch: {
-      method: 'GET',
-      mode: 'cors',
-      url: PRESENCE_URL,
-      refreshInterval: 60000
-    }
-  }))(DashboardContent)
+export default withWidth()(
+  withStyles(styles)(
+    connect(props => ({
+      presenceFetch: {
+        method: 'GET',
+        mode: 'cors',
+        url: PRESENCE_URL,
+        refreshInterval: 60000
+      }
+    }))(DashboardContent)
+  )
 );

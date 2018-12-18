@@ -15,7 +15,7 @@ const styles = theme => ({
     flexGrow: 1
   },
   grid: {
-    marginTop: 80,
+    // marginTop: 80,
     marginBottom: 80 - 30 - 18.75 // - padding for footer - line height
   },
   paper: {

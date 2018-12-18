@@ -10,6 +10,9 @@ import { createMuiTheme } from '@material-ui/core/styles';
  */
 
 export const darkTheme = createMuiTheme({
+  props: {
+    initialWidth: 'lg'
+  },
   typography: {
     fontFamily: [
       // 'Source Sans Pro',

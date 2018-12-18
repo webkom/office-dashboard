@@ -20,9 +20,12 @@
     "npm": "^6.4.1",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
+    "react-fittext": "^1.0.0",
+    "react-flowtype": "^1.0.0",
     "react-moment": "^0.8.4",
     "react-refetch": "^2.0.2",
-    "react-scripts": "2.1.1"
+    "react-scripts": "2.1.1",
+    "recompose": "^0.30.0"
   },
   "scripts": {
     "start": "react-scripts start",
