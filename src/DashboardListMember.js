@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import withWidth from '@material-ui/core/withWidth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,6 +12,9 @@ import DashboardListItem from './DashboardListItem';
 const styles = theme => ({
   root: {
     flexGrow: 1
+  },
+  isActive: {
+    fontWeight: 'bold'
   },
   prefix: {
     letterSpacing: 2,
@@ -40,8 +44,9 @@ const DashboardListMember = props => {
     activityToday,
     lastSeen
   } = props;
+  const isActive = lastSeen === 'På kontoret!';
   return (
-    <DashboardListItem avatar={avatar}>
+    <DashboardListItem avatar={avatar} isActive={isActive}>
       <span>{name}</span>
       <span>
         <FontAwesomeIcon className={classes.githubIcon} icon={faGithub} />
@@ -76,12 +81,19 @@ const DashboardListMember = props => {
           <Grid item xs={5} className={classes.prefix}>
             Sist sett:
           </Grid>
-          <Grid item xs={7} className={classes.alignRight}>
+          <Grid
+            item
+            xs={7}
+            className={classNames(
+              classes.alignRight,
+              isActive && classes.isActive
+            )}
+          >
             {lastSeen}
           </Grid>
         </Grid>
       ) : (
-        <span>{lastSeen}</span>
+        <span className={isActive && classes.isActive}>{lastSeen}</span>
       )}
     </DashboardListItem>
   );

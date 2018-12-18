@@ -12,6 +12,9 @@ const styles = theme => ({
   root: {
     flexGrow: 1
   },
+  isActive: {
+    background: theme.palette.primary.main
+  },
   compactGrid: {
     lineHeight: '1.5em',
     fontSize: '0.55rem'
@@ -21,10 +24,10 @@ const styles = theme => ({
     paddingTop: '0.5em',
     paddingBottom: '0.5em'
   },
-    compactCoffee: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-    },
+  compactCoffee: {
+    display: 'flex',
+    justifyContent: 'flex-end'
+  },
   compactLastSeen: {
     paddingTop: '1em',
     lineHeight: '0.3em'
@@ -79,14 +82,17 @@ const styles = theme => ({
 });
 
 const DashboardListItem = props => {
-  const { classes, children, avatar, width, header } = props;
+  const { classes, children, isActive, avatar, width, header } = props;
 
   const gridItemClass = header ? classes.headerItem : classes.dataItem;
 
   return (
     <ListItem
       divider
-      className={width === 'xs' ? classes.compactListItem : classes.listItem}
+      className={classNames(
+        isActive && classes.isActive,
+        width === 'xs' ? classes.compactListItem : classes.listItem
+      )}
     >
       <ListItemText className={classes.root}>
         {width === 'xs' ? (
@@ -199,6 +205,7 @@ DashboardListItem.propTypes = {
   ]).isRequired,
   width: PropTypes.string.isRequired,
   avatar: PropTypes.string,
+  isActive: PropTypes.bool,
   header: PropTypes.array
 };
 
