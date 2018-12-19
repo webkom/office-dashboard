@@ -62,8 +62,8 @@ export class DashboardContent extends Component {
   }
 
   render() {
-    const { classes } = this.props;
-    const { isLoading, width, members } = this.state;
+    const { classes, width } = this.props;
+    const { isLoading, members } = this.state;
 
     if (isLoading) {
       return <CircularProgress className={classes.loading} size={'12vh'} />;
@@ -71,7 +71,7 @@ export class DashboardContent extends Component {
 
     return (
       <List>
-        {width === 'xs' && <DashboardListHeader />}
+        {width !== undefined && width !== 'xs' && <DashboardListHeader />}
         {members.map(member => (
           <MemberItem key={member.slack} member={member} />
         ))}

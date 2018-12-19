@@ -68,7 +68,7 @@ const styles = theme => ({
   dataItem: {
     fontSize: '1rem',
     [theme.breakpoints.down('sm')]: {
-      fontSize: '0.85rem'
+      fontSize: '0.80rem'
     }
   },
   headerItem: {
@@ -77,9 +77,15 @@ const styles = theme => ({
     color: '#fff',
     opacity: 0.7,
     fontWeight: 500,
-    fontSize: '0.75rem',
+    fontSize: '1.2rem',
+    [theme.breakpoints.down('lg')]: {
+      fontSize: '1.2rem'
+    },
+    [theme.breakpoints.down('md')]: {
+      fontSize: '1rem'
+    },
     [theme.breakpoints.down('sm')]: {
-      fontSize: '0.60rem'
+      fontSize: '0.75rem'
     }
   },
   listItem: {
@@ -163,7 +169,7 @@ const DashboardListItem = props => {
               xs={1}
               className={classNames(classes.gridItem, gridItemClass)}
             >
-              {!header && children[0] /* Name */}
+              {!header && children[0] /* Navn */}
             </Grid>
 
             <Grid
@@ -221,7 +227,7 @@ DashboardListItem.propTypes = {
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.node),
     PropTypes.node
-  ]).isRequired,
+  ]),
   width: PropTypes.string.isRequired,
   avatar: PropTypes.string,
   isActive: PropTypes.bool,

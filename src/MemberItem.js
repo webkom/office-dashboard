@@ -17,7 +17,7 @@ const MemberItem = props => {
       coffeeCount={'?'} // TODO: implement kaffe_listener
       activityToday={
         member.activity_today === 0
-          ? '-'
+          ? ''
           : moment
               .duration(member.activity_today, 'seconds')
               .format('h [timer] m [minutter]', {

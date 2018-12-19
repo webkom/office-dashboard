@@ -6,6 +6,7 @@ import withWidth from '@material-ui/core/withWidth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCoffee } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { faFrown } from '@fortawesome/free-solid-svg-icons';
 import Grid from '@material-ui/core/Grid';
 import DashboardListItem from './DashboardListItem';
 
@@ -23,10 +24,13 @@ const styles = theme => ({
     fontWeight: 'bold'
   },
   coffeeIcon: {
-    color: theme.palette.secondary.main
+    color: theme.palette.secondary.dark
   },
   githubIcon: {
-    color: theme.palette.secondary.light
+    color: theme.palette.secondary.dark
+  },
+  frownIcon: {
+    color: theme.palette.secondary.dark
   },
   alignRight: {
     textAlign: 'right'
@@ -45,6 +49,12 @@ const DashboardListMember = props => {
     lastSeen
   } = props;
   const isActive = lastSeen === 'På kontoret!';
+  const formattedActivityToday =
+    activityToday === '' ? (
+      <FontAwesomeIcon className={classes.frownIcon} icon={faFrown} />
+    ) : (
+      activityToday
+    );
   return (
     <DashboardListItem avatar={avatar} isActive={isActive}>
       <span>{name}</span>
@@ -70,11 +80,11 @@ const DashboardListMember = props => {
             Kontortid:
           </Grid>
           <Grid item xs={7} className={classes.alignRight}>
-            {activityToday}
+            {formattedActivityToday}
           </Grid>
         </Grid>
       ) : (
-        <span>{activityToday}</span>
+        <span>{formattedActivityToday}</span>
       )}
       {width === 'xs' ? (
         <Grid container>
@@ -93,7 +103,7 @@ const DashboardListMember = props => {
           </Grid>
         </Grid>
       ) : (
-        <span className={isActive && classes.isActive}>{lastSeen}</span>
+        <span className={isActive ? classes.isActive : ''}>{lastSeen}</span>
       )}
     </DashboardListItem>
   );
