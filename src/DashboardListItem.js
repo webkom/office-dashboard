@@ -46,9 +46,20 @@ const styles = theme => ({
     textTransform: 'uppercase',
     color: '#fff',
     opacity: 0.7,
-    fontSize: '0.6rem',
+    fontSize: '0.55rem',
     fontWeight: 'bold'
   },
+    compactOfficeTime: {
+        marginTop: -9
+    },
+    compactFirstContainerIsActive: {
+        borderBottom: `1px ${theme.palette.primary.light} dashed`,
+        paddingBottom: 3
+    },
+    compactFirstContainer: {
+        borderBottom: `1px ${theme.palette.primary.main} dashed`,
+        paddingBottom: 3
+    },
   gridItem: {
     display: 'flex',
     alignItems: 'center',
@@ -103,14 +114,14 @@ const DashboardListItem = props => {
             </Grid>
 
             <Grid item xs={9}>
-              <Grid container direction="column">
+              <Grid container direction='column'>
                 <Grid item>
-                  <Grid container>
+                  <Grid container className={isActive ? classes.compactFirstContainerIsActive : classes.compactFirstContainer}>
                     <Grid item xs={5} className={classes.compactName}>
                       {children[0] /* Name */}
                     </Grid>
                     <Grid item xs={7} className={classes.compactMetadata}>
-                      <Grid container>
+                      <Grid container >
                         <Grid item xs={9} className={classes.compactGithub}>
                           {children[1] /* Github */}
                         </Grid>
