@@ -90,7 +90,8 @@ export class DashboardContent extends Component {
 
 DashboardContent.propTypes = {
   classes: PropTypes.object.isRequired,
-  presenceFetch: PropTypes.object.isRequired
+  presenceFetch: PropTypes.object.isRequired,
+  width: PropTypes.string.isRequired
 };
 
 export default withWidth()(
