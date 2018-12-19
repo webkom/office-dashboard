@@ -89,7 +89,10 @@ const styles = theme => ({
     }
   },
   listItem: {
-    padding: 20
+    padding: 10
+  },
+  memberName: {
+    letterSpacing: 1
   },
   alignRight: {
     justifyContent: 'flex-end'
@@ -167,7 +170,11 @@ const DashboardListItem = props => {
             <Grid
               item
               xs={1}
-              className={classNames(classes.gridItem, gridItemClass)}
+              className={classNames(
+                classes.gridItem,
+                gridItemClass,
+                classes.memberName
+              )}
             >
               {!header && children[0] /* Navn */}
             </Grid>
