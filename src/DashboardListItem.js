@@ -38,7 +38,8 @@ const styles = theme => ({
   },
   compactAvatar: {
     display: 'flex',
-    alignItems: 'center'
+      alignItems: 'center',
+      justifyContent: 'center'
   },
   compactName: {
     letterSpacing: 2,
