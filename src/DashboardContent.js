@@ -43,6 +43,7 @@ const styles = theme => ({
 export class DashboardContent extends Component {
   state = {
     isLoading: true,
+    lastDatetime: null,
     members: []
   };
 
@@ -53,9 +54,13 @@ export class DashboardContent extends Component {
       this.setState({ isLoading: true });
     } else if (isLoading && presenceFetch.rejected) {
       throw presenceFetch.reason.message;
-    } else if (presenceFetch.fulfilled && members !== presenceFetch.value) {
+    } else if (
+      presenceFetch.fulfilled &&
+      members !== presenceFetch.value.members
+    ) {
       this.setState({
-        members: presenceFetch.value,
+        lastDatetime: presenceFetch.value.last_datetime,
+        members: presenceFetch.value.members,
         isLoading: false
       });
     }
