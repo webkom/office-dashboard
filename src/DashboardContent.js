@@ -29,13 +29,15 @@ const styles = theme => ({
     color: theme.palette.secondary.dark
   },
   footer: {
-    justifyContent: 'center'
-  },
-  footerInfo: {
+    justifyContent: 'space-between',
+    display: 'flex',
+    width: '100%',
     marginBottom: 0,
-    fontSize: '1rem',
+    padding: '20px 0 0 0',
+    fontSize: '0.65rem',
+    color: theme.palette.primary.main,
     [theme.breakpoints.down('xs')]: {
-      fontSize: '0.6rem'
+      fontSize: '0.45rem'
     }
   }
 });
@@ -49,14 +51,15 @@ export class DashboardContent extends Component {
 
   componentDidUpdate(prevProps) {
     const { presenceFetch } = this.props;
-    const { isLoading, members } = this.state;
+    const { isLoading, members, lastDatetime } = this.state;
     if (!isLoading && presenceFetch.pending) {
       this.setState({ isLoading: true });
     } else if (isLoading && presenceFetch.rejected) {
       throw presenceFetch.reason.message;
     } else if (
       presenceFetch.fulfilled &&
-      members !== presenceFetch.value.members
+      (members !== presenceFetch.value.members ||
+        lastDatetime !== presenceFetch.value.last_datetime)
     ) {
       this.setState({
         lastDatetime: presenceFetch.value.last_datetime,
@@ -68,7 +71,7 @@ export class DashboardContent extends Component {
 
   render() {
     const { classes, width } = this.props;
-    const { isLoading, members } = this.state;
+    const { isLoading, members, lastDatetime } = this.state;
 
     if (isLoading) {
       return <CircularProgress className={classes.loading} size={'12vh'} />;
@@ -81,12 +84,20 @@ export class DashboardContent extends Component {
           <MemberItem key={member.slack} member={member} />
         ))}
         <ListItem className={classes.footer}>
-          <p className={classes.footerInfo}>
+          <div>
+            Data sist lagret{' '}
+            {lastDatetime === null
+              ? 'Ukjent'
+              : moment(lastDatetime)
+                  .locale(moment.locale('nb'))
+                  .format()}
+          </div>
+          <div>
             Data sist hentet{' '}
             {moment()
               .locale(moment.locale('nb'))
               .format()}
-          </p>
+          </div>
         </ListItem>
       </List>
     );
