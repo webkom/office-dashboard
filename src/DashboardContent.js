@@ -35,7 +35,7 @@ const styles = theme => ({
     marginBottom: 0,
     padding: '20px 0 0 0',
     fontSize: '0.65rem',
-    color: theme.palette.primary.main,
+    opacity: 0.5,
     [theme.breakpoints.down('xs')]: {
       fontSize: '0.45rem'
     }
