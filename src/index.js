@@ -4,6 +4,11 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+// Refresh the entire page every hour
+setInterval(function() {
+  window.location.reload(true);
+}, 1000 * 60 * 60);
+
 ReactDOM.render(<App />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
