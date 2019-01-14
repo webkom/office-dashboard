@@ -4,7 +4,7 @@ import DashboardListItem from './DashboardListItem';
 const DashboardListHeader = () => {
   return (
     <DashboardListItem
-      header={['Github', 'Antall kanner', 'Kontortid i dag', 'Sist sett']}
+      header={['Github', 'Kaffe', 'Brus', 'Kontortid', 'Sist sett']}
     />
   );
 };

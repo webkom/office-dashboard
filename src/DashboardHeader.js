@@ -27,7 +27,11 @@ const styles = theme => ({
     justifyContent: 'center',
     flex: '1 1 auto',
     textAlign: 'center',
-    padding: 20
+    padding: 20,
+    fontSize: '1rem',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.9rem'
+    }
   },
   leftAlign: {
     textAlign: 'left'

@@ -5,10 +5,14 @@ import { withStyles } from '@material-ui/core/styles';
 import withWidth from '@material-ui/core/withWidth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCoffee } from '@fortawesome/free-solid-svg-icons';
+import { faFlask } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faFrown } from '@fortawesome/free-solid-svg-icons';
+import { faGlassWhiskey } from '@fortawesome/free-solid-svg-icons';
+import { faWineBottle } from '@fortawesome/free-solid-svg-icons';
 import Grid from '@material-ui/core/Grid';
 import DashboardListItem from './DashboardListItem';
+import StatsItem from './StatsItem';
 
 const styles = theme => ({
   root: {
@@ -23,14 +27,14 @@ const styles = theme => ({
     color: '#fff',
     fontWeight: 'bold'
   },
-  coffeeIcon: {
+  statsIcon: {
     color: theme.palette.secondary.dark
   },
-  githubIcon: {
-    color: theme.palette.secondary.dark
+  alignCenter: {
+    textAlign: 'center'
   },
-  frownIcon: {
-    color: theme.palette.secondary.dark
+  alignLeft: {
+    textAlign: 'left'
   },
   alignRight: {
     textAlign: 'right'
@@ -51,7 +55,7 @@ const DashboardListMember = props => {
   const isActive = lastSeen === 'På kontoret!';
   const formattedActivityToday =
     activityToday === '' ? (
-      <FontAwesomeIcon className={classes.frownIcon} icon={faFrown} />
+      <FontAwesomeIcon className={classes.statsIcon} icon={faFrown} />
     ) : (
       activityToday
     );
@@ -59,20 +63,39 @@ const DashboardListMember = props => {
     <DashboardListItem avatar={avatar} isActive={isActive}>
       <span>{name}</span>
       <span>
-        <FontAwesomeIcon className={classes.githubIcon} icon={faGithub} />
+        <FontAwesomeIcon className={classes.statsIcon} icon={faGithub} />
         <span> </span>
         <a href={`https://github.com/${github}`}>@{github}</a>
       </span>
       {width === 'xs' ? (
-        <span className={classes.compactCenter}>
-          ? <FontAwesomeIcon className={classes.coffeeIcon} icon={faCoffee} />
-        </span>
+        <Grid
+          container
+          justify={'space-around'}
+          className={classes.alignCenter}
+        >
+          <StatsItem icon={faCoffee} value={coffeeCount} compact />
+          <StatsItem icon={faFlask} value={coffeeCount} compact />
+        </Grid>
       ) : (
-        <span>
-          Brygget {coffeeCount}{' '}
-          <FontAwesomeIcon className={classes.coffeeIcon} icon={faCoffee} />{' '}
-          kanne(r)
-        </span>
+        <Grid container direction={'column'} className={classes.alignCenter}>
+          <StatsItem icon={faCoffee} value={coffeeCount} text="kanner" />
+          <StatsItem icon={faFlask} value={coffeeCount} text="liter" />
+        </Grid>
+      )}
+      {width === 'xs' ? (
+        <Grid
+          container
+          justify={'space-around'}
+          className={classes.alignCenter}
+        >
+          <StatsItem icon={faGlassWhiskey} value={coffeeCount} compact />
+          <StatsItem icon={faGlassWhiskey} value={coffeeCount} compact />
+        </Grid>
+      ) : (
+        <Grid container direction={'column'} className={classes.alignCenter}>
+          <StatsItem icon={faGlassWhiskey} value={coffeeCount} text="bokser" />
+          <StatsItem icon={faWineBottle} value={coffeeCount} text="flasker" />
+        </Grid>
       )}
       {width === 'xs' ? (
         <Grid container>

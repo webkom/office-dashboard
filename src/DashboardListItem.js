@@ -17,14 +17,31 @@ const styles = theme => ({
   },
   compactGrid: {
     lineHeight: '1.5em',
-    fontSize: '0.55rem'
+    fontSize: '0.55rem',
+    whiteSpace: 'nowrap'
   },
   compactListItem: {
     padding: 2,
     paddingTop: '0.5em',
     paddingBottom: '0.5em'
   },
+  compactStats: {
+    width: '100%',
+    whiteSpace: 'nowrap'
+  },
+  compactStatsActive: {
+    borderTop: `0.5px ${theme.palette.primary.light} solid`,
+    borderBottom: `0.5px ${theme.palette.primary.light} solid`
+  },
+  compactStatsNotActive: {
+    borderTop: `0.5px ${theme.palette.primary.main} solid`,
+    borderBottom: `0.5px ${theme.palette.primary.main} solid`
+  },
   compactCoffee: {
+    display: 'flex',
+    justifyContent: 'flex-end'
+  },
+  compactBrus: {
     display: 'flex',
     justifyContent: 'flex-end'
   },
@@ -33,8 +50,7 @@ const styles = theme => ({
     lineHeight: '0.3em'
   },
   compactMetadata: {
-    display: 'flex',
-    justifyItems: 'flex-end'
+    textAlign: 'right'
   },
   compactAvatar: {
     display: 'flex',
@@ -50,15 +66,7 @@ const styles = theme => ({
     fontWeight: 'bold'
   },
   compactOfficeTime: {
-    marginTop: -9
-  },
-  compactFirstContainerIsActive: {
-    borderBottom: `1px ${theme.palette.primary.light} dashed`,
-    paddingBottom: 3
-  },
-  compactFirstContainer: {
-    borderBottom: `1px ${theme.palette.primary.main} dashed`,
-    paddingBottom: 3
+    marginTop: 2
   },
   gridItem: {
     display: 'flex',
@@ -68,7 +76,7 @@ const styles = theme => ({
   dataItem: {
     fontSize: '1rem',
     [theme.breakpoints.down('sm')]: {
-      fontSize: '0.80rem'
+      fontSize: '0.75rem'
     }
   },
   headerItem: {
@@ -125,34 +133,38 @@ const DashboardListItem = props => {
             <Grid item xs={9}>
               <Grid container direction="column">
                 <Grid item>
-                  <Grid
-                    container
-                    className={
-                      isActive
-                        ? classes.compactFirstContainerIsActive
-                        : classes.compactFirstContainer
-                    }
-                  >
+                  <Grid container>
                     <Grid item xs={5} className={classes.compactName}>
                       {children[0] /* Name */}
                     </Grid>
                     <Grid item xs={7} className={classes.compactMetadata}>
-                      <Grid container>
-                        <Grid item xs={9} className={classes.compactGithub}>
-                          {children[1] /* Github */}
-                        </Grid>
-                        <Grid item xs={3} className={classes.compactCoffee}>
-                          {children[2] /* Antall kaffekanner */}
-                        </Grid>
-                      </Grid>
+                      {children[1] /* Github */}
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Grid
+                  item
+                  className={classNames(
+                    classes.compactStats,
+                    isActive
+                      ? classes.compactStatsActive
+                      : classes.compactStatsNotActive
+                  )}
+                >
+                  <Grid container justify={'space-around'}>
+                    <Grid item xs={6} className={classes.compactCoffee}>
+                      {children[2] /* Kaffe */}
+                    </Grid>
+                    <Grid item xs={6} className={classes.compactBrus}>
+                      {children[3] /* Brus */}
                     </Grid>
                   </Grid>
                 </Grid>
                 <Grid item className={classes.compactOfficeTime}>
-                  {children[3] /* Kontortid i dag */}
+                  {children[4] /* Kontortid */}
                 </Grid>
                 <Grid item className={classes.compactLastSeen}>
-                  {children[4] /* Sist sett */}
+                  {children[5] /* Sist sett */}
                 </Grid>
               </Grid>
             </Grid>
@@ -189,26 +201,26 @@ const DashboardListItem = props => {
 
             <Grid
               item
-              xs={3}
+              xs={2}
               className={classNames(
                 classes.gridItem,
                 gridItemClass,
                 classes.alignCenter
               )}
             >
-              {!header ? children[2] : header[1] /* Antall kanner */}
+              {!header ? children[2] : header[1] /* Kaffe */}
             </Grid>
 
             <Grid
               item
-              xs={3}
+              xs={2}
               className={classNames(
                 classes.gridItem,
                 gridItemClass,
-                classes.alignRight
+                classes.alignCenter
               )}
             >
-              {!header ? children[3] : header[2] /* Kontortid i dag */}
+              {!header ? children[3] : header[2] /* Brus */}
             </Grid>
 
             <Grid
@@ -220,7 +232,19 @@ const DashboardListItem = props => {
                 classes.alignRight
               )}
             >
-              {!header ? children[4] : header[3] /* Sist sett */}
+              {!header ? children[4] : header[3] /* Kontortid */}
+            </Grid>
+
+            <Grid
+              item
+              xs={2}
+              className={classNames(
+                classes.gridItem,
+                gridItemClass,
+                classes.alignRight
+              )}
+            >
+              {!header ? children[5] : header[4] /* Sist sett */}
             </Grid>
           </Grid>
         )}
