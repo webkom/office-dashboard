@@ -15,6 +15,7 @@ const MemberItem = props => {
       name={member.name}
       github={member.github}
       coffeeCount={'?'} // TODO: implement kaffe_listener
+      brusData={member.brus_data}
       activityToday={
         member.activity_today === 0
           ? ''

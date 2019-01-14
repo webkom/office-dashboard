@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-refetch';
+import { connect, PromiseState } from 'react-refetch';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import withWidth from '@material-ui/core/withWidth';
@@ -10,7 +10,7 @@ import * as moment from 'moment';
 import 'moment-with-locales-es6';
 import 'moment/locale/nb';
 import 'moment-duration-format';
-import { PRESENCE_URL } from './config';
+import { PRESENCE_URL, BRUS_URL } from './config';
 import DashboardListHeader from './DashboardListHeader';
 import MemberItem from './MemberItem';
 
@@ -50,22 +50,43 @@ export class DashboardContent extends Component {
   };
 
   componentDidUpdate(prevProps) {
-    const { presenceFetch } = this.props;
+    const { presenceFetch, brusFetch } = this.props;
     const { isLoading, members, lastDatetime } = this.state;
-    if (!isLoading && presenceFetch.pending) {
+
+    const allFetches = PromiseState.all([presenceFetch, brusFetch]);
+
+    if (!isLoading && allFetches.pending) {
       this.setState({ isLoading: true });
-    } else if (isLoading && presenceFetch.rejected) {
-      throw presenceFetch.reason.message;
-    } else if (
-      presenceFetch.fulfilled &&
-      (members !== presenceFetch.value.members ||
-        lastDatetime !== presenceFetch.value.last_datetime)
-    ) {
-      this.setState({
-        lastDatetime: presenceFetch.value.last_datetime,
-        members: presenceFetch.value.members,
-        isLoading: false
+    } else if (isLoading && allFetches.rejected) {
+      throw allFetches.reason.message;
+    } else if (allFetches.fulfilled) {
+      const [presence, brus] = allFetches.value;
+      presence.members.map(member => {
+        const brusInfo = brus.find(
+          brusMember => brusMember.name === member.brus
+        );
+        if (typeof brusInfo === 'undefined') {
+          member['brus_data'] = {
+            balance: '?',
+            soda_bottles_bought: '?',
+            soda_cans_bought: '?'
+          };
+        } else {
+          member['brus_data'] = brusInfo;
+        }
+        return member;
       });
+
+      if (
+        lastDatetime !== presence.last_datetime ||
+        members !== presence.members
+      ) {
+        this.setState({
+          lastDatetime: presence.last_datetime,
+          members: presence.members,
+          isLoading: false
+        });
+      }
     }
   }
 
@@ -107,6 +128,7 @@ export class DashboardContent extends Component {
 DashboardContent.propTypes = {
   classes: PropTypes.object.isRequired,
   presenceFetch: PropTypes.object.isRequired,
+  brusFetch: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired
 };
 
@@ -117,6 +139,12 @@ export default withWidth()(
         method: 'GET',
         mode: 'cors',
         url: PRESENCE_URL,
+        refreshInterval: 60000
+      },
+      brusFetch: {
+        method: 'GET',
+        mode: 'cors',
+        url: `${BRUS_URL}/api/liste/`,
         refreshInterval: 60000
       }
     }))(DashboardContent)

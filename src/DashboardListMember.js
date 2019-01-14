@@ -8,6 +8,7 @@ import { faCoffee } from '@fortawesome/free-solid-svg-icons';
 import { faFlask } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faFrown } from '@fortawesome/free-solid-svg-icons';
+import { faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import { faGlassWhiskey } from '@fortawesome/free-solid-svg-icons';
 import { faWineBottle } from '@fortawesome/free-solid-svg-icons';
 import Grid from '@material-ui/core/Grid';
@@ -48,6 +49,7 @@ const DashboardListMember = props => {
     avatar,
     name,
     github,
+    brusData,
     coffeeCount,
     activityToday,
     lastSeen
@@ -67,7 +69,7 @@ const DashboardListMember = props => {
         <span> </span>
         <a href={`https://github.com/${github}`}>@{github}</a>
       </span>
-      {width === 'xs' ? (
+      {width === 'xs' && (
         <Grid
           container
           justify={'space-around'}
@@ -75,26 +77,41 @@ const DashboardListMember = props => {
         >
           <StatsItem icon={faCoffee} value={coffeeCount} compact />
           <StatsItem icon={faFlask} value={coffeeCount} compact />
+          <StatsItem
+            icon={faDollarSign}
+            value={`${brusData.balance} kr`}
+            compact
+          />
+          <StatsItem
+            icon={faGlassWhiskey}
+            value={brusData.soda_cans_bought}
+            compact
+          />
+          <StatsItem
+            icon={faWineBottle}
+            value={brusData.soda_bottles_bought}
+            compact
+          />
         </Grid>
-      ) : (
+      )}
+      {width !== 'xs' && (
         <Grid container direction={'column'} className={classes.alignCenter}>
           <StatsItem icon={faCoffee} value={coffeeCount} text="kanner" />
           <StatsItem icon={faFlask} value={coffeeCount} text="liter" />
         </Grid>
       )}
-      {width === 'xs' ? (
-        <Grid
-          container
-          justify={'space-around'}
-          className={classes.alignCenter}
-        >
-          <StatsItem icon={faGlassWhiskey} value={coffeeCount} compact />
-          <StatsItem icon={faGlassWhiskey} value={coffeeCount} compact />
-        </Grid>
-      ) : (
+      {width !== 'xs' && (
         <Grid container direction={'column'} className={classes.alignCenter}>
-          <StatsItem icon={faGlassWhiskey} value={coffeeCount} text="bokser" />
-          <StatsItem icon={faWineBottle} value={coffeeCount} text="flasker" />
+          <StatsItem
+            icon={faGlassWhiskey}
+            value={brusData.soda_cans_bought}
+            text="bokser"
+          />
+          <StatsItem
+            icon={faWineBottle}
+            value={brusData.soda_bottles_bought}
+            text="flasker"
+          />
         </Grid>
       )}
       {width === 'xs' ? (
@@ -137,6 +154,7 @@ DashboardListMember.propTypes = {
   avatar: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   github: PropTypes.string.isRequired,
+  brusData: PropTypes.object.isRequired,
   coffeeCount: PropTypes.string.isRequired,
   activityToday: PropTypes.string.isRequired,
   lastSeen: PropTypes.string.isRequired,

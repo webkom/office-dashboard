@@ -151,20 +151,13 @@ const DashboardListItem = props => {
                       : classes.compactStatsNotActive
                   )}
                 >
-                  <Grid container justify={'space-around'}>
-                    <Grid item xs={6} className={classes.compactCoffee}>
-                      {children[2] /* Kaffe */}
-                    </Grid>
-                    <Grid item xs={6} className={classes.compactBrus}>
-                      {children[3] /* Brus */}
-                    </Grid>
-                  </Grid>
+                  <span>{children[2] /* Kaffe && Brus */}</span>
                 </Grid>
                 <Grid item className={classes.compactOfficeTime}>
-                  {children[4] /* Kontortid */}
+                  {children[5] /* Kontortid */}
                 </Grid>
                 <Grid item className={classes.compactLastSeen}>
-                  {children[5] /* Sist sett */}
+                  {children[6] /* Sist sett */}
                 </Grid>
               </Grid>
             </Grid>
@@ -208,7 +201,7 @@ const DashboardListItem = props => {
                 classes.alignCenter
               )}
             >
-              {!header ? children[2] : header[1] /* Kaffe */}
+              {!header ? children[3] : header[1] /* Kaffe */}
             </Grid>
 
             <Grid
@@ -220,7 +213,7 @@ const DashboardListItem = props => {
                 classes.alignCenter
               )}
             >
-              {!header ? children[3] : header[2] /* Brus */}
+              {!header ? children[4] : header[2] /* Brus */}
             </Grid>
 
             <Grid
@@ -232,7 +225,7 @@ const DashboardListItem = props => {
                 classes.alignRight
               )}
             >
-              {!header ? children[4] : header[3] /* Kontortid */}
+              {!header ? children[5] : header[3] /* Kontortid */}
             </Grid>
 
             <Grid
@@ -244,7 +237,7 @@ const DashboardListItem = props => {
                 classes.alignRight
               )}
             >
-              {!header ? children[5] : header[4] /* Sist sett */}
+              {!header ? children[6] : header[4] /* Sist sett */}
             </Grid>
           </Grid>
         )}

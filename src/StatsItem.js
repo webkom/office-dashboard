@@ -44,7 +44,7 @@ const StatsItem = props => {
 StatsItem.propTypes = {
   classes: PropTypes.object.isRequired,
   icon: PropTypes.object.isRequired,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   text: PropTypes.string,
   compact: PropTypes.bool
 };
