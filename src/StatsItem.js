@@ -29,10 +29,10 @@ const StatsItem = props => {
           <Grid item xs={3} className={classes.alignRight}>
             <FontAwesomeIcon className={classes.statsIcon} icon={icon} />
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={3}>
             {value}
           </Grid>
-          <Grid item xs={7} className={classes.alignLeft}>
+          <Grid item xs={6} className={classes.alignLeft}>
             {text}
           </Grid>
         </Grid>

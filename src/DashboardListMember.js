@@ -50,7 +50,7 @@ const DashboardListMember = props => {
     name,
     github,
     brusData,
-    coffeeCount,
+    kaffeData,
     activityToday,
     lastSeen
   } = props;
@@ -75,8 +75,12 @@ const DashboardListMember = props => {
           justify={'space-around'}
           className={classes.alignCenter}
         >
-          <StatsItem icon={faCoffee} value={coffeeCount} compact />
-          <StatsItem icon={faFlask} value={coffeeCount} compact />
+          <StatsItem icon={faCoffee} value={kaffeData.jugs_brewed} compact />
+          <StatsItem
+            icon={faFlask}
+            value={`${kaffeData.volume_brewed} L`}
+            compact
+          />
           <StatsItem
             icon={faDollarSign}
             value={`${brusData.balance} kr`}
@@ -96,8 +100,16 @@ const DashboardListMember = props => {
       )}
       {width !== 'xs' && (
         <Grid container direction={'column'} className={classes.alignCenter}>
-          <StatsItem icon={faCoffee} value={coffeeCount} text="kanner" />
-          <StatsItem icon={faFlask} value={coffeeCount} text="liter" />
+          <StatsItem
+            icon={faCoffee}
+            value={`${kaffeData.jugs_brewed}`}
+            text="kanner"
+          />
+          <StatsItem
+            icon={faFlask}
+            value={kaffeData.volume_brewed}
+            text="liter"
+          />
         </Grid>
       )}
       {width !== 'xs' && (
@@ -155,7 +167,7 @@ DashboardListMember.propTypes = {
   name: PropTypes.string.isRequired,
   github: PropTypes.string.isRequired,
   brusData: PropTypes.object.isRequired,
-  coffeeCount: PropTypes.string.isRequired,
+  kaffeData: PropTypes.object.isRequired,
   activityToday: PropTypes.string.isRequired,
   lastSeen: PropTypes.string.isRequired,
   width: PropTypes.string.isRequired

@@ -10,7 +10,7 @@ import * as moment from 'moment';
 import 'moment-with-locales-es6';
 import 'moment/locale/nb';
 import 'moment-duration-format';
-import { PRESENCE_URL, BRUS_URL } from './config';
+import { PRESENCE_URL, BRUS_URL, KAFFE_URL } from './config';
 import DashboardListHeader from './DashboardListHeader';
 import MemberItem from './MemberItem';
 
@@ -50,18 +50,19 @@ export class DashboardContent extends Component {
   };
 
   componentDidUpdate(prevProps) {
-    const { presenceFetch, brusFetch } = this.props;
+    const { presenceFetch, brusFetch, kaffeFetch } = this.props;
     const { isLoading, members, lastDatetime } = this.state;
 
-    const allFetches = PromiseState.all([presenceFetch, brusFetch]);
+    const allFetches = PromiseState.all([presenceFetch, brusFetch, kaffeFetch]);
 
     if (!isLoading && allFetches.pending) {
       this.setState({ isLoading: true });
     } else if (isLoading && allFetches.rejected) {
       throw allFetches.reason.message;
     } else if (allFetches.fulfilled) {
-      const [presence, brus] = allFetches.value;
+      const [presence, brus, kaffe] = allFetches.value;
       presence.members.map(member => {
+        // Brus
         const brusInfo = brus.find(
           brusMember => brusMember.name === member.brus
         );
@@ -74,6 +75,21 @@ export class DashboardContent extends Component {
         } else {
           member['brus_data'] = brusInfo;
         }
+
+        // Kaffe
+        const kaffeInfo = kaffe.members.find(
+          kaffeMember => kaffeMember.name === member.name
+        );
+        if (typeof kaffeInfo === 'undefined') {
+          member['kaffe_data'] = {
+            jugs_brewed: '?',
+            volume_brewed: '?',
+            last_brew: '?'
+          };
+        } else {
+          member['kaffe_data'] = kaffeInfo;
+        }
+
         return member;
       });
 
@@ -129,6 +145,7 @@ DashboardContent.propTypes = {
   classes: PropTypes.object.isRequired,
   presenceFetch: PropTypes.object.isRequired,
   brusFetch: PropTypes.object.isRequired,
+  kaffeFetch: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired
 };
 
@@ -145,6 +162,12 @@ export default withWidth()(
         method: 'GET',
         mode: 'cors',
         url: `${BRUS_URL}/api/liste/`,
+        refreshInterval: 60000
+      },
+      kaffeFetch: {
+        method: 'GET',
+        mode: 'cors',
+        url: KAFFE_URL,
         refreshInterval: 60000
       }
     }))(DashboardContent)
