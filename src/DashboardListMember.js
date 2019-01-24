@@ -14,6 +14,7 @@ import { faWineBottle } from '@fortawesome/free-solid-svg-icons';
 import Grid from '@material-ui/core/Grid';
 import DashboardListItem from './DashboardListItem';
 import StatsItem from './StatsItem';
+import getPlural from './utils';
 
 const styles = theme => ({
   root: {
@@ -112,7 +113,7 @@ const DashboardListMember = props => {
           <StatsItem
             icon={faCoffee}
             value={`${kaffeData.jugs_brewed}`}
-            text="kanner"
+            text={getPlural('kanne', 'r', kaffeData.jugs_brewed)}
           />
           <StatsItem
             icon={faFlask}
@@ -126,12 +127,12 @@ const DashboardListMember = props => {
           <StatsItem
             icon={faGlassWhiskey}
             value={brusData.soda_cans_bought}
-            text="bokser"
+            text={getPlural('boks', 'er', brusData.soda_cans_bought)}
           />
           <StatsItem
             icon={faWineBottle}
             value={brusData.soda_bottles_bought}
-            text="flasker"
+            text={getPlural('flaske', 'r', brusData.soda_bottles_bought)}
           />
         </Grid>
       )}

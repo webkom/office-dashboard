@@ -14,7 +14,6 @@ const MemberItem = props => {
       avatar={member.avatar}
       name={member.name}
       github={member.github}
-      coffeeCount={'?'} // TODO: implement kaffe_listener
       brusData={member.brus_data}
       kaffeData={member.kaffe_data}
       activityToday={
@@ -22,7 +21,7 @@ const MemberItem = props => {
           ? ''
           : moment
               .duration(member.activity_today, 'seconds')
-              .format('h [timer] m [minutter]', {
+              .format('h [timer] m [minutter]', { // TODO: fix single and plural
                 usePlural: false
               })
       }
