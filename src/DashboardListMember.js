@@ -31,6 +31,12 @@ const styles = theme => ({
   statsIcon: {
     color: theme.palette.secondary.dark
   },
+  frownIcon: {
+    fontSize: 'inherit',
+    [theme.breakpoints.up('sm')]: {
+      fontSize: '1.5rem'
+    }
+  },
   alignCenter: {
     textAlign: 'center'
   },
@@ -57,7 +63,10 @@ const DashboardListMember = props => {
   const isActive = lastSeen === 'På kontoret!';
   const formattedActivityToday =
     activityToday === '' ? (
-      <FontAwesomeIcon className={classes.statsIcon} icon={faFrown} />
+      <FontAwesomeIcon
+        className={classNames(classes.statsIcon, classes.frownIcon)}
+        icon={faFrown}
+      />
     ) : (
       activityToday
     );
