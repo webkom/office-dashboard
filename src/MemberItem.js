@@ -6,6 +6,13 @@ import 'moment/locale/nb';
 import 'moment-duration-format';
 import DashboardListMember from './DashboardListMember';
 
+const getTimeFormatString = value => {
+  value = Number(value);
+  const hour = Math.floor(value / 3600) > 1 ? 'timer' : 'time';
+  const minute = Math.floor((value % 3600) / 60) > 1 ? 'minutter' : 'minutt';
+  return `h [${hour}] m [${minute}]`;
+};
+
 const MemberItem = props => {
   const { member } = props;
 
@@ -21,7 +28,7 @@ const MemberItem = props => {
           ? ''
           : moment
               .duration(member.activity_today, 'seconds')
-              .format('h [timer] m [minutter]', { // TODO: fix single and plural
+              .format(getTimeFormatString(member.activity_today), {
                 usePlural: false
               })
       }
