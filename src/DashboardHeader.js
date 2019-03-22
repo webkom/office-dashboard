@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-refetch';
+import { connect, PromiseState } from 'react-refetch';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import withWidth from '@material-ui/core/withWidth';
@@ -11,7 +11,9 @@ import { faCloud } from '@fortawesome/free-solid-svg-icons';
 import { faCompressArrowsAlt } from '@fortawesome/free-solid-svg-icons';
 import { faSkull } from '@fortawesome/free-solid-svg-icons';
 import { faIndustry } from '@fortawesome/free-solid-svg-icons';
-import { ENVIRONMENT_URL, OFFICE_SENSORS } from './config';
+import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
+import { faDoorClosed } from '@fortawesome/free-solid-svg-icons';
+import { ENVIRONMENT_URL, OFFICE_DOOR_URL, OFFICE_SENSORS } from './config';
 // import lightLogo from './static/abakus_logo_black.png';
 import Measurement from './Measurement';
 import darkLogo from './static/abakus_logo_white.png';
@@ -55,26 +57,38 @@ export class DashboardHeader extends Component {
     isLoading: true,
     lastDatetime: null,
     sensors: null,
-    environment: null
+    environment: null,
+    officeDoorOpen: null
   };
 
   componentDidUpdate(prevProps) {
-    const { environmentFetch } = this.props;
-    const { isLoading, sensors, lastDatetime } = this.state;
-    if (!isLoading && environmentFetch.pending) {
+    const { environmentFetch, officeDoorFetch } = this.props;
+    const { isLoading, sensors, lastDatetime, officeDoorOpen } = this.state;
+
+    const allFetches = PromiseState.all([environmentFetch, officeDoorFetch]);
+
+    if (!isLoading && allFetches.pending) {
       this.setState({ isLoading: true });
-    } else if (isLoading && environmentFetch.rejected) {
-      throw environmentFetch.reason.message;
+    } else if (isLoading && allFetches.rejected) {
+      throw allFetches.reason.message;
+    } else if (allFetches.fulfilled) {
+      /*
     } else if (
       environmentFetch.fulfilled &&
       (sensors !== environmentFetch.value.sensors ||
         lastDatetime !== environmentFetch.value.last_datetime)
     ) {
+    */
+      const [environmentValues, officeDoorValues] = allFetches.value;
+
+      // Office Door
+      const officeDoorCurrentlyOpen = officeDoorValues.status === 'OPEN';
+
       // Only use the sensors in the office
-      const officeSensors = Object.keys(environmentFetch.value.sensors)
+      const officeSensors = Object.keys(environmentValues.sensors)
         .filter(key => OFFICE_SENSORS.includes(key))
         .reduce((obj, key) => {
-          obj[key] = environmentFetch.value.sensors[key];
+          obj[key] = environmentValues.sensors[key];
           return obj;
         }, {});
 
@@ -104,18 +118,25 @@ export class DashboardHeader extends Component {
           ) / 100;
       });
 
-      this.setState({
-        lastDatetime: environmentFetch.value.last_datetime,
-        sensors: environmentFetch.value.sensors,
-        environment,
-        isLoading: false
-      });
+      if (
+        sensors !== environmentValues.sensors ||
+        lastDatetime !== environmentValues.last_datetime ||
+        officeDoorOpen !== officeDoorCurrentlyOpen
+      ) {
+        this.setState({
+          lastDatetime: environmentValues.last_datetime,
+          sensors: environmentValues.sensors,
+          environment,
+          isLoading: false,
+          officeDoorOpen: officeDoorCurrentlyOpen
+        });
+      }
     }
   }
 
   render() {
     const { classes, width } = this.props;
-    const { isLoading, environment } = this.state;
+    const { isLoading, environment, officeDoorOpen } = this.state;
     return (
       <AppBar position="static">
         {width !== undefined && width === 'xs' ? (
@@ -177,6 +198,12 @@ export class DashboardHeader extends Component {
                     alt="eCO2 (equivalent calculated carbon-dioxide) concentration parts per million (ppm)"
                     rightAlign
                   />
+                  <Measurement
+                    icon={officeDoorOpen ? faDoorOpen : faDoorClosed}
+                    value={`${officeDoorOpen ? 'Åpen' : 'Lukket'}`}
+                    alt="Kontordørstatus"
+                    rightAlign
+                  />
                 </Grid>
               )}
             </Grid>
@@ -190,6 +217,7 @@ export class DashboardHeader extends Component {
 DashboardHeader.propTypes = {
   classes: PropTypes.object.isRequired,
   environmentFetch: PropTypes.object.isRequired,
+  officeDoorFetch: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired
 };
 
@@ -200,6 +228,12 @@ export default withWidth()(
         method: 'GET',
         mode: 'cors',
         url: ENVIRONMENT_URL,
+        refreshInterval: 5000
+      },
+      officeDoorFetch: {
+        method: 'GET',
+        mode: 'cors',
+        url: OFFICE_DOOR_URL,
         refreshInterval: 5000
       }
     }))(DashboardHeader)

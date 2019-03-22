@@ -6,5 +6,7 @@ export const ENVIRONMENT_URL =
   process.env.REACT_APP_ENVIRONMENT_URL || 'https://environment-api.abakus.no';
 export const KAFFE_URL =
   process.env.REACT_APP_KAFFE_URL || 'https://kaffe-api.abakus.no';
+export const OFFICE_DOOR_URL =
+  process.env.REACT_APP_OFFICE_DOOR_URL || 'https://office-door-api.abakus.no';
 
 export const OFFICE_SENSORS = ['sensors/2', 'sensors/4', 'sensors/5'];
