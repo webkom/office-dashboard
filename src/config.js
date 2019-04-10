@@ -9,4 +9,4 @@ export const KAFFE_URL =
 export const OFFICE_DOOR_URL =
   process.env.REACT_APP_OFFICE_DOOR_URL || 'https://office-door-api.abakus.no';
 
-export const OFFICE_SENSORS = ['sensors/2', 'sensors/4', 'sensors/5'];
+export const OFFICE_SENSORS = ['sensors/208AAEC40A24', 'sensors/CC6BAFC40A24'];
