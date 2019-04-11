@@ -38,6 +38,13 @@ const styles = theme => ({
       fontSize: '1.5rem'
     }
   },
+  firstSeen: {
+    fontSize: '0.6rem',
+    opacity: 0.7
+  },
+  firstSeenCompact: {
+    paddingBottom: '0.25rem'
+  },
   alignCenter: {
     textAlign: 'center'
   },
@@ -59,6 +66,7 @@ const DashboardListMember = props => {
     brusData,
     kaffeData,
     activityToday,
+    firstSeen,
     lastSeen
   } = props;
   const isActive = lastSeen === 'På kontoret!';
@@ -71,6 +79,8 @@ const DashboardListMember = props => {
     ) : (
       activityToday
     );
+  const formattedFirstSeen =
+    firstSeen === null ? 'Ukjent' : firstSeen.format('HH:mm:ss');
   return (
     <DashboardListItem avatar={avatar} isActive={isActive}>
       <span>{name}</span>
@@ -137,16 +147,33 @@ const DashboardListMember = props => {
         </Grid>
       )}
       {width === 'xs' ? (
-        <Grid container>
-          <Grid item xs={5} className={classes.prefix}>
-            Kontortid:
+        <div>
+          <Grid container className={classes.firstSeenCompact}>
+            <Grid item xs={5} className={classes.prefix}>
+              Først sett:
+            </Grid>
+            <Grid item xs={7} className={classes.alignRight}>
+              {formattedFirstSeen}
+            </Grid>
           </Grid>
-          <Grid item xs={7} className={classes.alignRight}>
-            {formattedActivityToday}
+          <Grid container>
+            <Grid item xs={5} className={classes.prefix}>
+              Kontortid:
+            </Grid>
+            <Grid item xs={7} className={classes.alignRight}>
+              {formattedActivityToday}
+            </Grid>
           </Grid>
-        </Grid>
+        </div>
       ) : (
-        <span>{formattedActivityToday}</span>
+        <div>
+          {firstSeen !== null && (
+            <div className={classNames(classes.alignRight, classes.firstSeen)}>
+              Først sett: {formattedFirstSeen}
+            </div>
+          )}
+          <div>{formattedActivityToday}</div>
+        </div>
       )}
       {width === 'xs' ? (
         <Grid container>
@@ -180,6 +207,7 @@ DashboardListMember.propTypes = {
   kaffeData: PropTypes.object.isRequired,
   activityToday: PropTypes.string.isRequired,
   lastSeen: PropTypes.string.isRequired,
+  firstSeen: PropTypes.object,
   width: PropTypes.string.isRequired
 };
 

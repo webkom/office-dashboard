@@ -32,6 +32,11 @@ const MemberItem = props => {
                 usePlural: false
               })
       }
+      firstSeen={
+        member.first_seen
+          ? moment(member.first_seen).locale(moment.locale('nb'))
+          : null
+      }
       lastSeen={
         member.is_active
           ? 'På kontoret!'
