@@ -8,5 +8,8 @@ export const KAFFE_URL =
   process.env.REACT_APP_KAFFE_URL || 'https://kaffe-api.abakus.no';
 export const OFFICE_DOOR_URL =
   process.env.REACT_APP_OFFICE_DOOR_URL || 'https://office-door-api.abakus.no';
+export const OFFICE_CHROMECAST_URL =
+  process.env.REACT_APP_OFFICE_CHROMECAST_URL ||
+  'https://office-chromecast-api.abakus.no';
 
 export const OFFICE_SENSORS = ['sensors/208AAEC40A24', 'sensors/CC6BAFC40A24'];

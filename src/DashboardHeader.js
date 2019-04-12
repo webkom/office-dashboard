@@ -13,9 +13,15 @@ import { faSkull } from '@fortawesome/free-solid-svg-icons';
 import { faIndustry } from '@fortawesome/free-solid-svg-icons';
 import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import { faDoorClosed } from '@fortawesome/free-solid-svg-icons';
-import { ENVIRONMENT_URL, OFFICE_DOOR_URL, OFFICE_SENSORS } from './config';
+import {
+  ENVIRONMENT_URL,
+  OFFICE_DOOR_URL,
+  OFFICE_SENSORS,
+  OFFICE_CHROMECAST_URL
+} from './config';
 // import lightLogo from './static/abakus_logo_black.png';
 import Measurement from './Measurement';
+import MediaInfo from './MediaInfo';
 import darkLogo from './static/abakus_logo_white.png';
 
 const styles = theme => ({
@@ -49,6 +55,11 @@ const styles = theme => ({
   },
   webkom: {
     height: '60px'
+  },
+  mediaContainer: {
+    padding: '10px 0',
+    backgroundColor: theme.palette.secondary.darkest,
+    boxShadow: 'rgba(16, 23, 27, 0.52) 0px 10px 20px 6px inset'
   }
 });
 
@@ -58,14 +69,29 @@ export class DashboardHeader extends Component {
     lastDatetime: null,
     sensors: null,
     environment: null,
-    officeDoorOpen: null
+    officeDoorOpen: null,
+    chromecast: null
   };
 
   componentDidUpdate(prevProps) {
-    const { environmentFetch, officeDoorFetch } = this.props;
-    const { isLoading, sensors, lastDatetime, officeDoorOpen } = this.state;
+    const {
+      environmentFetch,
+      officeDoorFetch,
+      officeChromecastFetch
+    } = this.props;
+    const {
+      isLoading,
+      sensors,
+      lastDatetime,
+      officeDoorOpen,
+      chromecast
+    } = this.state;
 
-    const allFetches = PromiseState.all([environmentFetch, officeDoorFetch]);
+    const allFetches = PromiseState.all([
+      environmentFetch,
+      officeDoorFetch,
+      officeChromecastFetch
+    ]);
 
     if (!isLoading && allFetches.pending) {
       this.setState({ isLoading: true });
@@ -79,7 +105,11 @@ export class DashboardHeader extends Component {
         lastDatetime !== environmentFetch.value.last_datetime)
     ) {
     */
-      const [environmentValues, officeDoorValues] = allFetches.value;
+      const [
+        environmentValues,
+        officeDoorValues,
+        officeChromecastValues
+      ] = allFetches.value;
 
       // Office Door
       const officeDoorCurrentlyOpen = officeDoorValues.status === 'OPEN';
@@ -118,17 +148,21 @@ export class DashboardHeader extends Component {
           ) / 100;
       });
 
+      const chromecastStatus = officeChromecastValues.current_status;
+
       if (
         sensors !== environmentValues.sensors ||
         lastDatetime !== environmentValues.last_datetime ||
-        officeDoorOpen !== officeDoorCurrentlyOpen
+        officeDoorOpen !== officeDoorCurrentlyOpen ||
+        chromecast !== chromecastStatus
       ) {
         this.setState({
           lastDatetime: environmentValues.last_datetime,
           sensors: environmentValues.sensors,
           environment,
           isLoading: false,
-          officeDoorOpen: officeDoorCurrentlyOpen
+          officeDoorOpen: officeDoorCurrentlyOpen,
+          chromecast: chromecastStatus
         });
       }
     }
@@ -136,80 +170,95 @@ export class DashboardHeader extends Component {
 
   render() {
     const { classes, width } = this.props;
-    const { isLoading, environment, officeDoorOpen } = this.state;
+    const { isLoading, environment, officeDoorOpen, chromecast } = this.state;
+    const isMobile = width !== undefined && width === 'xs';
     return (
-      <AppBar position="static">
-        {width !== undefined && width === 'xs' ? (
-          <Grid container spacing={0} className={classes.toolbar}>
-            <Grid item xs={12}>
-              <img
-                alt="Abakus Linjeforening"
-                className={classes.logo}
-                src={darkLogo}
-              />
+      <div>
+        <AppBar position="static">
+          {isMobile ? (
+            <Grid container spacing={0} className={classes.toolbar}>
+              <Grid item xs={12}>
+                <img
+                  alt="Abakus Linjeforening"
+                  className={classes.logo}
+                  src={darkLogo}
+                />
+              </Grid>
             </Grid>
-          </Grid>
-        ) : (
-          <Grid container className={classes.toolbar}>
-            <Grid item xs={2}>
-              {isLoading ? (
-                <CircularProgress className={classes.loading} size={'4vh'} />
-              ) : (
-                <Grid container direction={'column'}>
-                  <Measurement
-                    icon={faThermometerHalf}
-                    value={`${environment.temperature} °C`}
-                    alt="Temperature"
-                  />
-                  <Measurement
-                    icon={faCloud}
-                    value={`${environment.humidity} %`}
-                    alt="Humidity"
-                  />
-                  <Measurement
-                    icon={faCompressArrowsAlt}
-                    value={`${Math.round(environment.pressure) / 100} hPa`}
-                    alt="Pressure"
-                  />
-                </Grid>
-              )}
+          ) : (
+            <Grid container className={classes.toolbar}>
+              <Grid item xs={2}>
+                {isLoading ? (
+                  <CircularProgress className={classes.loading} size={'4vh'} />
+                ) : (
+                  <Grid container direction={'column'}>
+                    <Measurement
+                      icon={faThermometerHalf}
+                      value={`${environment.temperature} °C`}
+                      alt="Temperature"
+                    />
+                    <Measurement
+                      icon={faCloud}
+                      value={`${environment.humidity} %`}
+                      alt="Humidity"
+                    />
+                    <Measurement
+                      icon={faCompressArrowsAlt}
+                      value={`${Math.round(environment.pressure) / 100} hPa`}
+                      alt="Pressure"
+                    />
+                  </Grid>
+                )}
+              </Grid>
+              <Grid item xs={8}>
+                <img
+                  alt="Abakus Linjeforening"
+                  className={classes.logo}
+                  src={darkLogo}
+                />
+              </Grid>
+              <Grid item xs={2}>
+                {isLoading ? (
+                  <CircularProgress className={classes.loading} size={'4vh'} />
+                ) : (
+                  <Grid container direction={'column'}>
+                    <Measurement
+                      icon={faSkull}
+                      value={`${environment.TVOC} ppb`}
+                      alt="TVOC (Total Volatile Organic Compound) concentration parts per billion (ppb)"
+                      rightAlign
+                    />
+                    <Measurement
+                      icon={faIndustry}
+                      value={`${environment.eCO2} ppm`}
+                      alt="eCO2 (equivalent calculated carbon-dioxide) concentration parts per million (ppm)"
+                      rightAlign
+                    />
+                    <Measurement
+                      icon={officeDoorOpen ? faDoorOpen : faDoorClosed}
+                      value={`${officeDoorOpen ? 'Åpen' : 'Lukket'}`}
+                      alt="Kontordørstatus"
+                      rightAlign
+                    />
+                  </Grid>
+                )}
+              </Grid>
             </Grid>
-            <Grid item xs={8}>
-              <img
-                alt="Abakus Linjeforening"
-                className={classes.logo}
-                src={darkLogo}
-              />
-            </Grid>
-            <Grid item xs={2}>
-              {isLoading ? (
-                <CircularProgress className={classes.loading} size={'4vh'} />
-              ) : (
-                <Grid container direction={'column'}>
-                  <Measurement
-                    icon={faSkull}
-                    value={`${environment.TVOC} ppb`}
-                    alt="TVOC (Total Volatile Organic Compound) concentration parts per billion (ppb)"
-                    rightAlign
-                  />
-                  <Measurement
-                    icon={faIndustry}
-                    value={`${environment.eCO2} ppm`}
-                    alt="eCO2 (equivalent calculated carbon-dioxide) concentration parts per million (ppm)"
-                    rightAlign
-                  />
-                  <Measurement
-                    icon={officeDoorOpen ? faDoorOpen : faDoorClosed}
-                    value={`${officeDoorOpen ? 'Åpen' : 'Lukket'}`}
-                    alt="Kontordørstatus"
-                    rightAlign
-                  />
-                </Grid>
-              )}
+          )}
+        </AppBar>
+        {chromecast && chromecast.state != 'UNKNOWN' && (
+          <Grid
+            container
+            alignItems="center"
+            justify="center"
+            className={classes.mediaContainer}
+          >
+            <Grid xs={isMobile ? 11 : 5}>
+              <MediaInfo content={chromecast} />
             </Grid>
           </Grid>
         )}
-      </AppBar>
+      </div>
     );
   }
 }
@@ -218,6 +267,7 @@ DashboardHeader.propTypes = {
   classes: PropTypes.object.isRequired,
   environmentFetch: PropTypes.object.isRequired,
   officeDoorFetch: PropTypes.object.isRequired,
+  officeChromecastFetch: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired
 };
 
@@ -234,6 +284,12 @@ export default withWidth()(
         method: 'GET',
         mode: 'cors',
         url: OFFICE_DOOR_URL,
+        refreshInterval: 5000
+      },
+      officeChromecastFetch: {
+        method: 'GET',
+        mode: 'cors',
+        url: OFFICE_CHROMECAST_URL,
         refreshInterval: 5000
       }
     }))(DashboardHeader)
