@@ -166,9 +166,9 @@ const DashboardListMember = props => {
           </Grid>
         </div>
       ) : (
-        <div>
+        <div className={classes.alignRight}>
           {firstSeen !== null && (
-            <div className={classNames(classes.alignRight, classes.firstSeen)}>
+            <div className={classes.firstSeen}>
               Først sett: {formattedFirstSeen}
             </div>
           )}
