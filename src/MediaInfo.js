@@ -98,7 +98,6 @@ const MediaInfo = props => {
           </Grid>
         </Grid>
       </Grid>
-      <Grid />
     </Grid>
   );
 };

@@ -7,6 +7,7 @@ import withWidth from '@material-ui/core/withWidth';
 import AppBar from '@material-ui/core/AppBar';
 import Grid from '@material-ui/core/Grid';
 import Zoom from '@material-ui/core/Zoom';
+import Palette from 'react-palette';
 import { faThermometerHalf } from '@fortawesome/free-solid-svg-icons';
 import { faCloud } from '@fortawesome/free-solid-svg-icons';
 import { faCompressArrowsAlt } from '@fortawesome/free-solid-svg-icons';
@@ -248,18 +249,40 @@ export class DashboardHeader extends Component {
           )}
         </AppBar>
         {chromecast && chromecast.state !== 'UNKNOWN' && (
-          <Zoom in>
-            <Grid
-              container
-              alignItems="center"
-              justify="center"
-              className={classes.mediaContainer}
-            >
-              <Grid xs={isMobile ? 11 : 5}>
-                <MediaInfo content={chromecast} />
-              </Grid>
-            </Grid>
-          </Zoom>
+          <div>
+            {chromecast.image !== null ? (
+              <Palette image={chromecast.image}>
+                {palette => (
+                  <Zoom in>
+                    <Grid
+                      container
+                      alignItems="center"
+                      justify="center"
+                      className={classes.mediaContainer}
+                      style={{ backgroundColor: palette.darkMuted }}
+                    >
+                      <Grid xs={isMobile ? 11 : 5}>
+                        <MediaInfo content={chromecast} />
+                      </Grid>
+                    </Grid>
+                  </Zoom>
+                )}
+              </Palette>
+            ) : (
+              <Zoom in>
+                <Grid
+                  container
+                  alignItems="center"
+                  justify="center"
+                  className={classes.mediaContainer}
+                >
+                  <Grid xs={isMobile ? 11 : 5}>
+                    <MediaInfo content={chromecast} />
+                  </Grid>
+                </Grid>
+              </Zoom>
+            )}
+          </div>
         )}
       </div>
     );
