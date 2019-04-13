@@ -247,7 +247,7 @@ export class DashboardHeader extends Component {
             </Grid>
           )}
         </AppBar>
-        {chromecast && chromecast.state != 'UNKNOWN' && (
+        {chromecast && chromecast.state !== 'UNKNOWN' && (
           <Zoom in>
             <Grid
               container
