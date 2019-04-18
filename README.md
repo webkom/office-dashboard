@@ -2,6 +2,8 @@
 
 The webkom office dashboard uses different data sources to display information about the office, its environment, and the members of the office.
 
+_Do note that the dashboard and data sources require you to be on the NTNU network, either through VPN or at campus._
+
 ![Dashboard](../assets/dashboard.png?raw=true)
 
 _<p align="center">laget med :beer: av webkom</p>_
