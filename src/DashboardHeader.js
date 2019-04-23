@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Color from 'color';
+import ColorThief from 'color-thief';
 import { connect, PromiseState } from 'react-refetch';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import withWidth from '@material-ui/core/withWidth';
 import AppBar from '@material-ui/core/AppBar';
 import Grid from '@material-ui/core/Grid';
 import Zoom from '@material-ui/core/Zoom';
-import Palette from 'react-palette';
 import { faThermometerHalf } from '@fortawesome/free-solid-svg-icons';
 import { faCloud } from '@fortawesome/free-solid-svg-icons';
 import { faCompressArrowsAlt } from '@fortawesome/free-solid-svg-icons';
@@ -61,7 +62,7 @@ const styles = theme => ({
   mediaContainer: {
     padding: '10px 0',
     backgroundColor: theme.palette.secondary.darkest,
-    boxShadow: 'rgba(16, 23, 27, 0.52) 0px 10px 20px 6px inset'
+    boxShadow: 'rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset'
   }
 });
 
@@ -72,7 +73,9 @@ export class DashboardHeader extends Component {
     sensors: null,
     environment: null,
     officeDoorOpen: null,
-    chromecast: null
+    chromecast: null,
+    mediaImage: null,
+    mediaColor: null
   };
 
   componentDidUpdate(prevProps) {
@@ -86,7 +89,8 @@ export class DashboardHeader extends Component {
       sensors,
       lastDatetime,
       officeDoorOpen,
-      chromecast
+      chromecast,
+      mediaImage
     } = this.state;
 
     const allFetches = PromiseState.all([
@@ -100,13 +104,6 @@ export class DashboardHeader extends Component {
     } else if (isLoading && allFetches.rejected) {
       throw allFetches.reason.message;
     } else if (allFetches.fulfilled) {
-      /*
-    } else if (
-      environmentFetch.fulfilled &&
-      (sensors !== environmentFetch.value.sensors ||
-        lastDatetime !== environmentFetch.value.last_datetime)
-    ) {
-    */
       const [
         environmentValues,
         officeDoorValues,
@@ -153,27 +150,80 @@ export class DashboardHeader extends Component {
       const chromecastStatus = officeChromecastValues.current_status;
 
       if (
-        sensors !== environmentValues.sensors ||
+        JSON.stringify(sensors) !== JSON.stringify(environmentValues.sensors) ||
         lastDatetime !== environmentValues.last_datetime ||
         officeDoorOpen !== officeDoorCurrentlyOpen ||
-        chromecast !== chromecastStatus
+        JSON.stringify(chromecast) !== JSON.stringify(chromecastStatus)
       ) {
-        this.setState({
+        const newState = {
           lastDatetime: environmentValues.last_datetime,
           sensors: environmentValues.sensors,
           environment,
           isLoading: false,
           officeDoorOpen: officeDoorCurrentlyOpen,
           chromecast: chromecastStatus
-        });
+        };
+        if (
+          newState.chromecast &&
+          newState.chromecast.image !== null &&
+          (mediaImage === null || mediaImage.src !== newState.chromecast.image)
+        ) {
+          // Get the most dominant color of the media image
+          const updatedMediaImage = new Image(300, 300);
+          updatedMediaImage.crossOrigin = 'Anonymous';
+          updatedMediaImage.src = newState.chromecast.image;
+
+          const _ = this;
+          updatedMediaImage.onload = function() {
+            const colorThief = new ColorThief();
+            const mediaColor = Color.rgb(
+              colorThief.getColor(updatedMediaImage)
+            );
+            const backgroundColor = mediaColor.isLight()
+              ? mediaColor.darken(0.5)
+              : mediaColor;
+            updatedMediaImage.setAttribute(
+              'backgroundColor',
+              backgroundColor.hsl().string()
+            );
+            const mediaPalette = colorThief.getPalette(updatedMediaImage);
+            const mediaTextColors = mediaPalette
+              .map(rgbArray => Color.rgb(rgbArray))
+              .filter(color => color.isLight() !== backgroundColor.isLight());
+            updatedMediaImage.setAttribute(
+              'textColor',
+              mediaTextColors.length > 0
+                ? mediaTextColors[0].hsl().string()
+                : '#FFFFFF'
+            );
+            newState.mediaImage = updatedMediaImage;
+            _.setState(newState);
+          };
+        } else {
+          this.setState(newState);
+        }
       }
     }
   }
 
   render() {
-    const { classes, width } = this.props;
-    const { isLoading, environment, officeDoorOpen, chromecast } = this.state;
+    const { classes, width, theme } = this.props;
+    const {
+      isLoading,
+      environment,
+      officeDoorOpen,
+      chromecast,
+      mediaImage
+    } = this.state;
     const isMobile = width !== undefined && width === 'xs';
+
+    const mediaColor =
+      mediaImage !== null
+        ? mediaImage.getAttribute('backgroundColor')
+        : theme.palette.secondary.darkest;
+    const mediaTextColor =
+      mediaImage !== null ? mediaImage.getAttribute('textColor') : '#FFFFFF';
+
     return (
       <div>
         <AppBar position="static">
@@ -249,40 +299,23 @@ export class DashboardHeader extends Component {
           )}
         </AppBar>
         {chromecast && chromecast.state !== 'UNKNOWN' && (
-          <div>
-            {chromecast.image !== null ? (
-              <Palette image={chromecast.image}>
-                {palette => (
-                  <Zoom in>
-                    <Grid
-                      container
-                      alignItems="center"
-                      justify="center"
-                      className={classes.mediaContainer}
-                      style={{ backgroundColor: palette.darkMuted }}
-                    >
-                      <Grid xs={isMobile ? 11 : 5}>
-                        <MediaInfo content={chromecast} />
-                      </Grid>
-                    </Grid>
-                  </Zoom>
-                )}
-              </Palette>
-            ) : (
-              <Zoom in>
-                <Grid
-                  container
-                  alignItems="center"
-                  justify="center"
-                  className={classes.mediaContainer}
-                >
-                  <Grid xs={isMobile ? 11 : 5}>
-                    <MediaInfo content={chromecast} />
-                  </Grid>
-                </Grid>
-              </Zoom>
-            )}
-          </div>
+          <Zoom in>
+            <Grid
+              container
+              alignItems="center"
+              justify="center"
+              className={classes.mediaContainer}
+              style={{ backgroundColor: mediaColor }}
+            >
+              <Grid item xs={isMobile ? 11 : 5}>
+                <MediaInfo
+                  content={chromecast}
+                  backgroundColor={mediaColor}
+                  textColor={mediaTextColor}
+                />
+              </Grid>
+            </Grid>
+          </Zoom>
         )}
       </div>
     );
@@ -291,6 +324,7 @@ export class DashboardHeader extends Component {
 
 DashboardHeader.propTypes = {
   classes: PropTypes.object.isRequired,
+  theme: PropTypes.object.isRequired,
   environmentFetch: PropTypes.object.isRequired,
   officeDoorFetch: PropTypes.object.isRequired,
   officeChromecastFetch: PropTypes.object.isRequired,
@@ -298,26 +332,28 @@ DashboardHeader.propTypes = {
 };
 
 export default withWidth()(
-  withStyles(styles)(
-    connect(props => ({
-      environmentFetch: {
-        method: 'GET',
-        mode: 'cors',
-        url: ENVIRONMENT_URL,
-        refreshInterval: 5000
-      },
-      officeDoorFetch: {
-        method: 'GET',
-        mode: 'cors',
-        url: OFFICE_DOOR_URL,
-        refreshInterval: 5000
-      },
-      officeChromecastFetch: {
-        method: 'GET',
-        mode: 'cors',
-        url: OFFICE_CHROMECAST_URL,
-        refreshInterval: 5000
-      }
-    }))(DashboardHeader)
+  withTheme()(
+    withStyles(styles)(
+      connect(props => ({
+        environmentFetch: {
+          method: 'GET',
+          mode: 'cors',
+          url: ENVIRONMENT_URL,
+          refreshInterval: 5000
+        },
+        officeDoorFetch: {
+          method: 'GET',
+          mode: 'cors',
+          url: OFFICE_DOOR_URL,
+          refreshInterval: 5000
+        },
+        officeChromecastFetch: {
+          method: 'GET',
+          mode: 'cors',
+          url: OFFICE_CHROMECAST_URL,
+          refreshInterval: 5000
+        }
+      }))(DashboardHeader)
+    )
   )
 );
