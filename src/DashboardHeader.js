@@ -298,25 +298,27 @@ export class DashboardHeader extends Component {
             </Grid>
           )}
         </AppBar>
-        {chromecast && chromecast.state !== 'UNKNOWN' && (
-          <Zoom in>
-            <Grid
-              container
-              alignItems="center"
-              justify="center"
-              className={classes.mediaContainer}
-              style={{ backgroundColor: mediaColor }}
-            >
-              <Grid item xs={isMobile ? 11 : 5}>
-                <MediaInfo
-                  content={chromecast}
-                  backgroundColor={mediaColor}
-                  textColor={mediaTextColor}
-                />
+        {chromecast &&
+          chromecast.artist !== null &&
+          chromecast.state !== 'UNKNOWN' && (
+            <Zoom in>
+              <Grid
+                container
+                alignItems="center"
+                justify="center"
+                className={classes.mediaContainer}
+                style={{ backgroundColor: mediaColor }}
+              >
+                <Grid item xs={isMobile ? 11 : 5}>
+                  <MediaInfo
+                    content={chromecast}
+                    backgroundColor={mediaColor}
+                    textColor={mediaTextColor}
+                  />
+                </Grid>
               </Grid>
-            </Grid>
-          </Zoom>
-        )}
+            </Zoom>
+          )}
       </div>
     );
   }
