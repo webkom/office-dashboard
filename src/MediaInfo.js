@@ -31,14 +31,14 @@ const styles = theme => ({
   },
   durationText: {
     fontSize: '0.7rem',
-    opacity: 0.8,
-    paddingLeft: '0.5rem'
+    opacity: 0.8
   },
   currentTimeText: {
     fontSize: '0.7rem',
-    opacity: 0.8,
-    textAlign: 'right',
-    paddingRight: '0.5rem'
+    opacity: 0.8
+  },
+  progressContainer: {
+    flex: '1 1 auto'
   },
   progress: {
     borderRadius: '0.1rem'
@@ -77,7 +77,10 @@ const MediaInfo = props => {
   )}`;
 
   const textColorInstance = Color(textColor);
-  const imageShadowColor = Color(backgroundColor).darken(0.2).hsl().string();
+  const imageShadowColor = Color(backgroundColor)
+    .darken(0.2)
+    .hsl()
+    .string();
   const progressBarColor = textColorInstance
     .fade(0.3)
     .hsl()
@@ -110,15 +113,21 @@ const MediaInfo = props => {
         </a>
       </Grid>
       <Grid item xs={9} container direction="column" justify="space-between">
-        <Grid item>
+        <Grid item xs>
           <div>{`${artist} - ${title}`}</div>
           <div className={classes.albumText}>{album}</div>
         </Grid>
-        <Grid item container alignItems="center" justify="space-between">
-          <Grid item xs={2}>
+        <Grid
+          item
+          container
+          alignItems="center"
+          justify="space-between"
+          spacing={8}
+        >
+          <Grid item>
             <div className={classes.currentTimeText}>{formattedCurrent}</div>
           </Grid>
-          <Grid item xs={8}>
+          <Grid item className={classes.progressContainer}>
             <LinearProgress
               className={classes.progress}
               style={{
@@ -133,7 +142,7 @@ const MediaInfo = props => {
               value={progress}
             />
           </Grid>
-          <Grid item xs={2}>
+          <Grid item>
             <div className={classes.durationText}>{formattedDuration}</div>
           </Grid>
         </Grid>
