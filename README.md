@@ -4,14 +4,9 @@ The webkom office dashboard uses different data sources to display information a
 
 _Do note that the dashboard and data sources require you to be on the NTNU network, either through VPN or at campus._
 
-<center>
-
-<img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/dashboard.png?raw=true" height="400" /> 
-<img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/dashboard_mobile.png?raw=true" height="400"/>
+<img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/dashboard.png?raw=true" height="550" /> <img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/dashboard_mobile.png?raw=true" height="550"/>
 
 _laget med :beer: av webkom_
-
-</center>
 
 ## Data Sources
 
