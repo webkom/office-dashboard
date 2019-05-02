@@ -6,7 +6,8 @@ _Do note that the dashboard and data sources require you to be on the NTNU netwo
 
 <img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/dashboard.png?raw=true" height="550" /> <img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/dashboard_mobile.png?raw=true" height="550"/>
 
-_laget med :beer: av webkom_
+_<p align="center">laget med :beer: av webkom</p>_
+
 
 ## Data Sources
 
