@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import Color from 'color';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -10,12 +11,17 @@ import moment from 'moment';
 import 'moment-duration-format';
 
 const styles = theme => ({
-  mediaText: {
+  mediaFont: {
     color: 'var(--text-color)',
     fontSize: '0.875rem',
     fontWeight: 400,
     fontFamily: 'Raleway, "Helvetica Neue", Arial, sans-serif',
     lineHeight: '1.46429em'
+  },
+  mediaText: {
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden'
   },
   mediaImage: {
     backgroundImage: 'var(--image-url)',
@@ -178,6 +184,8 @@ export class MediaInfo extends Component {
       .hsl()
       .string();
 
+    const mediaHeaderText = `${artist} - ${title}`;
+
     return (
       <Grid
         container
@@ -187,7 +195,7 @@ export class MediaInfo extends Component {
         style={{
           '--text-color': textColor
         }}
-        className={classes.mediaText}
+        className={classes.mediaFont}
       >
         <Grid item container xs={3} className={classes.imageContainer}>
           <a href={url} target="_blank" rel="noopener noreferrer">
@@ -205,8 +213,15 @@ export class MediaInfo extends Component {
         </Grid>
         <Grid item xs={9} container direction="column" justify="space-between">
           <Grid item xs>
-            <div>{`${artist} - ${title}`}</div>
-            <div className={classes.albumText}>{album}</div>
+            <div className={classes.mediaText} title={mediaHeaderText}>
+              {mediaHeaderText}
+            </div>
+            <div
+              className={classNames(classes.mediaText, classes.albumText)}
+              title={album}
+            >
+              {album}
+            </div>
           </Grid>
           <Grid
             item
