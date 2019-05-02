@@ -4,7 +4,9 @@ The webkom office dashboard uses different data sources to display information a
 
 _Do note that the dashboard and data sources require you to be on the NTNU network, either through VPN or at campus._
 
-![Dashboard](../assets/dashboard.png?raw=true)
+Desktop / Tablet                       |  Mobile
+:-------------------------------------:|:--------------------------------------------:
+![](../assets/dashboard.png?raw=true)  |  ![](../assets/dashboard_mobile.png?raw=true)
 
 _<p align="center">laget med :beer: av webkom</p>_
 
@@ -40,7 +42,7 @@ _<p align="center">laget med :beer: av webkom</p>_
 - #### Office Chromecast · [<img src="../assets/GitHub-Mark-32px.png?raw=true" width="16" /> GitHub](https://github.com/webkom/office-chromecast-api) · [:shipit: API](https://office-chromecast-api.abakus.no)
 
   We have an application running in our office _cloud_ (Orange PI Zeros running our [custom cloud script](https://github.com/webkom/CubeCometh)) that communicates with the Chromecast connected to our office TV and broadcasts the status of the Chromecast every 5 seconds to our MQTT broker. The data is then stored in InfluxDB via. Telegraf.
-  If there is a song playing via. Spotify (or similiar) it is displayed accordingly on the dashboard (see the dashboard image above), the media banner is hidden if there is nothing playing on the Chromecast.
+  If there is a song playing via. Spotify (or similiar) it is displayed accordingly on the dashboard (see the dashboard image above), the media banner is hidden if there is nothing playing on the Chromecast. The background and text colors of the media banner are generated based on the colors in the media image. Additionally, there's a simulated current duration that increases and syncs with the actual current time from Chromecast.
 
   The dashboard uses the [Office Chromecast API](https://office-chromecast-api.abakus.no) to display the relevant media information.
 
