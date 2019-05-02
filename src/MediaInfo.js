@@ -18,7 +18,7 @@ const styles = theme => ({
   mediaImage: {
     backgroundImage: 'var(--image-url)',
     backgroundSize: '100% 100%',
-    boxShadow: 'inset 0px 0px 3px 3px var(--shadow-color)',
+    boxShadow: '0px 0px 3px 3px var(--shadow-color)',
     width: '5rem',
     height: '5rem'
   },
@@ -77,6 +77,7 @@ const MediaInfo = props => {
   )}`;
 
   const textColorInstance = Color(textColor);
+  const imageShadowColor = Color(backgroundColor).darken(0.2).hsl().string();
   const progressBarColor = textColorInstance
     .fade(0.3)
     .hsl()
@@ -103,7 +104,7 @@ const MediaInfo = props => {
             className={classes.mediaImage}
             style={{
               '--image-url': `url(${image})`,
-              '--shadow-color': backgroundColor
+              '--shadow-color': imageShadowColor
             }}
           />
         </a>
