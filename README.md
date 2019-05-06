@@ -8,7 +8,6 @@ _Do note that the dashboard and data sources require you to be on the NTNU netwo
 
 _<p align="center">laget med :beer: av webkom</p>_
 
-
 ## Data Sources
 
 - #### Brus · [<img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/GitHub-Mark-32px.png?raw=true" width="16" /> GitHub](https://github.com/webkom/brus) · [:shipit: API](https://brus.abakus.no)
