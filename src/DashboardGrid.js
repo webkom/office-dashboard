@@ -53,7 +53,7 @@ export class DashboardGrid extends Component {
           alignItems="center"
           className={classes.grid}
         >
-          <Grid item xs={11}>
+          <Grid item xs={12}>
             <DashboardHeader />
             <Paper className={classes.paper} square>
               <ErrorBoundary onError={this.handleError.bind(this)}>
