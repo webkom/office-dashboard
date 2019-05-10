@@ -20,7 +20,6 @@ const styles = theme => ({
     color: 'var(--text-color)',
     fontSize: '0.875rem',
     fontWeight: 400,
-    fontFamily: 'Raleway, "Helvetica Neue", Arial, sans-serif',
     lineHeight: '1.46429em'
   },
   mediaText: {

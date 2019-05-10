@@ -14,13 +14,7 @@ export const darkTheme = createMuiTheme({
     initialWidth: 'lg'
   },
   typography: {
-    fontFamily: [
-      // 'Source Sans Pro',
-      'Raleway',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif'
-    ].join(',')
+    fontFamily: ['rawline'].join(',')
   },
   palette: {
     type: 'dark',
