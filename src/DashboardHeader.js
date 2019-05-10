@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import Color from 'color';
 import ColorThief from 'color-thief';
 import { connect, PromiseState } from 'react-refetch';
@@ -16,6 +17,7 @@ import { faSkull } from '@fortawesome/free-solid-svg-icons';
 import { faIndustry } from '@fortawesome/free-solid-svg-icons';
 import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import { faDoorClosed } from '@fortawesome/free-solid-svg-icons';
+import moment from 'moment';
 import {
   ENVIRONMENT_URL,
   OFFICE_DOOR_URL,
@@ -53,11 +55,39 @@ const styles = theme => ({
   loading: {
     color: theme.palette.secondary.dark
   },
+  centerContainer: {
+    display: 'flex'
+  },
+  centerContainerLeft: {
+    display: 'flex',
+    justifyContent: 'center',
+    width: '20%'
+  },
+  centerContainerCenter: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '60%'
+  },
+  centerContainerRight: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    width: '20%'
+  },
   logo: {
     height: '50px'
   },
   webkom: {
     height: '60px'
+  },
+  clock: {
+    fontFamily: 'monospace',
+    height: '100%',
+    fontSize: '4.3vw',
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '3vw'
+    }
   },
   mediaContainer: {
     padding: '10px 0',
@@ -75,7 +105,8 @@ export class DashboardHeader extends Component {
     officeDoorOpen: null,
     chromecast: null,
     mediaImage: null,
-    mediaColor: null
+    mediaColor: null,
+    clock: moment().format('HH:mm')
   };
 
   componentDidUpdate(prevProps) {
@@ -206,6 +237,20 @@ export class DashboardHeader extends Component {
     }
   }
 
+  componentDidMount() {
+    this.clockTimer = setInterval(
+      () =>
+        this.setState({
+          clock: moment().format('HH:mm')
+        }),
+      15000
+    );
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.clockTimer);
+  }
+
   render() {
     const { classes, width, theme } = this.props;
     const {
@@ -213,7 +258,8 @@ export class DashboardHeader extends Component {
       environment,
       officeDoorOpen,
       chromecast,
-      mediaImage
+      mediaImage,
+      clock
     } = this.state;
     const isMobile = width !== undefined && width === 'xs';
 
@@ -262,12 +308,23 @@ export class DashboardHeader extends Component {
                   </Grid>
                 )}
               </Grid>
-              <Grid item xs={8}>
-                <img
-                  alt="Abakus Linjeforening"
-                  className={classes.logo}
-                  src={darkLogo}
-                />
+              <Grid item xs={8} className={classes.centerContainer}>
+                <div className={classes.centerContainerLeft} />
+                <div className={classes.centerContainerCenter}>
+                  <img
+                    alt="Abakus Linjeforening"
+                    className={classes.logo}
+                    src={darkLogo}
+                  />
+                </div>
+                <div
+                  className={classNames(
+                    classes.centerContainerRight,
+                    classes.clock
+                  )}
+                >
+                  {clock}
+                </div>
               </Grid>
               <Grid item xs={2}>
                 {isLoading ? (
