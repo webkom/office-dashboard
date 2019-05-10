@@ -133,7 +133,12 @@ const DashboardListMember = props => {
         </Grid>
       )}
       {width !== 'xs' && (
-        <Grid container direction={'column'} className={classes.alignCenter}>
+        <Grid
+          container
+          direction={'column'}
+          className={classes.alignCenter}
+          title={`Saldo: ${brusData.balance} kr`}
+        >
           <StatsItem
             icon={faGlassWhiskey}
             value={brusData.soda_cans_bought}
