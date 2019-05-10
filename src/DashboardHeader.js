@@ -22,10 +22,10 @@ import {
   OFFICE_SENSORS,
   OFFICE_CHROMECAST_URL
 } from './config';
-// import lightLogo from './static/abakus_logo_black.png';
+// import lightLogo from './static/abakus_logo_black_webkom.png';
 import Measurement from './Measurement';
 import MediaInfo from './MediaInfo';
-import darkLogo from './static/abakus_logo_white.png';
+import darkLogo from './static/abakus_logo_white_webkom.png';
 
 const styles = theme => ({
   root: {
