@@ -160,8 +160,8 @@ export class MediaInfo extends Component {
     } = this.props.content;
     const { classes, backgroundColor, textColor } = this.props;
     const { currentTime, isPaused } = this.state;
-    const hideMediaProgressBar =
-      window.location.hash && window.location.hash === '#hideMediaProgressBar';
+    const urlParams = new URLSearchParams(window.location.search);
+    const hideMediaProgressBar = urlParams.has('hideMediaProgressBar');
 
     const progress = (currentTime / duration) * 100;
     const formattedDuration = moment
@@ -221,7 +221,9 @@ export class MediaInfo extends Component {
           <Grid
             item
             xs
-            className={hideMediaProgressBar && classes.centerMediaText}
+            className={
+              hideMediaProgressBar ? classes.centerMediaText : classes.none
+            }
           >
             <div className={classes.mediaText} title={mediaHeaderText}>
               {mediaHeaderText}
