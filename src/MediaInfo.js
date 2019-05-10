@@ -14,7 +14,8 @@ const styles = theme => ({
   centerMediaText: {
     display: 'flex',
     justifyContent: 'center',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    textAlign: 'right'
   },
   mediaFont: {
     color: 'var(--text-color)',
