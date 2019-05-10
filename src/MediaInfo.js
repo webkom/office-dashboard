@@ -11,6 +11,11 @@ import moment from 'moment';
 import 'moment-duration-format';
 
 const styles = theme => ({
+  centerMediaText: {
+    display: 'flex',
+    justifyContent: 'center',
+    flexDirection: 'column'
+  },
   mediaFont: {
     color: 'var(--text-color)',
     fontSize: '0.875rem',
@@ -154,8 +159,9 @@ export class MediaInfo extends Component {
       image
     } = this.props.content;
     const { classes, backgroundColor, textColor } = this.props;
-
     const { currentTime, isPaused } = this.state;
+    const hideMediaProgressBar =
+      window.location.hash && window.location.hash === '#hideMediaProgressBar';
 
     const progress = (currentTime / duration) * 100;
     const formattedDuration = moment
@@ -212,7 +218,11 @@ export class MediaInfo extends Component {
           </a>
         </Grid>
         <Grid item xs={9} container direction="column" justify="space-between">
-          <Grid item xs>
+          <Grid
+            item
+            xs
+            className={hideMediaProgressBar && classes.centerMediaText}
+          >
             <div className={classes.mediaText} title={mediaHeaderText}>
               {mediaHeaderText}
             </div>
@@ -223,35 +233,39 @@ export class MediaInfo extends Component {
               {album}
             </div>
           </Grid>
-          <Grid
-            item
-            container
-            alignItems="center"
-            justify="space-between"
-            spacing={8}
-          >
-            <Grid item>
-              <div className={classes.currentTimeText}>{formattedCurrent}</div>
+          {!hideMediaProgressBar && (
+            <Grid
+              item
+              container
+              alignItems="center"
+              justify="space-between"
+              spacing={8}
+            >
+              <Grid item>
+                <div className={classes.currentTimeText}>
+                  {formattedCurrent}
+                </div>
+              </Grid>
+              <Grid item className={classes.progressContainer}>
+                <LinearProgress
+                  className={classes.progress}
+                  style={{
+                    '--progressbar-color': progressBarColor,
+                    '--progressbar-background-color': progressBarBackgroundColor
+                  }}
+                  classes={{
+                    colorPrimary: classes.progressBarBackground,
+                    barColorPrimary: classes.progressBar
+                  }}
+                  variant="determinate"
+                  value={progress}
+                />
+              </Grid>
+              <Grid item>
+                <div className={classes.durationText}>{formattedDuration}</div>
+              </Grid>
             </Grid>
-            <Grid item className={classes.progressContainer}>
-              <LinearProgress
-                className={classes.progress}
-                style={{
-                  '--progressbar-color': progressBarColor,
-                  '--progressbar-background-color': progressBarBackgroundColor
-                }}
-                classes={{
-                  colorPrimary: classes.progressBarBackground,
-                  barColorPrimary: classes.progressBar
-                }}
-                variant="determinate"
-                value={progress}
-              />
-            </Grid>
-            <Grid item>
-              <div className={classes.durationText}>{formattedDuration}</div>
-            </Grid>
-          </Grid>
+          )}
         </Grid>
       </Grid>
     );
