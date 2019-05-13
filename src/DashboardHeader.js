@@ -82,12 +82,19 @@ const styles = theme => ({
     height: '60px'
   },
   clock: {
-    fontFamily: 'monospace',
     height: '100%',
-    fontSize: '4.3vw',
-    [theme.breakpoints.up('lg')]: {
-      fontSize: '3vw'
-    }
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'flex-end'
+  },
+  clockDay: {
+    textTransform: 'capitalize',
+    fontSize: '1rem'
+  },
+  clockTime: {
+    fontFamily: 'monospace',
+    fontSize: '3rem'
   },
   mediaContainer: {
     padding: '10px 0',
@@ -106,7 +113,10 @@ export class DashboardHeader extends Component {
     chromecast: null,
     mediaImage: null,
     mediaColor: null,
-    clock: moment().format('HH:mm')
+    clock: {
+      time: moment().format('HH:mm'),
+      day: moment().format('dddd')
+    }
   };
 
   componentDidUpdate(prevProps) {
@@ -241,7 +251,10 @@ export class DashboardHeader extends Component {
     this.clockTimer = setInterval(
       () =>
         this.setState({
-          clock: moment().format('HH:mm')
+          clock: {
+            time: moment().format('HH:mm'),
+            day: moment().format('dddd')
+          }
         }),
       15000
     );
@@ -259,7 +272,7 @@ export class DashboardHeader extends Component {
       officeDoorOpen,
       chromecast,
       mediaImage,
-      clock
+      clock: { time, day }
     } = this.state;
     const isMobile = width !== undefined && width === 'xs';
 
@@ -323,7 +336,8 @@ export class DashboardHeader extends Component {
                     classes.clock
                   )}
                 >
-                  {clock}
+                  <div className={classes.clockDay}>{day}</div>
+                  <div className={classes.clockTime}>{time}</div>
                 </div>
               </Grid>
               <Grid item xs={2}>
