@@ -11,5 +11,7 @@ export const OFFICE_DOOR_URL =
 export const OFFICE_CHROMECAST_URL =
   process.env.REACT_APP_OFFICE_CHROMECAST_URL ||
   'https://office-chromecast-api.webkom.dev';
+export const GITHUB_STATS_URL =
+  process.env.REACT_APP_GITHUB_STATS_URL || 'https://github-stats.webkom.dev';
 
 export const OFFICE_SENSORS = ['sensors/208AAEC40A24', 'sensors/CC6BAFC40A24'];

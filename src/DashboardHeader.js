@@ -12,14 +12,16 @@ import Grid from '@material-ui/core/Grid';
 import Zoom from '@material-ui/core/Zoom';
 import { faThermometerHalf } from '@fortawesome/free-solid-svg-icons';
 import { faCloud } from '@fortawesome/free-solid-svg-icons';
-import { faCompressArrowsAlt } from '@fortawesome/free-solid-svg-icons';
 import { faSkull } from '@fortawesome/free-solid-svg-icons';
 import { faIndustry } from '@fortawesome/free-solid-svg-icons';
+/*
 import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import { faDoorClosed } from '@fortawesome/free-solid-svg-icons';
+*/
 import moment from 'moment';
 import {
   ENVIRONMENT_URL,
+  GITHUB_STATS_URL,
   OFFICE_DOOR_URL,
   OFFICE_SENSORS,
   OFFICE_CHROMECAST_URL
@@ -27,6 +29,7 @@ import {
 // import lightLogo from './static/abakus_logo_black_webkom.png';
 import Measurement from './Measurement';
 import MediaInfo from './MediaInfo';
+import GithubRepository from './GithubRepository';
 import darkLogo from './static/abakus_logo_white_webkom.png';
 
 const styles = theme => ({
@@ -55,26 +58,6 @@ const styles = theme => ({
   loading: {
     color: theme.palette.secondary.dark
   },
-  centerContainer: {
-    display: 'flex'
-  },
-  centerContainerLeft: {
-    display: 'flex',
-    justifyContent: 'center',
-    width: '20%'
-  },
-  centerContainerCenter: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '60%'
-  },
-  centerContainerRight: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    width: '20%'
-  },
   logo: {
     height: '50px'
   },
@@ -86,7 +69,7 @@ const styles = theme => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'flex-end'
+    justifyContent: 'center'
   },
   clockDay: {
     textTransform: 'capitalize',
@@ -100,6 +83,10 @@ const styles = theme => ({
     padding: '10px 0',
     backgroundColor: theme.palette.secondary.darkest,
     boxShadow: 'rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset'
+  },
+  githubContainer: {
+    display: 'flex',
+    height: '100%'
   }
 });
 
@@ -113,6 +100,7 @@ export class DashboardHeader extends Component {
     chromecast: null,
     mediaImage: null,
     mediaColor: null,
+    githubRepositories: null,
     clock: {
       time: moment().format('HH:mm'),
       day: moment().format('dddd')
@@ -122,6 +110,7 @@ export class DashboardHeader extends Component {
   componentDidUpdate(prevProps) {
     const {
       environmentFetch,
+      githubFetch,
       officeDoorFetch,
       officeChromecastFetch
     } = this.props;
@@ -131,11 +120,13 @@ export class DashboardHeader extends Component {
       lastDatetime,
       officeDoorOpen,
       chromecast,
-      mediaImage
+      mediaImage,
+      githubRepositories
     } = this.state;
 
     const allFetches = PromiseState.all([
       environmentFetch,
+      githubFetch,
       officeDoorFetch,
       officeChromecastFetch
     ]);
@@ -147,6 +138,7 @@ export class DashboardHeader extends Component {
     } else if (allFetches.fulfilled) {
       const [
         environmentValues,
+        githubValues,
         officeDoorValues,
         officeChromecastValues
       ] = allFetches.value;
@@ -189,10 +181,13 @@ export class DashboardHeader extends Component {
       });
 
       const chromecastStatus = officeChromecastValues.current_status;
+      const newGithubRepositories = Object.values(githubValues.repositories);
 
       if (
         JSON.stringify(sensors) !== JSON.stringify(environmentValues.sensors) ||
         lastDatetime !== environmentValues.last_datetime ||
+        JSON.stringify(githubRepositories) !==
+          JSON.stringify(newGithubRepositories) ||
         officeDoorOpen !== officeDoorCurrentlyOpen ||
         JSON.stringify(chromecast) !== JSON.stringify(chromecastStatus)
       ) {
@@ -202,7 +197,8 @@ export class DashboardHeader extends Component {
           environment,
           isLoading: false,
           officeDoorOpen: officeDoorCurrentlyOpen,
-          chromecast: chromecastStatus
+          chromecast: chromecastStatus,
+          githubRepositories: newGithubRepositories
         };
         if (
           newState.chromecast &&
@@ -269,12 +265,14 @@ export class DashboardHeader extends Component {
     const {
       isLoading,
       environment,
-      officeDoorOpen,
+      // officeDoorOpen,
       chromecast,
       mediaImage,
+      githubRepositories,
       clock: { time, day }
     } = this.state;
     const isMobile = width !== undefined && width === 'xs';
+    const isLarge = width !== undefined && ['lg', 'xl'].includes(width);
 
     const mediaColor =
       mediaImage !== null
@@ -282,6 +280,11 @@ export class DashboardHeader extends Component {
         : theme.palette.secondary.darkest;
     const mediaTextColor =
       mediaImage !== null ? mediaImage.getAttribute('textColor') : '#FFFFFF';
+
+    const repositoryWidth =
+      githubRepositories !== null && githubRepositories.length > 0
+        ? 100 / githubRepositories.length
+        : 100;
 
     return (
       <div>
@@ -298,73 +301,92 @@ export class DashboardHeader extends Component {
             </Grid>
           ) : (
             <Grid container className={classes.toolbar}>
-              <Grid item xs={2}>
+              <Grid item container xs={isLarge ? 5 : 4} alignItems={'center'}>
                 {isLoading ? (
                   <CircularProgress className={classes.loading} size={'4vh'} />
                 ) : (
-                  <Grid container direction={'column'}>
-                    <Measurement
-                      icon={faThermometerHalf}
-                      value={`${environment.temperature} °C`}
-                      alt="Temperature"
-                    />
-                    <Measurement
-                      icon={faCloud}
-                      value={`${environment.humidity} %`}
-                      alt="Humidity"
-                    />
-                    <Measurement
-                      icon={faCompressArrowsAlt}
-                      value={`${Math.round(environment.pressure) / 100} hPa`}
-                      alt="Pressure"
-                    />
+                  <Grid
+                    item
+                    container
+                    justify={'space-evenly'}
+                    style={{ flexWrap: 'nowrap' }}
+                  >
+                    {githubRepositories.map(repository => (
+                      <GithubRepository
+                        containerWidth={repositoryWidth}
+                        key={`repository-${repository.name}`}
+                        repository={repository}
+                      />
+                    ))}
                   </Grid>
                 )}
               </Grid>
-              <Grid item xs={8} className={classes.centerContainer}>
-                <div className={classes.centerContainerLeft} />
-                <div className={classes.centerContainerCenter}>
-                  <img
-                    alt="Abakus Linjeforening"
-                    className={classes.logo}
-                    src={darkLogo}
-                  />
-                </div>
-                <div
-                  className={classNames(
-                    classes.centerContainerRight,
-                    classes.clock
-                  )}
+              <Grid
+                item
+                container
+                xs={isLarge ? 2 : 4}
+                justify={'center'}
+                alignItems={'center'}
+              >
+                <img
+                  alt="Abakus Linjeforening"
+                  className={classes.logo}
+                  src={darkLogo}
+                />
+              </Grid>
+              <Grid item container xs={isLarge ? 5 : 4} alignItems={'center'}>
+                <Grid
+                  item
+                  container
+                  xs={8}
+                  className={classNames(classes.clock)}
                 >
                   <div className={classes.clockDay}>{day}</div>
                   <div className={classes.clockTime}>{time}</div>
-                </div>
-              </Grid>
-              <Grid item xs={2}>
-                {isLoading ? (
-                  <CircularProgress className={classes.loading} size={'4vh'} />
-                ) : (
-                  <Grid container direction={'column'}>
-                    <Measurement
-                      icon={faSkull}
-                      value={`${environment.TVOC} ppb`}
-                      alt="TVOC (Total Volatile Organic Compound) concentration parts per billion (ppb)"
-                      rightAlign
+                </Grid>
+                <Grid item container xs={4} alignItems="center">
+                  {isLoading ? (
+                    <CircularProgress
+                      className={classes.loading}
+                      size={'4vh'}
                     />
-                    <Measurement
-                      icon={faIndustry}
-                      value={`${environment.eCO2} ppm`}
-                      alt="eCO2 (equivalent calculated carbon-dioxide) concentration parts per million (ppm)"
-                      rightAlign
-                    />
+                  ) : (
+                    <Grid item container direction={'column'}>
+                      <Measurement
+                        icon={faThermometerHalf}
+                        value={`${environment.temperature} °C`}
+                        alt="Temperature"
+                        rightAlign
+                      />
+                      <Measurement
+                        icon={faCloud}
+                        value={`${environment.humidity} %`}
+                        alt="Humidity"
+                        rightAlign
+                      />
+                      <Measurement
+                        icon={faSkull}
+                        value={`${environment.TVOC} ppb`}
+                        alt="TVOC (Total Volatile Organic Compound) concentration parts per billion (ppb)"
+                        rightAlign
+                      />
+                      <Measurement
+                        icon={faIndustry}
+                        value={`${environment.eCO2} ppm`}
+                        alt="eCO2 (equivalent calculated carbon-dioxide) concentration parts per million (ppm)"
+                        rightAlign
+                      />
+                      {/*
                     <Measurement
                       icon={officeDoorOpen ? faDoorOpen : faDoorClosed}
                       value={`${officeDoorOpen ? 'Åpen' : 'Lukket'}`}
                       alt="Kontordørstatus"
                       rightAlign
                     />
-                  </Grid>
-                )}
+                    */}
+                    </Grid>
+                  )}
+                </Grid>
               </Grid>
             </Grid>
           )}
@@ -399,6 +421,7 @@ DashboardHeader.propTypes = {
   classes: PropTypes.object.isRequired,
   theme: PropTypes.object.isRequired,
   environmentFetch: PropTypes.object.isRequired,
+  githubFetch: PropTypes.object.isRequired,
   officeDoorFetch: PropTypes.object.isRequired,
   officeChromecastFetch: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired
@@ -412,6 +435,12 @@ export default withWidth()(
           method: 'GET',
           mode: 'cors',
           url: ENVIRONMENT_URL,
+          refreshInterval: 5000
+        },
+        githubFetch: {
+          method: 'GET',
+          mode: 'cors',
+          url: GITHUB_STATS_URL,
           refreshInterval: 5000
         },
         officeDoorFetch: {

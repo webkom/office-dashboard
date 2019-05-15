@@ -17,10 +17,12 @@ const styles = theme => ({
     color: theme.palette.secondary.dark
   },
   measurementValue: {
-    opacity: 0.7
+    opacity: 0.7,
+    fontFamily: 'monospace'
   },
   container: {
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    alignItems: 'center'
   }
 });
 
