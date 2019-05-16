@@ -1,284 +1,203 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
 import Color from 'color';
-import { withStyles } from '@material-ui/core/styles';
+import ColorThief from 'color-thief';
+import { connect } from 'react-refetch';
+import { withStyles, withTheme } from '@material-ui/core/styles';
+import withWidth from '@material-ui/core/withWidth';
 import Grid from '@material-ui/core/Grid';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPause } from '@fortawesome/free-solid-svg-icons';
-import moment from 'moment';
-import 'moment-duration-format';
+import Zoom from '@material-ui/core/Zoom';
+import { OFFICE_CHROMECAST_URL } from 'app/config';
+// import lightLogo from 'app/static/abakus_logo_black_webkom.png';
+import Data from 'app/components/MediaInfo/Data';
 
 const styles = theme => ({
-  centerMediaText: {
-    display: 'flex',
+  root: {
+    flexGrow: 1
+  },
+  grow: {
+    flexGrow: 1
+  },
+  toolbar: {
     justifyContent: 'center',
-    flexDirection: 'column',
+    flex: '1 1 auto',
+    textAlign: 'center',
+    padding: 20,
+    fontSize: '1rem',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.9rem'
+    }
+  },
+  leftAlign: {
+    textAlign: 'left'
+  },
+  rightAlign: {
     textAlign: 'right'
   },
-  mediaFont: {
-    color: 'var(--text-color)',
-    fontSize: '0.875rem',
-    fontWeight: 400,
-    lineHeight: '1.46429em'
+  loading: {
+    color: theme.palette.secondary.dark
   },
-  mediaText: {
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden'
+  logo: {
+    height: '50px'
   },
-  mediaImage: {
-    backgroundImage: 'var(--image-url)',
-    backgroundSize: '100% 100%',
-    boxShadow: '0px 0px 3px 3px var(--shadow-color)',
-    width: '5rem',
-    height: '5rem'
+  webkom: {
+    height: '60px'
   },
-  pauseIcon: {
-    color: '#ffffff',
-    fontSize: '50px',
-    position: 'absolute',
-    padding: '17.125px 0px 0px 17.125px'
-  },
-  imageContainer: {
+  clock: {
+    height: '100%',
     display: 'flex',
-    justifyContent: 'flex-end',
+    flexDirection: 'column',
     alignItems: 'center',
-    position: 'relative'
+    justifyContent: 'center'
   },
-  albumText: {
-    opacity: 0.7
+  clockDay: {
+    textTransform: 'capitalize',
+    fontSize: '1rem'
   },
-  durationText: {
-    fontSize: '0.7rem',
-    opacity: 0.8
+  clockTime: {
+    fontFamily: 'monospace',
+    fontSize: '3rem'
   },
-  currentTimeText: {
-    fontSize: '0.7rem',
-    opacity: 0.8
+  mediaContainer: {
+    padding: '10px 0',
+    backgroundColor: theme.palette.secondary.darkest,
+    boxShadow: 'rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset'
   },
-  progressContainer: {
-    flex: '1 1 auto'
-  },
-  progress: {
-    borderRadius: '0.1rem'
-  },
-  progressBar: {
-    backgroundColor: 'var(--progressbar-color)'
-  },
-  progressBarBackground: {
-    backgroundColor: 'var(--progressbar-background-color)'
+  githubContainer: {
+    display: 'flex',
+    height: '100%'
   }
 });
 
 export class MediaInfo extends Component {
   state = {
-    currentTime: null,
-    isPaused: false
+    isLoading: true,
+    lastDatetime: null,
+    chromecast: null,
+    mediaImage: null,
+    mediaColor: null
   };
 
-  setTimer(time, force = false) {
-    if (!force && time >= this.props.content.duration) {
-      // Stop the timer from overflowing when the current time
-      this.stopTimer();
-      this.setState({
-        currentTime: this.props.content.duration
-      });
-    } else {
-      /*
-       * Only update if the difference between our simulated
-       * current time and the actual current time is higher
-       * than 1 second. This stops the timer from jumping that
-       * much.
-       */
-      const diff = time - this.state.currentTime;
-      const isBefore = diff < 0;
-      const isAboveThreshold = Math.abs(diff) > 1;
-      if (force || (!isBefore && isAboveThreshold)) {
-        this.stopTimer();
-        this.setState(
-          {
-            currentTime: time
-          },
-          () => {
-            this.timer = setInterval(() => {
-              // Increase the simulated timer with 1 second
-              const newTime = this.state.currentTime + 1;
-              if (newTime >= this.props.content.duration) {
-                // Stop the timer if the simulated timer is larger than the duration
-                this.setState({
-                  currentTime: this.props.content.duration
-                });
-                this.stopTimer();
-              } else if (!this.state.isPaused) {
-                // Don't run the timer if the player is paused
-                this.setState({
-                  currentTime: newTime
-                });
-              }
-            }, 1000);
-          }
-        );
+  componentDidUpdate(prevProps) {
+    const { apiFetch } = this.props;
+    const { isLoading, chromecast, mediaImage } = this.state;
+
+    if (!isLoading && apiFetch.pending) {
+      this.setState({ isLoading: true });
+    } else if (isLoading && apiFetch.rejected) {
+      throw apiFetch.reason.message;
+    } else if (apiFetch.fulfilled) {
+      const response = apiFetch.value;
+
+      const chromecastStatus = response.current_status;
+
+      if (JSON.stringify(chromecast) !== JSON.stringify(chromecastStatus)) {
+        const newState = {
+          isLoading: false,
+          lastDatetime: response.last_datetime,
+          chromecast: chromecastStatus
+        };
+        if (
+          newState.chromecast &&
+          newState.chromecast.image !== null &&
+          (mediaImage === null || mediaImage.src !== newState.chromecast.image)
+        ) {
+          // Get the most dominant color of the media image
+          const updatedMediaImage = new Image(300, 300);
+          updatedMediaImage.crossOrigin = 'Anonymous';
+          updatedMediaImage.src = newState.chromecast.image;
+
+          const _ = this;
+          updatedMediaImage.onload = function() {
+            const colorThief = new ColorThief();
+            const mediaColor = Color.rgb(
+              colorThief.getColor(updatedMediaImage)
+            );
+            const backgroundColor = mediaColor.isLight()
+              ? mediaColor.darken(0.5)
+              : mediaColor;
+            updatedMediaImage.setAttribute(
+              'backgroundColor',
+              backgroundColor.hsl().string()
+            );
+            const mediaPalette = colorThief.getPalette(updatedMediaImage);
+            const mediaTextColors = mediaPalette
+              .map(rgbArray => Color.rgb(rgbArray))
+              .filter(color => color.isLight() !== backgroundColor.isLight());
+            updatedMediaImage.setAttribute(
+              'textColor',
+              mediaTextColors.length > 0
+                ? mediaTextColors[0].hsl().string()
+                : '#FFFFFF'
+            );
+            newState.mediaImage = updatedMediaImage;
+            _.setState(newState);
+          };
+        } else {
+          this.setState(newState);
+        }
       }
     }
   }
 
-  stopTimer() {
-    clearInterval(this.timer);
-  }
-
-  componentDidUpdate(prevProps) {
-    const stateCurrent = this.state.currentTime;
-    const prevCurrent = prevProps.content.current_time;
-    const newCurrent = this.props.content.current_time;
-    if ((this.props.content.state === 'PAUSED') !== this.state.isPaused) {
-      this.setState({
-        isPaused: this.props.content.state === 'PAUSED'
-      });
-    }
-    if (stateCurrent == null || newCurrent !== prevCurrent) {
-      this.setTimer(
-        newCurrent,
-        prevProps.content.duration !== this.props.content.duration
-      );
-    }
-  }
-
-  componentWillUnmount() {
-    this.stopTimer();
-  }
-
   render() {
-    const {
-      title,
-      album,
-      artist,
-      content_id,
-      duration,
-      image
-    } = this.props.content;
-    const { classes, backgroundColor, textColor } = this.props;
-    const { currentTime, isPaused } = this.state;
-    const urlParams = new URLSearchParams(window.location.search);
-    const hideMediaProgressBar = urlParams.has('hideMediaProgressBar');
+    const { classes, width, theme } = this.props;
+    const { chromecast, mediaImage } = this.state;
+    const isMobile = width !== undefined && width === 'xs';
 
-    const progress = (currentTime / duration) * 100;
-    const formattedDuration = moment
-      .duration(duration, 'seconds')
-      .format('mm:ss', { trim: false });
-    const formattedCurrent = moment
-      .duration(currentTime, 'seconds')
-      .format('mm:ss', { trim: false });
-
-    const url = `https://open.spotify.com/embed/track/${content_id.replace(
-      'spotify:track:',
-      ''
-    )}`;
-
-    const textColorInstance = Color(textColor);
-    const imageShadowColor = Color(backgroundColor)
-      .darken(0.2)
-      .hsl()
-      .string();
-    const progressBarColor = textColorInstance
-      .fade(0.3)
-      .hsl()
-      .string();
-    const progressBarBackgroundColor = textColorInstance
-      .fade(0.8)
-      .hsl()
-      .string();
-
-    const mediaHeaderText = `${artist} - ${title}`;
+    const mediaColor =
+      mediaImage !== null
+        ? mediaImage.getAttribute('backgroundColor')
+        : theme.palette.secondary.darkest;
+    const mediaTextColor =
+      mediaImage !== null ? mediaImage.getAttribute('textColor') : '#FFFFFF';
 
     return (
-      <Grid
-        container
-        direction="row"
-        justify="space-around"
-        spacing={8}
-        style={{
-          '--text-color': textColor
-        }}
-        className={classes.mediaFont}
-      >
-        <Grid item container xs={3} className={classes.imageContainer}>
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            {isPaused && (
-              <FontAwesomeIcon className={classes.pauseIcon} icon={faPause} />
-            )}
-            <div
-              className={classes.mediaImage}
-              style={{
-                '--image-url': `url(${image})`,
-                '--shadow-color': imageShadowColor
-              }}
-            />
-          </a>
-        </Grid>
-        <Grid item xs={9} container direction="column" justify="space-between">
-          <Grid
-            item
-            xs
-            className={
-              hideMediaProgressBar ? classes.centerMediaText : classes.none
-            }
-          >
-            <div className={classes.mediaText} title={mediaHeaderText}>
-              {mediaHeaderText}
-            </div>
-            <div
-              className={classNames(classes.mediaText, classes.albumText)}
-              title={album}
-            >
-              {album}
-            </div>
-          </Grid>
-          {!hideMediaProgressBar && (
-            <Grid
-              item
-              container
-              alignItems="center"
-              justify="space-between"
-              spacing={8}
-            >
-              <Grid item>
-                <div className={classes.currentTimeText}>
-                  {formattedCurrent}
-                </div>
+      <div>
+        {chromecast &&
+          chromecast.artist !== null &&
+          chromecast.state !== 'UNKNOWN' && (
+            <Zoom in>
+              <Grid
+                container
+                alignItems="center"
+                justify="center"
+                className={classes.mediaContainer}
+                style={{ backgroundColor: mediaColor }}
+              >
+                <Grid item xs={isMobile ? 11 : 5}>
+                  <Data
+                    content={chromecast}
+                    backgroundColor={mediaColor}
+                    textColor={mediaTextColor}
+                  />
+                </Grid>
               </Grid>
-              <Grid item className={classes.progressContainer}>
-                <LinearProgress
-                  className={classes.progress}
-                  style={{
-                    '--progressbar-color': progressBarColor,
-                    '--progressbar-background-color': progressBarBackgroundColor
-                  }}
-                  classes={{
-                    colorPrimary: classes.progressBarBackground,
-                    barColorPrimary: classes.progressBar
-                  }}
-                  variant="determinate"
-                  value={progress}
-                />
-              </Grid>
-              <Grid item>
-                <div className={classes.durationText}>{formattedDuration}</div>
-              </Grid>
-            </Grid>
+            </Zoom>
           )}
-        </Grid>
-      </Grid>
+      </div>
     );
   }
 }
 
 MediaInfo.propTypes = {
-  content: PropTypes.object.isRequired,
   classes: PropTypes.object.isRequired,
-  backgroundColor: PropTypes.string.isRequired,
-  textColor: PropTypes.string.isRequired
+  theme: PropTypes.object.isRequired,
+  officeChromecastFetch: PropTypes.object.isRequired,
+  width: PropTypes.string.isRequired
 };
 
-export default withStyles(styles)(MediaInfo);
+export default withWidth()(
+  withTheme()(
+    withStyles(styles)(
+      connect(props => ({
+        apiFetch: {
+          method: 'GET',
+          mode: 'cors',
+          url: OFFICE_CHROMECAST_URL,
+          refreshInterval: 5000
+        }
+      }))(MediaInfo)
+    )
+  )
+);

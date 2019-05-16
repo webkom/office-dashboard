@@ -112,7 +112,7 @@ export class Content extends Component {
       return <CircularProgress className={classes.loading} size={'12vh'} />;
     }
 
-      return <List members={members} lastDatetime={lastDatetime}/>
+    return <List members={members} lastDatetime={lastDatetime} />;
   }
 }
 
@@ -120,29 +120,28 @@ Content.propTypes = {
   classes: PropTypes.object.isRequired,
   presenceFetch: PropTypes.object.isRequired,
   brusFetch: PropTypes.object.isRequired,
-  kaffeFetch: PropTypes.object.isRequired,
+  kaffeFetch: PropTypes.object.isRequired
 };
 
-export default
-  withStyles(styles)(
-    connect(props => ({
-      presenceFetch: {
-        method: 'GET',
-        mode: 'cors',
-        url: PRESENCE_URL,
-        refreshInterval: 60000
-      },
-      brusFetch: {
-        method: 'GET',
-        mode: 'cors',
-        url: `${BRUS_URL}/api/liste/`,
-        refreshInterval: 60000
-      },
-      kaffeFetch: {
-        method: 'GET',
-        mode: 'cors',
-        url: KAFFE_URL,
-        refreshInterval: 60000
-      }
-    }))(Content)
+export default withStyles(styles)(
+  connect(props => ({
+    presenceFetch: {
+      method: 'GET',
+      mode: 'cors',
+      url: PRESENCE_URL,
+      refreshInterval: 60000
+    },
+    brusFetch: {
+      method: 'GET',
+      mode: 'cors',
+      url: `${BRUS_URL}/api/liste/`,
+      refreshInterval: 60000
+    },
+    kaffeFetch: {
+      method: 'GET',
+      mode: 'cors',
+      url: KAFFE_URL,
+      refreshInterval: 60000
+    }
+  }))(Content)
 );

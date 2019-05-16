@@ -89,7 +89,7 @@ const styles = theme => ({
   },
   statusContainer: {
     padding: '10px 0',
-      color: '#fff',
+    color: '#fff',
     backgroundColor: theme.palette.primary.light,
     opacity: 0.5,
     boxShadow: 'rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset'
@@ -311,7 +311,13 @@ export class DashboardHeader extends Component {
             </Grid>
           ) : (
             <Grid container className={classes.toolbar}>
-              <Grid item container xs={isLarge ? 5 : 4} alignItems={'center'} justify={'center'}>
+              <Grid
+                item
+                container
+                xs={isLarge ? 5 : 4}
+                alignItems={'center'}
+                justify={'center'}
+              >
                 {isLoading ? (
                   <CircularProgress className={classes.loading} size={'4vh'} />
                 ) : (
@@ -422,14 +428,14 @@ export class DashboardHeader extends Component {
               </Grid>
             </Zoom>
           )}
-          <Grid
-            container
-            alignItems="center"
-            justify="center"
-            className={classes.statusContainer}
-          >
-              Hello world!
-          </Grid>
+        <Grid
+          container
+          alignItems="center"
+          justify="center"
+          className={classes.statusContainer}
+        >
+          Hello world!
+        </Grid>
       </div>
     );
   }
@@ -476,13 +482,13 @@ export default withWidth()(
         uptimeRobotFetch: {
           method: 'POST',
           mode: 'cors',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
           url: UPTIME_ROBOT_URL,
           refreshInterval: 5000,
-        body: queryString.stringify(UPTIME_ROBOT_POST_DATA)
-        },
+          body: queryString.stringify(UPTIME_ROBOT_POST_DATA)
+        }
       }))(DashboardHeader)
     )
   )

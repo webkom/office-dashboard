@@ -101,11 +101,7 @@ const Item = props => {
             value={`${kaffeData.volume_brewed} L`}
             compact
           />
-          <Stats
-            icon={faDollarSign}
-            value={`${brusData.balance} kr`}
-            compact
-          />
+          <Stats icon={faDollarSign} value={`${brusData.balance} kr`} compact />
           <Stats
             icon={faGlassWhiskey}
             value={brusData.soda_cans_bought}
@@ -125,11 +121,7 @@ const Item = props => {
             value={`${kaffeData.jugs_brewed}`}
             text={getPlural('kanne', 'r', kaffeData.jugs_brewed)}
           />
-          <Stats
-            icon={faFlask}
-            value={kaffeData.volume_brewed}
-            text="liter"
-          />
+          <Stats icon={faFlask} value={kaffeData.volume_brewed} text="liter" />
         </Grid>
       )}
       {width !== 'xs' && (

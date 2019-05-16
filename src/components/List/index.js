@@ -39,35 +39,34 @@ const styles = theme => ({
   }
 });
 
-const DashboardList = ({ classes, width, members, lastDatetime }) =>
-      <List>
-        {width !== undefined && width !== 'xs' && <Header />}
-        {members.map(member => (
-          <Member key={member.slack} member={member} />
-        ))}
-        <ListItem className={classes.footer}>
-          <div>
-            Data sist lagret{' '}
-            {lastDatetime === null
-              ? 'Ukjent'
-              : moment(lastDatetime)
-                  .locale(moment.locale('nb'))
-                  .format()}
-          </div>
-          <div>
-            Data sist hentet{' '}
-            {moment()
+const DashboardList = ({ classes, width, members, lastDatetime }) => (
+  <List>
+    {width !== undefined && width !== 'xs' && <Header />}
+    {members.map(member => (
+      <Member key={member.slack} member={member} />
+    ))}
+    <ListItem className={classes.footer}>
+      <div>
+        Data sist lagret{' '}
+        {lastDatetime === null
+          ? 'Ukjent'
+          : moment(lastDatetime)
               .locale(moment.locale('nb'))
               .format()}
-          </div>
-        </ListItem>
-      </List>
+      </div>
+      <div>
+        Data sist hentet{' '}
+        {moment()
+          .locale(moment.locale('nb'))
+          .format()}
+      </div>
+    </ListItem>
+  </List>
+);
 
 DashboardList.propTypes = {
   classes: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired
 };
 
-export default withWidth()(
-  withStyles(styles)(DashboardList)
-);
+export default withWidth()(withStyles(styles)(DashboardList));
