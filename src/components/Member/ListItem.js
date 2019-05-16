@@ -12,9 +12,9 @@ import { faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import { faGlassWhiskey } from '@fortawesome/free-solid-svg-icons';
 import { faWineBottle } from '@fortawesome/free-solid-svg-icons';
 import Grid from '@material-ui/core/Grid';
-import DashboardListItem from './DashboardListItem';
-import StatsItem from './StatsItem';
-import getPlural from './utils';
+import ListItem from 'app/components/List/Item';
+import Stats from 'app/components/Member/Stats';
+import getPlural from 'app/utils';
 
 const styles = theme => ({
   root: {
@@ -56,7 +56,7 @@ const styles = theme => ({
   }
 });
 
-const DashboardListMember = props => {
+const Item = props => {
   const {
     classes,
     width,
@@ -82,7 +82,7 @@ const DashboardListMember = props => {
   const formattedFirstSeen =
     firstSeen === null ? 'Ukjent' : firstSeen.format('HH:mm:ss');
   return (
-    <DashboardListItem avatar={avatar} isActive={isActive}>
+    <ListItem avatar={avatar} isActive={isActive}>
       <span>{name}</span>
       <span>
         <FontAwesomeIcon className={classes.statsIcon} icon={faGithub} />
@@ -95,23 +95,23 @@ const DashboardListMember = props => {
           justify={'space-around'}
           className={classes.alignCenter}
         >
-          <StatsItem icon={faCoffee} value={kaffeData.jugs_brewed} compact />
-          <StatsItem
+          <Stats icon={faCoffee} value={kaffeData.jugs_brewed} compact />
+          <Stats
             icon={faFlask}
             value={`${kaffeData.volume_brewed} L`}
             compact
           />
-          <StatsItem
+          <Stats
             icon={faDollarSign}
             value={`${brusData.balance} kr`}
             compact
           />
-          <StatsItem
+          <Stats
             icon={faGlassWhiskey}
             value={brusData.soda_cans_bought}
             compact
           />
-          <StatsItem
+          <Stats
             icon={faWineBottle}
             value={brusData.soda_bottles_bought}
             compact
@@ -120,12 +120,12 @@ const DashboardListMember = props => {
       )}
       {width !== 'xs' && (
         <Grid container direction={'column'} className={classes.alignCenter}>
-          <StatsItem
+          <Stats
             icon={faCoffee}
             value={`${kaffeData.jugs_brewed}`}
             text={getPlural('kanne', 'r', kaffeData.jugs_brewed)}
           />
-          <StatsItem
+          <Stats
             icon={faFlask}
             value={kaffeData.volume_brewed}
             text="liter"
@@ -139,12 +139,12 @@ const DashboardListMember = props => {
           className={classes.alignCenter}
           title={`Saldo: ${brusData.balance} kr`}
         >
-          <StatsItem
+          <Stats
             icon={faGlassWhiskey}
             value={brusData.soda_cans_bought}
             text={getPlural('boks', 'er', brusData.soda_cans_bought)}
           />
-          <StatsItem
+          <Stats
             icon={faWineBottle}
             value={brusData.soda_bottles_bought}
             text={getPlural('flaske', 'r', brusData.soda_bottles_bought)}
@@ -199,11 +199,11 @@ const DashboardListMember = props => {
       ) : (
         <span className={isActive ? classes.isActive : ''}>{lastSeen}</span>
       )}
-    </DashboardListItem>
+    </ListItem>
   );
 };
 
-DashboardListMember.propTypes = {
+Item.propTypes = {
   classes: PropTypes.object.isRequired,
   avatar: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
@@ -216,4 +216,4 @@ DashboardListMember.propTypes = {
   width: PropTypes.string.isRequired
 };
 
-export default withWidth()(withStyles(styles)(DashboardListMember));
+export default withWidth()(withStyles(styles)(Item));

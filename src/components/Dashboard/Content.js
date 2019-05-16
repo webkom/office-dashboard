@@ -3,16 +3,14 @@ import PropTypes from 'prop-types';
 import { connect, PromiseState } from 'react-refetch';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import withWidth from '@material-ui/core/withWidth';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
+/*
 import * as moment from 'moment';
 import 'moment-with-locales-es6';
 import 'moment/locale/nb';
 import 'moment-duration-format';
-import { PRESENCE_URL, BRUS_URL, KAFFE_URL } from './config';
-import DashboardListHeader from './DashboardListHeader';
-import MemberItem from './MemberItem';
+*/
+import { PRESENCE_URL, BRUS_URL, KAFFE_URL } from 'app/config';
+import List from 'app/components/List';
 
 const styles = theme => ({
   tableFooter: {
@@ -42,7 +40,7 @@ const styles = theme => ({
   }
 });
 
-export class DashboardContent extends Component {
+export class Content extends Component {
   state = {
     isLoading: true,
     lastDatetime: null,
@@ -107,49 +105,25 @@ export class DashboardContent extends Component {
   }
 
   render() {
-    const { classes, width } = this.props;
+    const { classes } = this.props;
     const { isLoading, members, lastDatetime } = this.state;
 
     if (isLoading) {
       return <CircularProgress className={classes.loading} size={'12vh'} />;
     }
 
-    return (
-      <List>
-        {width !== undefined && width !== 'xs' && <DashboardListHeader />}
-        {members.map(member => (
-          <MemberItem key={member.slack} member={member} />
-        ))}
-        <ListItem className={classes.footer}>
-          <div>
-            Data sist lagret{' '}
-            {lastDatetime === null
-              ? 'Ukjent'
-              : moment(lastDatetime)
-                  .locale(moment.locale('nb'))
-                  .format()}
-          </div>
-          <div>
-            Data sist hentet{' '}
-            {moment()
-              .locale(moment.locale('nb'))
-              .format()}
-          </div>
-        </ListItem>
-      </List>
-    );
+      return <List members={members} lastDatetime={lastDatetime}/>
   }
 }
 
-DashboardContent.propTypes = {
+Content.propTypes = {
   classes: PropTypes.object.isRequired,
   presenceFetch: PropTypes.object.isRequired,
   brusFetch: PropTypes.object.isRequired,
   kaffeFetch: PropTypes.object.isRequired,
-  width: PropTypes.string.isRequired
 };
 
-export default withWidth()(
+export default
   withStyles(styles)(
     connect(props => ({
       presenceFetch: {
@@ -170,6 +144,5 @@ export default withWidth()(
         url: KAFFE_URL,
         refreshInterval: 60000
       }
-    }))(DashboardContent)
-  )
+    }))(Content)
 );

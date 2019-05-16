@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import 'app/index.css';
+import App from 'app/routes/App';
+import * as serviceWorker from 'app/serviceWorker';
 
 // Refresh the entire page every hour
 setInterval(function() {

@@ -110,7 +110,7 @@ const styles = theme => ({
   }
 });
 
-const DashboardListItem = props => {
+const Item = props => {
   const { classes, children, isActive, avatar, width, header } = props;
 
   const gridItemClass = header ? classes.headerItem : classes.dataItem;
@@ -246,7 +246,7 @@ const DashboardListItem = props => {
   );
 };
 
-DashboardListItem.propTypes = {
+Item.propTypes = {
   classes: PropTypes.object.isRequired,
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.node),
@@ -258,4 +258,4 @@ DashboardListItem.propTypes = {
   header: PropTypes.array
 };
 
-export default withWidth()(withStyles(styles)(DashboardListItem));
+export default withWidth()(withStyles(styles)(Item));

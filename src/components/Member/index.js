@@ -4,7 +4,7 @@ import * as moment from 'moment';
 import 'moment-with-locales-es6';
 import 'moment/locale/nb';
 import 'moment-duration-format';
-import DashboardListMember from './DashboardListMember';
+import ListItem from 'app/components/Member/ListItem';
 
 const getTimeFormatString = value => {
   value = Number(value);
@@ -13,11 +13,11 @@ const getTimeFormatString = value => {
   return `h [${hour}] m [${minute}]`;
 };
 
-const MemberItem = props => {
+const Member = props => {
   const { member } = props;
 
   return (
-    <DashboardListMember
+    <ListItem
       avatar={member.avatar}
       name={member.name}
       github={member.github}
@@ -50,8 +50,8 @@ const MemberItem = props => {
   );
 };
 
-MemberItem.propTypes = {
+Member.propTypes = {
   member: PropTypes.object.isRequired
 };
 
-export default MemberItem;
+export default Member;

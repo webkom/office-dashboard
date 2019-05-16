@@ -25,12 +25,12 @@ import {
   OFFICE_DOOR_URL,
   OFFICE_SENSORS,
   OFFICE_CHROMECAST_URL
-} from './config';
-// import lightLogo from './static/abakus_logo_black_webkom.png';
-import Measurement from './Measurement';
-import MediaInfo from './MediaInfo';
-import GithubRepository from './GithubRepository';
-import darkLogo from './static/abakus_logo_white_webkom.png';
+} from 'app/config';
+// import lightLogo from 'app/static/abakus_logo_black_webkom.png';
+import Measurement from 'app/components/Measurement';
+import MediaInfo from 'app/components/MediaInfo';
+import GithubRepository from 'app/components/GithubRepository';
+import darkLogo from 'app/static/abakus_logo_white_webkom.png';
 
 const styles = theme => ({
   root: {
@@ -90,7 +90,7 @@ const styles = theme => ({
   }
 });
 
-export class DashboardHeader extends Component {
+export class Header extends Component {
   state = {
     isLoading: true,
     lastDatetime: null,
@@ -417,7 +417,7 @@ export class DashboardHeader extends Component {
   }
 }
 
-DashboardHeader.propTypes = {
+Header.propTypes = {
   classes: PropTypes.object.isRequired,
   theme: PropTypes.object.isRequired,
   environmentFetch: PropTypes.object.isRequired,
@@ -455,7 +455,7 @@ export default withWidth()(
           url: OFFICE_CHROMECAST_URL,
           refreshInterval: 5000
         }
-      }))(DashboardHeader)
+      }))(Header)
     )
   )
 );

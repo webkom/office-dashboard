@@ -5,10 +5,10 @@ import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBeer } from '@fortawesome/free-solid-svg-icons';
-import ErrorBoundary from './ErrorBoundary';
-import DashboardHeader from './DashboardHeader';
-import DashboardContent from './DashboardContent';
-import DashboardSnackbar, { notify } from './DashboardSnackbar';
+import ErrorBoundary from 'app/components/ErrorBoundary';
+import Header from 'app/components/Dashboard/Header';
+import Content from 'app/components/Dashboard/Content';
+import Snackbar, { notify } from 'app/components/Dashboard/Snackbar';
 
 const styles = theme => ({
   root: {
@@ -54,12 +54,12 @@ export class DashboardGrid extends Component {
           className={classes.grid}
         >
           <Grid item xs={12}>
-            <DashboardHeader />
+            <Header />
             <Paper className={classes.paper} square>
               <ErrorBoundary onError={this.handleError.bind(this)}>
-                <DashboardContent />
+                <Content />
               </ErrorBoundary>
-              <DashboardSnackbar />
+              <Snackbar />
             </Paper>
             <p className={classes.madeByLove}>
               laget med{' '}

@@ -16,7 +16,7 @@ const styles = theme => ({
   }
 });
 
-const StatsItem = props => {
+const Stats = props => {
   const { classes, icon, value, text, compact } = props;
   return (
     <Grid item>
@@ -41,7 +41,7 @@ const StatsItem = props => {
   );
 };
 
-StatsItem.propTypes = {
+Stats.propTypes = {
   classes: PropTypes.object.isRequired,
   icon: PropTypes.object.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
@@ -49,8 +49,8 @@ StatsItem.propTypes = {
   compact: PropTypes.bool
 };
 
-StatsItem.defaultProps = {
+Stats.defaultProps = {
   compact: false
 };
 
-export default withStyles(styles)(StatsItem);
+export default withStyles(styles)(Stats);
