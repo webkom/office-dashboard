@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import withWidth from '@material-ui/core/withWidth';
 import AppBar from '@material-ui/core/AppBar';
@@ -14,7 +13,6 @@ import Clock from 'app/components/Clock';
 
 const styles = theme => ({
   toolbar: {
-    justifyContent: 'center',
     flex: '1 1 auto',
     textAlign: 'center',
     padding: 20,
@@ -32,6 +30,9 @@ const styles = theme => ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  rightContainer: {
+    overflow: 'hidden'
   }
 });
 
@@ -53,10 +54,7 @@ const Header = ({ classes, width, theme }) => {
             </Grid>
           </Grid>
         ) : (
-          <Grid container className={classes.toolbar}>
-            <Grid item container xs={isLarge ? 5 : 4} alignItems={'center'}>
-              <Github />
-            </Grid>
+          <Grid container justify={'flex-start'} className={classes.toolbar}>
             <Grid
               item
               container
@@ -70,11 +68,21 @@ const Header = ({ classes, width, theme }) => {
                 src={darkLogo}
               />
             </Grid>
-            <Grid item container xs={isLarge ? 5 : 4} alignItems={'center'}>
-              <Grid item container xs={8} className={classNames(classes.clock)}>
-                <Clock />
+            <Grid item container xs={isLarge ? 1 : 2} alignItems={'center'}>
+              <Clock />
+            </Grid>
+            <Grid
+              item
+              container
+              xs={isLarge ? 9 : 6}
+              alignItems={'center'}
+              justify={'flex-end'}
+              className={classes.rightContainer}
+            >
+              <Grid item container xs={isLarge ? 8 : 8} alignItems={'center'}>
+                <Github />
               </Grid>
-              <Grid item container xs={4} alignItems="center">
+              <Grid item container xs={isLarge ? 2 : 4} alignItems={'center'}>
                 <Environment />
               </Grid>
             </Grid>

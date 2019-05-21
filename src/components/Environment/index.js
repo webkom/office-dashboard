@@ -2,22 +2,27 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-refetch';
 import { withStyles, withTheme } from '@material-ui/core/styles';
+import withWidth from '@material-ui/core/withWidth';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Grid from '@material-ui/core/Grid';
 import { faThermometerHalf } from '@fortawesome/free-solid-svg-icons';
 import { faCloud } from '@fortawesome/free-solid-svg-icons';
 import { faSkull } from '@fortawesome/free-solid-svg-icons';
 import { faIndustry } from '@fortawesome/free-solid-svg-icons';
-/*
-import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
-import { faDoorClosed } from '@fortawesome/free-solid-svg-icons';
-*/
 import { ENVIRONMENT_URL, OFFICE_SENSORS } from 'app/config';
 import Measurement from 'app/components/Environment/Measurement';
+
+import Table from 'app/components/Table';
+import TableHeader from 'app/components/Table/Header';
+import TableBody from 'app/components/Table/Body';
+import TableColumn from 'app/components/Table/Column';
 
 const styles = theme => ({
   rightAlign: {
     textAlign: 'right'
+  },
+  loading: {
+    color: theme.palette.secondary.dark
   }
 });
 
@@ -89,73 +94,74 @@ export class Environment extends Component {
     }
   }
   render() {
-    const { classes } = this.props;
-    const {
-      isLoading,
-      environment
-      // officeDoorOpen,
-    } = this.state;
+    const { classes, width } = this.props;
+    const { isLoading, environment } = this.state;
+    const isLarge = width !== undefined && ['lg', 'xl'].includes(width);
+    const maxItems = 4;
+    const valueHeight = 100 / maxItems;
 
     return (
-      <div>
-        {isLoading ? (
-          <CircularProgress className={classes.loading} size={'4vh'} />
-        ) : (
-          <Grid item container direction={'column'}>
-            <Measurement
-              icon={faThermometerHalf}
-              value={`${environment.temperature} °C`}
-              alt="Temperature"
-              rightAlign
-            />
-            <Measurement
-              icon={faCloud}
-              value={`${environment.humidity} %`}
-              alt="Humidity"
-              rightAlign
-            />
-            <Measurement
-              icon={faSkull}
-              value={`${environment.TVOC} ppb`}
-              alt="TVOC (Total Volatile Organic Compound) concentration parts per billion (ppb)"
-              rightAlign
-            />
-            <Measurement
-              icon={faIndustry}
-              value={`${environment.eCO2} ppm`}
-              alt="eCO2 (equivalent calculated carbon-dioxide) concentration parts per million (ppm)"
-              rightAlign
-            />
-            {/*
-                    <Measurement
-                      icon={officeDoorOpen ? faDoorOpen : faDoorClosed}
-                      value={`${officeDoorOpen ? 'Åpen' : 'Lukket'}`}
-                      alt="Kontordørstatus"
-                      rightAlign
-                    />
-                    */}
-          </Grid>
-        )}
-      </div>
+      <Table>
+        <TableHeader height={valueHeight}>
+          <span>Sensorer</span>
+        </TableHeader>
+        <TableBody>
+          {isLoading ? (
+            <Grid item container justify={'center'} alignItems={'center'}>
+              <CircularProgress className={classes.loading} size={'4vh'} />
+            </Grid>
+          ) : (
+            <TableColumn>
+              <Measurement
+                icon={faThermometerHalf}
+                value={`${environment.temperature} °C`}
+                alt="Temperatur"
+                name={isLarge ? 'Temperatur' : 'Temp..'}
+              />
+              <Measurement
+                icon={faCloud}
+                value={`${environment.humidity} %`}
+                alt="Luftfuktighet"
+                name={isLarge ? 'Fuktighet' : 'Fukt..'}
+              />
+              <Measurement
+                icon={faSkull}
+                value={`${environment.TVOC} ppb`}
+                alt="TVOC (Total Volatile Organic Compound) concentration parts per billion (ppb)"
+                name={'TVOC'}
+              />
+              <Measurement
+                icon={faIndustry}
+                value={`${environment.eCO2} ppm`}
+                alt="eCO2 (equivalent calculated carbon-dioxide) concentration parts per million (ppm)"
+                name={'CO2'}
+              />
+            </TableColumn>
+          )}
+        </TableBody>
+      </Table>
     );
   }
 }
 
 Environment.propTypes = {
   classes: PropTypes.object.isRequired,
+  width: PropTypes.string.isRequired,
   theme: PropTypes.object.isRequired,
   apiFetch: PropTypes.object.isRequired
 };
 
-export default withTheme()(
-  withStyles(styles)(
-    connect(props => ({
-      apiFetch: {
-        method: 'GET',
-        mode: 'cors',
-        url: ENVIRONMENT_URL,
-        refreshInterval: 5000
-      }
-    }))(Environment)
+export default withWidth()(
+  withTheme()(
+    withStyles(styles)(
+      connect(props => ({
+        apiFetch: {
+          method: 'GET',
+          mode: 'cors',
+          url: ENVIRONMENT_URL,
+          refreshInterval: 5000
+        }
+      }))(Environment)
+    )
   )
 );

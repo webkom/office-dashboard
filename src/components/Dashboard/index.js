@@ -64,7 +64,7 @@ export class DashboardGrid extends Component {
             <p className={classes.madeByLove}>
               laget med{' '}
               <FontAwesomeIcon className={classes.beerIcon} icon={faBeer} /> av{' '}
-              <a href="https://github.com/webkom">webkom</a>
+              <a href="https://github.com/webkom/office-dashboard">webkom</a>
             </p>
           </Grid>
         </Grid>

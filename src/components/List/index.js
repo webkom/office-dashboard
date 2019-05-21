@@ -66,7 +66,9 @@ const DashboardList = ({ classes, width, members, lastDatetime }) => (
 
 DashboardList.propTypes = {
   classes: PropTypes.object.isRequired,
-  width: PropTypes.string.isRequired
+  width: PropTypes.string.isRequired,
+  members: PropTypes.object.isRequired,
+  lastDatetime: PropTypes.object.isRequired
 };
 
 export default withWidth()(withStyles(styles)(DashboardList));

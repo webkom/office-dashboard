@@ -183,8 +183,8 @@ export class MediaInfo extends Component {
 MediaInfo.propTypes = {
   classes: PropTypes.object.isRequired,
   theme: PropTypes.object.isRequired,
-  officeChromecastFetch: PropTypes.object.isRequired,
-  width: PropTypes.string.isRequired
+  width: PropTypes.string.isRequired,
+  apiFetch: PropTypes.object.isRequired
 };
 
 export default withWidth()(

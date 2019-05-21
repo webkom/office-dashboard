@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import moment from 'moment';
 
@@ -46,10 +47,10 @@ export class Clock extends Component {
     } = this.state;
 
     return (
-      <div>
+      <Grid container item direction={'column'} alignItems={'center'}>
         <div className={classes.clockDay}>{day}</div>
         <div className={classes.clockTime}>{time}</div>
-      </div>
+      </Grid>
     );
   }
 }

@@ -1,16 +1,26 @@
 import React from 'react';
+import bytes from 'bytes';
 import PropTypes from 'prop-types';
 import withWidth from '@material-ui/core/withWidth';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Octicon, {
+import {
   History,
   GitPullRequest,
   Star,
-  IssueOpened
+  IssueOpened,
+  IssueClosed,
+  GitMerge,
+  Database
 } from '@githubprimer/octicons-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import moment from 'moment';
+import Table from 'app/components/Table';
+import TableHeader from 'app/components/Table/Header';
+import TableBody from 'app/components/Table/Body';
+import TableColumn from 'app/components/Table/Column';
+import Stats from 'app/components/Github/Stats';
 
 const styles = theme => ({
   leftAlign: {
@@ -23,16 +33,9 @@ const styles = theme => ({
     color: theme.palette.secondary.dark,
     paddingRight: '4px'
   },
-  counterIcon: {
-    display: 'flow-root',
-    color: theme.palette.secondary.main,
-    opacity: 0.8,
-    paddingRight: '4px'
-  },
   container: {
     padding: 'var(--container-padding)',
-    whiteSpace: 'pre',
-    width: 'var(--container-width)'
+    whiteSpace: 'pre'
   },
   header: {
     display: 'flex',
@@ -46,114 +49,143 @@ const styles = theme => ({
     fontWeight: 'bold',
     borderBottom: '1px solid rgba(255, 255, 255, 0.10)'
   },
-  counters: {
+  values: {
     height: '75%',
     flexFlow: 'column'
   },
-  counterContainer: {
-    width: '100%',
-    height: 'var(--counter-container-height)',
-    fontSize: '0.85rem'
+  valuesLeft: {
+    paddingRight: '5px'
   },
-  counterContainerLeft: {
-    width: '60%',
-    textAlign: 'left'
-  },
-  counterContainerRight: {
-    width: '40%',
-    textAlign: 'right'
-  },
-  counterText: {
-    opacity: 0.7
-  },
-  counterValue: {
-    fontFamily: 'monospace',
-    opacity: 0.7
+  valuesRight: {
+    borderLeft: '1px solid rgba(255, 255, 255, 0.10)',
+    paddingLeft: '5px'
   }
 });
 
-const GithubRepository = props => {
+const Repository = props => {
   const {
     classes,
     width,
-    repository: { name, commits, issues_open, pull_requests_open, stars }
+    repository: {
+      name,
+      commits,
+      issues_open,
+      pull_requests_open,
+      stars,
+      issues_closed,
+      pull_requests_merged,
+      disk_usage,
+      updated_at
+    }
   } = props;
   const formattedName = name.replace('webkom/', '').replace('lego-', '');
   const isLarge = width !== undefined && ['lg', 'xl'].includes(width);
-  const counterItems = [
+  const statsItems = [
     {
-      name: 'Commits',
+      name: width !== 'sm' ? 'Commits' : 'Com..',
       icon: History,
-      value: commits
+      value: Number(commits).toLocaleString('en')
     },
     {
-      name: 'PR',
+      name: 'PRs',
       icon: GitPullRequest,
-      value: pull_requests_open
+      value: Number(pull_requests_open).toLocaleString('en')
     },
     {
       name: 'Stars',
       icon: Star,
-      value: stars
+      value: Number(stars).toLocaleString('en')
+    }
+  ];
+  const extraStatsItems = [
+    {
+      name: 'Merged PRs',
+      icon: GitMerge,
+      value: Number(pull_requests_merged).toLocaleString('en')
+    },
+    {
+      name: 'Diskforbruk',
+      icon: Database,
+      value: bytes(disk_usage)
+    },
+    {
+      name: 'Siste Push',
+      icon: History,
+      value: moment(updated_at).format('YYYY-MM-DD')
     }
   ];
   if (formattedName !== 'webapp') {
-    counterItems.push({
+    statsItems.push({
       name: 'Issues',
       icon: IssueOpened,
-      value: issues_open
+      value: Number(issues_open).toLocaleString('en')
+    });
+    extraStatsItems.push({
+      name: 'Lukkede Issues',
+      icon: IssueClosed,
+      value: Number(issues_closed).toLocaleString('en')
     });
   }
   const maxItems = 4;
+  const statsHeight = 100 / maxItems;
   return (
-    <Grid
-      item
-      container
-      className={classes.container}
-      style={{
-        '--container-width': isLarge ? '10vw' : '100%',
-        '--container-padding': isLarge ? '0px 8px' : '0px 6px'
-      }}
-    >
-      <Grid item className={classes.header}>
+    <Table xs={6}>
+      <TableHeader height={statsHeight}>
         <FontAwesomeIcon className={classes.githubIcon} icon={faGithub} />
         <span>{formattedName}</span>
-      </Grid>
-      <Grid item container className={classes.counters}>
-        {counterItems.map(({ name, icon, value }) => (
-          <Grid
-            item
-            container
-            className={classes.counterContainer}
-            key={`github-stats-${name}`}
-            style={{
-              '--counter-container-height': `${100 / maxItems}%`
-            }}
-          >
-            <Grid item className={classes.counterContainerLeft}>
-              <Octicon className={classes.counterIcon} icon={icon} />
-              {true && <span className={classes.counterText}>{name}:</span>}
-            </Grid>
-            <Grid item className={classes.counterContainerRight}>
-              <span className={classes.counterValue}>
-                {Number(value).toLocaleString('en')}
-              </span>
-            </Grid>
+      </TableHeader>
+      <TableBody>
+        {!isLarge ? (
+          <TableColumn>
+            {statsItems.map(({ name, icon, value }) => (
+              <Stats
+                key={`github-stats-${name}`}
+                height={statsHeight}
+                name={name}
+                icon={icon}
+                value={value}
+              />
+            ))}
+          </TableColumn>
+        ) : (
+          <Grid item container>
+            <TableColumn xs={6} leftColumn>
+              {statsItems.map(({ name, icon, value }) => (
+                <Stats
+                  key={`github-stats-${name}`}
+                  height={statsHeight}
+                  name={name}
+                  icon={icon}
+                  value={value}
+                />
+              ))}
+            </TableColumn>
+            <TableColumn xs={6} rightColumn>
+              {extraStatsItems.map(({ name, icon, value }) => (
+                <Stats
+                  key={`github-stats-${name}`}
+                  height={statsHeight}
+                  name={name}
+                  icon={icon}
+                  value={value}
+                />
+              ))}
+            </TableColumn>
           </Grid>
-        ))}
-      </Grid>
-    </Grid>
+        )}
+      </TableBody>
+    </Table>
   );
 };
 
-GithubRepository.propTypes = {
+Repository.propTypes = {
   classes: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired,
   repository: PropTypes.object.isRequired
 };
 
-GithubRepository.defaultProps = {
+Repository.defaultProps = {
   rightAlign: false
 };
 
-export default withWidth()(withStyles(styles)(GithubRepository));
+export default withWidth()(withStyles(styles)(Repository));

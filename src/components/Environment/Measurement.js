@@ -1,73 +1,40 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
 import withWidth from '@material-ui/core/withWidth';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import TableIconRow from 'app/components/Table/IconRow';
 
 const styles = theme => ({
-  leftAlign: {
-    textAlign: 'left'
-  },
-  rightAlign: {
-    textAlign: 'right'
-  },
-  measurementIcon: {
-    color: theme.palette.secondary.dark
-  },
-  measurementValue: {
-    opacity: 0.7,
-    fontFamily: 'monospace'
-  },
-  container: {
-    whiteSpace: 'nowrap',
-    alignItems: 'center'
+  icon: {
+    color: theme.palette.secondary.main,
+    opacity: 0.8,
+    paddingRight: '4px',
+    fontSize: '12px'
   }
 });
 
-const Measurement = props => {
-  const { classes, width, icon, value, alt, rightAlign } = props;
-  const expand = width !== undefined && width === 'sm';
-  return (
-    <Grid item title={alt}>
-      {rightAlign ? (
-        <Grid container className={classes.container}>
-          <Grid
-            item
-            xs={10 - (expand ? 1 : 0)}
-            className={classNames(classes.rightAlign, classes.measurementValue)}
-          >
-            {value}
-          </Grid>
-          <Grid item xs={2 + (expand ? 1 : 0)}>
-            <FontAwesomeIcon className={classes.measurementIcon} icon={icon} />
-          </Grid>
-        </Grid>
-      ) : (
-        <Grid container className={classes.container}>
-          <Grid item xs={2 + (expand ? 1 : 0)}>
-            <FontAwesomeIcon className={classes.measurementIcon} icon={icon} />
-          </Grid>
-          <Grid
-            item
-            xs={10 - (expand ? 1 : 0)}
-            className={classNames(classes.leftAlign, classes.measurementValue)}
-          >
-            {value}
-          </Grid>
-        </Grid>
-      )}
-    </Grid>
-  );
-};
+const Measurement = ({ classes, height, name, icon, value }) => (
+  <TableIconRow
+    className={classes.container}
+    height={height}
+    name={name}
+    icon={<FontAwesomeIcon className={classes.icon} icon={icon} fixedWidth />}
+    value={value}
+    style={{
+      '--value-container-height': `${height}%`
+    }}
+  />
+);
 
 Measurement.propTypes = {
   classes: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired,
+  height: PropTypes.number.isRequired,
   icon: PropTypes.object.isRequired,
   value: PropTypes.string.isRequired,
   alt: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
   rightAlign: PropTypes.bool
 };
 

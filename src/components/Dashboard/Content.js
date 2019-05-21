@@ -3,12 +3,6 @@ import PropTypes from 'prop-types';
 import { connect, PromiseState } from 'react-refetch';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-/*
-import * as moment from 'moment';
-import 'moment-with-locales-es6';
-import 'moment/locale/nb';
-import 'moment-duration-format';
-*/
 import { PRESENCE_URL, BRUS_URL, KAFFE_URL } from 'app/config';
 import List from 'app/components/List';
 

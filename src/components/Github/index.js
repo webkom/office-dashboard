@@ -14,54 +14,8 @@ const styles = theme => ({
   grow: {
     flexGrow: 1
   },
-  toolbar: {
-    justifyContent: 'center',
-    flex: '1 1 auto',
-    textAlign: 'center',
-    padding: 20,
-    fontSize: '1rem',
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '0.9rem'
-    }
-  },
-  leftAlign: {
-    textAlign: 'left'
-  },
-  rightAlign: {
-    textAlign: 'right'
-  },
   loading: {
     color: theme.palette.secondary.dark
-  },
-  logo: {
-    height: '50px'
-  },
-  webkom: {
-    height: '60px'
-  },
-  clock: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  clockDay: {
-    textTransform: 'capitalize',
-    fontSize: '1rem'
-  },
-  clockTime: {
-    fontFamily: 'monospace',
-    fontSize: '3rem'
-  },
-  mediaContainer: {
-    padding: '10px 0',
-    backgroundColor: theme.palette.secondary.darkest,
-    boxShadow: 'rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset'
-  },
-  githubContainer: {
-    display: 'flex',
-    height: '100%'
   }
 });
 
@@ -105,7 +59,7 @@ export class Github extends Component {
         : 100;
 
     return (
-      <div>
+      <Grid item container alignItems={'center'} justify={'center'}>
         {isLoading ? (
           <CircularProgress className={classes.loading} size={'4vh'} />
         ) : (
@@ -124,7 +78,7 @@ export class Github extends Component {
             ))}
           </Grid>
         )}
-      </div>
+      </Grid>
     );
   }
 }
