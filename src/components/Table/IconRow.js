@@ -78,7 +78,7 @@ IconRow.propTypes = {
 };
 
 IconRow.defaultValues = {
-    leftAlign: false
-}
+  leftAlign: false
+};
 
 export default withWidth()(withStyles(styles)(IconRow));
