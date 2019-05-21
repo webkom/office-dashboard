@@ -82,7 +82,7 @@ const Repository = props => {
   const isLarge = width !== undefined && ['lg', 'xl'].includes(width);
   const statsItems = [
     {
-      name: width !== 'sm' ? 'Commits' : 'Com..',
+      name: 'Commits',
       icon: History,
       value: Number(commits).toLocaleString('en')
     },
