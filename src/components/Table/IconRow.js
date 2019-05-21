@@ -38,7 +38,7 @@ const styles = theme => ({
   }
 });
 
-const IconRow = ({ classes, height, name, icon, value }) => (
+const IconRow = ({ classes, height, leftAlign, name, icon, value }) => (
   <TableRow
     className={classes.container}
     style={{
@@ -61,7 +61,7 @@ const IconRow = ({ classes, height, name, icon, value }) => (
         </span>
       </Grid>
     </TableCell>
-    <TableCell xs={5} rightAlign>
+    <TableCell xs={5} rightAlign={!leftAlign}>
       <span className={classes.value}>{value}</span>
     </TableCell>
   </TableRow>
@@ -73,7 +73,12 @@ IconRow.propTypes = {
   height: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   icon: PropTypes.node.isRequired,
-  value: PropTypes.string.isRequired
+  value: PropTypes.string.isRequired,
+  leftAlign: PropTypes.bool
 };
+
+IconRow.defaultValues = {
+    leftAlign: false
+}
 
 export default withWidth()(withStyles(styles)(IconRow));

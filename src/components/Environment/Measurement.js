@@ -24,6 +24,7 @@ const Measurement = ({ classes, height, name, icon, value }) => (
     style={{
       '--value-container-height': `${height}%`
     }}
+    leftAlign
   />
 );
 
