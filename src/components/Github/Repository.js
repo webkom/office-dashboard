@@ -106,7 +106,7 @@ const Repository = props => {
     {
       name: 'Diskforbruk',
       icon: Database,
-      value: bytes(disk_usage)
+      value: bytes(disk_usage * 1024)
     },
     {
       name: 'Siste Push',
