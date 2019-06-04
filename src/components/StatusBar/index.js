@@ -5,7 +5,7 @@ import { connect, PromiseState } from 'react-refetch';
 import { withStyles } from '@material-ui/core/styles';
 import withWidth from '@material-ui/core/withWidth';
 import Grid from '@material-ui/core/Grid';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import Zoom from '@material-ui/core/Zoom';
 import StatusItem from 'app/components/StatusBar/Item';
 import {
   OFFICE_DOOR_URL,
@@ -97,37 +97,38 @@ export class StatusBar extends Component {
   render() {
     const { classes, width } = this.props;
     const { isLoading, statuses } = this.state;
-    const isMobile = width !== undefined && width === 'xs';
     const isLarge = width !== undefined && ['lg', 'xl'].includes(width);
 
     return (
-      <Grid
-        item
-        container
-        alignItems={'center'}
-        justify={'center'}
-        className={classes.container}
-      >
-        {isLoading ? (
-          <Grid item container justify={'center'} alignItems={'center'}>
-            <CircularProgress
-              className={classes.loading}
-              size={isMobile ? '4.4vh' : '2vh'}
-            />
-          </Grid>
-        ) : (
-          <Grid item container xs={isLarge ? 8 : 10} justify={'space-evenly'}>
-            {statuses.map(status => (
-              <StatusItem
-                key={`status-${status.name}`}
-                xs={12 / statuses.length}
-                iconColor={status.color}
-                name={status.name}
-              />
-            ))}
-          </Grid>
+      <div>
+        {!isLoading && (
+          <Zoom in>
+            <Grid
+              item
+              container
+              alignItems={'center'}
+              justify={'center'}
+              className={classes.container}
+            >
+              <Grid
+                item
+                container
+                xs={isLarge ? 8 : 10}
+                justify={'space-evenly'}
+              >
+                {statuses.map(status => (
+                  <StatusItem
+                    key={`status-${status.name}`}
+                    xs={12 / statuses.length}
+                    iconColor={status.color}
+                    name={status.name}
+                  />
+                ))}
+              </Grid>
+            </Grid>
+          </Zoom>
         )}
-      </Grid>
+      </div>
     );
   }
 }
