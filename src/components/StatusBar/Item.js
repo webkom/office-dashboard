@@ -2,8 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import withWidth from '@material-ui/core/withWidth';
 import { withStyles } from '@material-ui/core/styles';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import TableIconRow from 'app/components/Table/IconRow';
 import Grid from '@material-ui/core/Grid';
 
 const styles = theme => ({

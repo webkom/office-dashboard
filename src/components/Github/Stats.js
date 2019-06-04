@@ -57,7 +57,7 @@ Stats.propTypes = {
   width: PropTypes.string.isRequired,
   height: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
-  icon: PropTypes.node.isRequired,
+  icon: PropTypes.func.isRequired,
   value: PropTypes.string.isRequired
 };
 

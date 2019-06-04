@@ -14,16 +14,12 @@ const styles = theme => ({
   }
 });
 
-const Measurement = ({ classes, height, name, icon, value }) => (
+const Measurement = ({ classes, name, icon, value }) => (
   <TableIconRow
     className={classes.container}
-    height={height}
     name={name}
     icon={<FontAwesomeIcon className={classes.icon} icon={icon} fixedWidth />}
     value={value}
-    style={{
-      '--value-container-height': `${height}%`
-    }}
     leftAlign
   />
 );
@@ -31,7 +27,6 @@ const Measurement = ({ classes, height, name, icon, value }) => (
 Measurement.propTypes = {
   classes: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired,
-  height: PropTypes.number.isRequired,
   icon: PropTypes.object.isRequired,
   value: PropTypes.string.isRequired,
   alt: PropTypes.string.isRequired,

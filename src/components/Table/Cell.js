@@ -32,8 +32,7 @@ const Cell = ({ children, classes, xs, leftAlign, rightAlign }) => (
 Cell.propTypes = {
   children: PropTypes.node.isRequired,
   classes: PropTypes.object.isRequired,
-  width: PropTypes.string.isRequired,
-  xs: PropTypes.Number,
+  xs: PropTypes.number,
   leftAlign: PropTypes.bool,
   rightAlign: PropTypes.bool
 };

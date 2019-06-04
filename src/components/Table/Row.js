@@ -6,29 +6,19 @@ import Grid from '@material-ui/core/Grid';
 const styles = theme => ({
   container: {
     width: '100%',
-    height: 'var(--value-container-height)',
     fontSize: '0.85rem'
   }
 });
 
-const Row = ({ children, classes, height }) => (
-  <Grid
-    item
-    container
-    className={classes.container}
-    style={{
-      '--value-container-height': `${height}%`
-    }}
-  >
+const Row = ({ children, classes }) => (
+  <Grid item container className={classes.container}>
     {children}
   </Grid>
 );
 
 Row.propTypes = {
   children: PropTypes.node.isRequired,
-  classes: PropTypes.object.isRequired,
-  width: PropTypes.string.isRequired,
-  height: PropTypes.number.isRequired
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(Row);

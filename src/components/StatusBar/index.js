@@ -28,9 +28,9 @@ const styles = theme => ({
 const statusColors = {
   paused: '#ff0000', // TODO
   not_checked: '#ff0000', // TODO
-  up: '#80BA27', // TODO: other color
+  up: '#80BA27',
   seems_down: '#ff0000', // TODO
-  down: '#ff0000' // TODO: other color?
+  down: '#ff0000'
 };
 
 const getUptimeRobotColorFromStatus = status => {
@@ -45,6 +45,8 @@ const getUptimeRobotColorFromStatus = status => {
       return statusColors.seems_down;
     case 9:
       return statusColors.down;
+    default:
+      return statusColors.paused;
   }
 };
 
@@ -132,6 +134,7 @@ export class StatusBar extends Component {
 
 StatusBar.propTypes = {
   classes: PropTypes.object.isRequired,
+  width: PropTypes.string.isRequired,
   officeDoorFetch: PropTypes.object.isRequired,
   uptimeRobotFetch: PropTypes.object.isRequired
 };

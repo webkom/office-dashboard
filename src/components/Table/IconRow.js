@@ -9,7 +9,6 @@ import TableCell from 'app/components/Table/Cell';
 const styles = theme => ({
   container: {
     width: '100%',
-    height: 'var(--value-container-height)',
     fontSize: '0.85rem'
   },
   containerLeft: {
@@ -38,13 +37,8 @@ const styles = theme => ({
   }
 });
 
-const IconRow = ({ classes, height, leftAlign, name, icon, value }) => (
-  <TableRow
-    className={classes.container}
-    style={{
-      '--value-container-height': `${height}%`
-    }}
-  >
+const IconRow = ({ classes, leftAlign, name, icon, value }) => (
+  <TableRow className={classes.container}>
     <TableCell xs={7} leftAlign>
       <Grid
         item
@@ -70,7 +64,6 @@ const IconRow = ({ classes, height, leftAlign, name, icon, value }) => (
 IconRow.propTypes = {
   classes: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired,
-  height: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   icon: PropTypes.node.isRequired,
   value: PropTypes.string.isRequired,
