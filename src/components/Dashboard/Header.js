@@ -10,6 +10,7 @@ import Environment from 'app/components/Environment';
 import MediaInfo from 'app/components/MediaInfo';
 import Github from 'app/components/Github';
 import Clock from 'app/components/Clock';
+import StatusBar from 'app/components/StatusBar';
 
 const styles = theme => ({
   toolbar: {
@@ -90,6 +91,7 @@ const Header = ({ classes, width, theme }) => {
         )}
       </AppBar>
       <MediaInfo />
+      <StatusBar />
     </div>
   );
 };
@@ -97,7 +99,6 @@ const Header = ({ classes, width, theme }) => {
 Header.propTypes = {
   classes: PropTypes.object.isRequired,
   theme: PropTypes.object.isRequired,
-  officeChromecastFetch: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired
 };
 
