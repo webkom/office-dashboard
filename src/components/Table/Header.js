@@ -9,12 +9,12 @@ const styles = theme => ({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    height: '2.5vh',
     letterSpacing: '4px',
     fontSize: '0.9rem',
     textTransform: 'uppercase',
     fontWeight: 'bold',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.10)'
+    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+    paddingBottom: '3px'
   }
 });
 
