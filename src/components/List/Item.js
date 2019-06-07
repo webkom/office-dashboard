@@ -9,9 +9,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 
 const styles = theme => ({
-  root: {
-    flexGrow: 1
-  },
   isActive: {
     background: theme.palette.primary.main
   },
@@ -107,11 +104,32 @@ const styles = theme => ({
   },
   alignCenter: {
     justifyContent: 'center'
+  },
+  '@keyframes outline-pulsate': {
+    '0%': { outlineColor: 'rgba(251, 5, 6, 1)' },
+    '50%': { outlineColor: 'rgba(251, 5, 6, 0)' },
+    '100%': { outlineColor: 'rgba(251, 5, 6, 1)' }
+  },
+
+  birthday: {
+    outlineWidth: '6px',
+    outlineColor: theme.palette.secondary.main,
+    outlineStyle: 'outset',
+    animation: 'outline-pulsate 3s infinite'
   }
 });
 
 const Item = props => {
-  const { classes, children, isActive, avatar, width, header } = props;
+  const {
+    classes,
+    children,
+    isActive,
+    isBirthday,
+    isLegoDay,
+    avatar,
+    width,
+    header
+  } = props;
 
   const gridItemClass = header ? classes.headerItem : classes.dataItem;
 
@@ -120,6 +138,8 @@ const Item = props => {
       divider
       className={classNames(
         isActive && classes.isActive,
+        isBirthday && classes.birthday,
+        isLegoDay && classes.legoDay,
         width === 'xs' ? classes.compactListItem : classes.listItem
       )}
     >
@@ -255,6 +275,8 @@ Item.propTypes = {
   width: PropTypes.string.isRequired,
   avatar: PropTypes.string,
   isActive: PropTypes.bool,
+  isBirthday: PropTypes.bool,
+  isLegoDay: PropTypes.bool,
   header: PropTypes.array
 };
 

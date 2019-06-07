@@ -65,11 +65,19 @@ const Item = props => {
     github,
     brusData,
     kaffeData,
+    birthday,
+    firstLegoCommit,
     activityToday,
     firstSeen,
     lastSeen
   } = props;
   const isActive = lastSeen === 'På kontoret!';
+  const isBirthday =
+    birthday !== null ? birthday.isSame(new Date(), 'day') : false;
+  const isLegoDay =
+    firstLegoCommit !== null
+      ? firstLegoCommit.isSame(new Date(), 'day')
+      : false;
   const formattedActivityToday =
     activityToday === '' ? (
       <FontAwesomeIcon
@@ -82,7 +90,12 @@ const Item = props => {
   const formattedFirstSeen =
     firstSeen === null ? 'Ukjent' : firstSeen.format('HH:mm:ss');
   return (
-    <ListItem avatar={avatar} isActive={isActive}>
+    <ListItem
+      avatar={avatar}
+      isActive={isActive}
+      isBirthday={isBirthday}
+      isLegoDay={isLegoDay}
+    >
       <span>{name}</span>
       <span>
         <FontAwesomeIcon className={classes.statsIcon} icon={faGithub} />
@@ -197,6 +210,7 @@ const Item = props => {
 
 Item.propTypes = {
   classes: PropTypes.object.isRequired,
+  width: PropTypes.string.isRequired,
   avatar: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   github: PropTypes.string.isRequired,
@@ -205,7 +219,8 @@ Item.propTypes = {
   activityToday: PropTypes.string.isRequired,
   lastSeen: PropTypes.string.isRequired,
   firstSeen: PropTypes.object,
-  width: PropTypes.string.isRequired
+  birthday: PropTypes.object,
+  firstLegoCommit: PropTypes.object
 };
 
 export default withWidth()(withStyles(styles)(Item));

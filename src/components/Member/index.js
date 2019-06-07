@@ -23,6 +23,19 @@ const Member = props => {
       github={member.github}
       brusData={member.brus_data}
       kaffeData={member.kaffe_data}
+      birthday={
+        member.birthday
+          ? moment(member.birthday).locale(moment.locale('nb'))
+          : null
+      }
+      joined={
+        member.joined ? moment(member.joined).locale(moment.locale('nb')) : null
+      }
+      firstLegoCommit={
+        member.first_lego_commit
+          ? moment(member.first_lego_commit).locale(moment.locale('nb'))
+          : null
+      }
       activityToday={
         member.activity_today === 0
           ? ''
