@@ -110,12 +110,20 @@ const styles = theme => ({
     '50%': { outlineColor: 'rgba(251, 5, 6, 0)' },
     '100%': { outlineColor: 'rgba(251, 5, 6, 1)' }
   },
-
   birthday: {
     outlineWidth: '6px',
     outlineColor: theme.palette.secondary.main,
     outlineStyle: 'outset',
     animation: 'outline-pulsate 3s infinite'
+  },
+  '@keyframes text-pulsate': {
+    '0%': { opacity: 1 },
+    '50%': { opacity: 0 },
+    '100%': { opacity: 1 }
+  },
+  legoDay: {
+    color: theme.palette.secondary.main,
+    animation: 'text-pulsate 3s infinite'
   }
 });
 
@@ -139,7 +147,6 @@ const Item = props => {
       className={classNames(
         isActive && classes.isActive,
         isBirthday && classes.birthday,
-        isLegoDay && classes.legoDay,
         width === 'xs' ? classes.compactListItem : classes.listItem
       )}
     >
@@ -208,8 +215,15 @@ const Item = props => {
               item
               xs={2}
               className={classNames(classes.gridItem, gridItemClass)}
+              direction={!header && isLegoDay ? 'column' : 'row'}
+              style={{
+                alignItems: !header && isLegoDay ? 'flex-start' : 'center'
+              }}
             >
               {!header ? children[1] : header[0] /* Github */}
+              {!header && isLegoDay && (
+                <div className={classes.legoDay}>LEGO day!</div>
+              )}
             </Grid>
 
             <Grid
