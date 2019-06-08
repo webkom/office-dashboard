@@ -7,6 +7,7 @@ import Grid from '@material-ui/core/Grid';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
+import LegoIcon from 'app/static/lego.png';
 
 const styles = theme => ({
   isActive: {
@@ -47,7 +48,8 @@ const styles = theme => ({
     lineHeight: '0.3em'
   },
   compactMetadata: {
-    textAlign: 'right'
+    display: 'flex',
+    justifyContent: 'flex-end'
   },
   compactAvatar: {
     display: 'flex',
@@ -124,6 +126,14 @@ const styles = theme => ({
   legoDay: {
     color: theme.palette.secondary.main,
     animation: 'text-pulsate 3s infinite'
+  },
+  legoIcon: {
+    width: '16px',
+    height: '16px',
+    [theme.breakpoints.down('xs')]: {
+      width: '8.8px',
+      height: '8.8px'
+    }
   }
 });
 
@@ -165,6 +175,26 @@ const Item = props => {
                       {children[0] /* Name */}
                     </Grid>
                     <Grid item xs={7} className={classes.compactMetadata}>
+                      {isLegoDay && (
+                        <div
+                          className={classes.legoDay}
+                          style={{ paddingRight: '5px' }}
+                        >
+                          <img
+                            src={LegoIcon}
+                            className={classes.legoIcon}
+                            style={{ paddingRight: '5px' }}
+                            alt="LEGO day icon"
+                          />
+                          LEGO day!
+                          <img
+                            src={LegoIcon}
+                            className={classes.legoIcon}
+                            style={{ paddingLeft: '5px' }}
+                            alt="LEGO day icon"
+                          />
+                        </div>
+                      )}
                       {children[1] /* Github */}
                     </Grid>
                   </Grid>
@@ -213,6 +243,7 @@ const Item = props => {
 
             <Grid
               item
+              container
               xs={2}
               className={classNames(classes.gridItem, gridItemClass)}
               direction={!header && isLegoDay ? 'column' : 'row'}
@@ -222,7 +253,21 @@ const Item = props => {
             >
               {!header ? children[1] : header[0] /* Github */}
               {!header && isLegoDay && (
-                <div className={classes.legoDay}>LEGO day!</div>
+                <div className={classes.legoDay}>
+                  <img
+                    src={LegoIcon}
+                    className={classes.legoIcon}
+                    style={{ paddingRight: '5px' }}
+                    alt="LEGO day icon"
+                  />
+                  LEGO day!
+                  <img
+                    src={LegoIcon}
+                    className={classes.legoIcon}
+                    style={{ paddingLeft: '5px' }}
+                    alt="LEGO day icon"
+                  />
+                </div>
               )}
             </Grid>
 
