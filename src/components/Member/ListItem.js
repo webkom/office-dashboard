@@ -15,6 +15,7 @@ import Grid from '@material-ui/core/Grid';
 import ListItem from 'app/components/List/Item';
 import Stats from 'app/components/Member/Stats';
 import getPlural from 'app/utils';
+import moment from 'moment';
 
 const styles = theme => ({
   root: {
@@ -56,6 +57,9 @@ const styles = theme => ({
   }
 });
 
+const isSameDayAndMonth = (m1, m2) =>
+  m1.date() === m2.date() && m1.month() === m2.month();
+
 const Item = props => {
   const {
     classes,
@@ -73,10 +77,10 @@ const Item = props => {
   } = props;
   const isActive = lastSeen === 'På kontoret!';
   const isBirthday =
-    birthday !== null ? birthday.isSame(new Date(), 'day') : false;
+    birthday !== null ? isSameDayAndMonth(moment(), birthday) : false;
   const isLegoDay =
     firstLegoCommit !== null
-      ? firstLegoCommit.isSame(new Date(), 'day')
+      ? isSameDayAndMonth(moment(), firstLegoCommit)
       : false;
   const formattedActivityToday =
     activityToday === '' ? (
