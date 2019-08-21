@@ -4,10 +4,9 @@ import { withStyles } from '@material-ui/core/styles';
 import withWidth from '@material-ui/core/withWidth';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import * as moment from 'moment';
-import 'moment-with-locales-es6';
 import 'moment/locale/nb';
 import 'moment-duration-format';
+import * as moment from 'moment';
 import Header from 'app/components/List/Header';
 import Member from 'app/components/Member';
 

@@ -61,8 +61,8 @@ export class Content extends Component {
         if (typeof brusInfo === 'undefined') {
           member['brus_data'] = {
             balance: '?',
-            soda_bottles_bought: '?',
-            soda_cans_bought: '?'
+            purchase_summary: '?',
+            products_bought: '?'
           };
         } else {
           member['brus_data'] = brusInfo;
