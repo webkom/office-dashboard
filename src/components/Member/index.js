@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import * as moment from 'moment';
-import 'moment-with-locales-es6';
 import 'moment/locale/nb';
 import 'moment-duration-format';
+import * as moment from 'moment';
 import ListItem from 'app/components/Member/ListItem';
 
 const getTimeFormatString = value => {

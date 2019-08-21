@@ -4,13 +4,16 @@ import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import withWidth from '@material-ui/core/withWidth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCoffee } from '@fortawesome/free-solid-svg-icons';
-import { faFlask } from '@fortawesome/free-solid-svg-icons';
+import {
+  faCoffee,
+  faQuestion,
+  faFlask,
+  faFrown,
+  faDollarSign,
+  faBeer,
+  faWineBottle
+} from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
-import { faFrown } from '@fortawesome/free-solid-svg-icons';
-import { faDollarSign } from '@fortawesome/free-solid-svg-icons';
-import { faGlassWhiskey } from '@fortawesome/free-solid-svg-icons';
-import { faWineBottle } from '@fortawesome/free-solid-svg-icons';
 import Grid from '@material-ui/core/Grid';
 import ListItem from 'app/components/List/Item';
 import Stats from 'app/components/Member/Stats';
@@ -59,6 +62,28 @@ const styles = theme => ({
 
 const isSameDayAndMonth = (m1, m2) =>
   m1.date() === m2.date() && m1.month() === m2.month();
+
+const getTranslatedProductType = product_type => {
+  switch (product_type) {
+    case 'beer':
+      return 'Øl';
+    case 'soda':
+      return 'Brus';
+    default:
+      return 'Ukjent';
+  }
+};
+
+const getProductTypeIcon = product_type => {
+  switch (product_type) {
+    case 'beer':
+      return faBeer;
+    case 'soda':
+      return faWineBottle;
+    default:
+      return faQuestion;
+  }
+};
 
 const Item = props => {
   const {
@@ -119,16 +144,16 @@ const Item = props => {
             compact
           />
           <Stats icon={faDollarSign} value={`${brusData.balance} kr`} compact />
-          <Stats
-            icon={faGlassWhiskey}
-            value={brusData.soda_cans_bought}
-            compact
-          />
-          <Stats
-            icon={faWineBottle}
-            value={brusData.soda_bottles_bought}
-            compact
-          />
+          {brusData.purchase_summary === '?'
+            ? '?'
+            : Object.keys(brusData.purchase_summary).map(product_type => (
+                <Stats
+                  key={product_type}
+                  icon={getProductTypeIcon(product_type)}
+                  value={brusData.purchase_summary[product_type]}
+                  compact
+                />
+              ))}
         </Grid>
       )}
       {width !== 'xs' && (
@@ -148,16 +173,16 @@ const Item = props => {
           className={classes.alignCenter}
           title={`Saldo: ${brusData.balance} kr`}
         >
-          <Stats
-            icon={faGlassWhiskey}
-            value={brusData.soda_cans_bought}
-            text={getPlural('boks', 'er', brusData.soda_cans_bought)}
-          />
-          <Stats
-            icon={faWineBottle}
-            value={brusData.soda_bottles_bought}
-            text={getPlural('flaske', 'r', brusData.soda_bottles_bought)}
-          />
+          {brusData.purchase_summary === '?'
+            ? '?'
+            : Object.keys(brusData.purchase_summary).map(product_type => (
+                <Stats
+                  key={product_type}
+                  icon={getProductTypeIcon(product_type)}
+                  value={brusData.purchase_summary[product_type]}
+                  text={getTranslatedProductType(product_type)}
+                />
+              ))}
         </Grid>
       )}
       {width === 'xs' ? (
