@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-refetch';
 import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Grid from '@material-ui/core/Grid';
 import { GITHUB_STATS_URL } from 'app/config';
 import Repository from 'app/components/Github/Repository';
+import LoadingIcon from 'app/components/LoadingIcon';
 
 const styles = theme => ({
   root: {
@@ -50,7 +50,6 @@ export class Github extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     const { isLoading, repositories } = this.state;
 
     const repositoryWidth =
@@ -61,7 +60,7 @@ export class Github extends Component {
     return (
       <Grid item container alignItems={'center'} justify={'center'}>
         {isLoading ? (
-          <CircularProgress className={classes.loading} size={'4vh'} />
+          <LoadingIcon size={4} />
         ) : (
           <Grid
             item

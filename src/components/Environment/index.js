@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-refetch';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import withWidth from '@material-ui/core/withWidth';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Grid from '@material-ui/core/Grid';
 import { faThermometerHalf } from '@fortawesome/free-solid-svg-icons';
 import { faCloud } from '@fortawesome/free-solid-svg-icons';
@@ -11,6 +10,7 @@ import { faSkull } from '@fortawesome/free-solid-svg-icons';
 import { faIndustry } from '@fortawesome/free-solid-svg-icons';
 import { ENVIRONMENT_URL, OFFICE_SENSORS } from 'app/config';
 import Measurement from 'app/components/Environment/Measurement';
+import LoadingIcon from 'app/components/LoadingIcon';
 
 import Table from 'app/components/Table';
 import TableHeader from 'app/components/Table/Header';
@@ -94,7 +94,7 @@ export class Environment extends Component {
     }
   }
   render() {
-    const { classes, width } = this.props;
+    const { width } = this.props;
     const { isLoading, environment } = this.state;
     const isLarge = width !== undefined && ['lg', 'xl'].includes(width);
     const maxItems = 4;
@@ -108,7 +108,7 @@ export class Environment extends Component {
         <TableBody>
           {isLoading ? (
             <Grid item container justify={'center'} alignItems={'center'}>
-              <CircularProgress className={classes.loading} size={'4vh'} />
+              <LoadingIcon size={4} />
             </Grid>
           ) : (
             <TableColumn>
