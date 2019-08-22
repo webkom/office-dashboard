@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect, PromiseState } from 'react-refetch';
 import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import { PRESENCE_URL, BRUS_URL, KAFFE_URL } from 'app/config';
 import List from 'app/components/List';
+import LoadingIcon from 'app/components/LoadingIcon';
 
 const styles = theme => ({
   tableFooter: {
@@ -99,11 +99,10 @@ export class Content extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     const { isLoading, members, lastDatetime } = this.state;
 
     if (isLoading) {
-      return <CircularProgress className={classes.loading} size={'12vh'} />;
+      return <LoadingIcon />;
     }
 
     return <List members={members} lastDatetime={lastDatetime} />;
