@@ -53,6 +53,7 @@ export class Content extends Component {
       throw allFetches.reason.message;
     } else if (allFetches.fulfilled) {
       const [presence, brus, kaffe] = allFetches.value;
+
       presence.members.map(member => {
         // Brus
         const brusInfo = brus.find(
@@ -87,7 +88,7 @@ export class Content extends Component {
 
       if (
         lastDatetime !== presence.last_datetime ||
-        members !== presence.members
+        JSON.stringify(members) !== JSON.stringify(presence.members)
       ) {
         this.setState({
           lastDatetime: presence.last_datetime,

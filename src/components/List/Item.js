@@ -113,6 +113,7 @@ const styles = theme => ({
     '100%': { outlineColor: 'rgba(251, 5, 6, 1)' }
   },
   birthday: {
+    zIndex: 1000,
     outlineWidth: '6px',
     outlineColor: theme.palette.secondary.main,
     outlineStyle: 'outset',
