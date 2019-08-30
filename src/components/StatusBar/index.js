@@ -71,7 +71,7 @@ export class StatusBar extends Component {
 
       let newStatuses = [];
       const doorStatus = {
-        name: 'Kontor Dør',
+        name: 'Kontordør',
         color:
           officeDoorValues.status === 'OPEN'
             ? statusColors.up
