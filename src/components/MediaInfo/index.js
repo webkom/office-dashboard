@@ -61,7 +61,8 @@ const styles = theme => ({
   mediaContainer: {
     padding: '10px 0',
     backgroundColor: theme.palette.secondary.darkest,
-    boxShadow: 'rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset'
+    boxShadow: 'rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset',
+    transition: 'all 1s ease-in'
   },
   githubContainer: {
     display: 'flex',
@@ -74,8 +75,7 @@ export class MediaInfo extends Component {
     isLoading: true,
     lastDatetime: null,
     chromecast: null,
-    mediaImage: null,
-    mediaColor: null
+    mediaImage: null
   };
 
   componentDidUpdate(prevProps) {
@@ -158,21 +158,23 @@ export class MediaInfo extends Component {
           chromecast.artist !== null &&
           chromecast.state !== 'UNKNOWN' && (
             <Zoom in>
-              <Grid
-                container
-                alignItems="center"
-                justify="center"
-                className={classes.mediaContainer}
-                style={{ backgroundColor: mediaColor }}
-              >
-                <Grid item xs={isMobile ? 11 : 5}>
-                  <Data
-                    content={chromecast}
-                    backgroundColor={mediaColor}
-                    textColor={mediaTextColor}
-                  />
+              <div>
+                <Grid
+                  container
+                  alignItems="center"
+                  justify="center"
+                  className={classes.mediaContainer}
+                  style={{ backgroundColor: mediaColor }}
+                >
+                  <Grid item xs={isMobile ? 11 : 5}>
+                    <Data
+                      content={chromecast}
+                      backgroundColor={mediaColor}
+                      textColor={mediaTextColor}
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
+              </div>
             </Zoom>
           )}
       </div>
