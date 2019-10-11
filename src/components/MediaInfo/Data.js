@@ -21,7 +21,8 @@ const styles = theme => ({
     color: 'var(--text-color)',
     fontSize: '0.875rem',
     fontWeight: 400,
-    lineHeight: '1.46429em'
+    lineHeight: '1.46429em',
+    transition: 'all 1s ease-in'
   },
   mediaText: {
     textOverflow: 'ellipsis',
@@ -65,10 +66,12 @@ const styles = theme => ({
     borderRadius: '0.1rem'
   },
   progressBar: {
-    backgroundColor: 'var(--progressbar-color)'
+    backgroundColor: 'var(--progressbar-color)',
+    transition: 'all 1s ease-in'
   },
   progressBarBackground: {
-    backgroundColor: 'var(--progressbar-background-color)'
+    backgroundColor: 'var(--progressbar-background-color)',
+    transition: 'all 1s ease-in'
   }
 });
 
