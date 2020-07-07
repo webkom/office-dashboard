@@ -21,7 +21,7 @@
     "moment-duration-format": "^2.2.2",
     "moment-timezone": "^0.5.23",
     "moment-with-locales-es6": "^1.0.1",
-    "npm": "^6.13.4",
+    "npm": "^6.14.6",
     "query-string": "^6.5.0",
     "react": "^16.6.3",
     "react-app-rewired": "^2.1.3",
