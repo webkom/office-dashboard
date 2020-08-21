@@ -5,6 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import withWidth from '@material-ui/core/withWidth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faBlind,
   faCoffee,
   faQuestion,
   faFlask,
@@ -110,10 +111,22 @@ const Item = props => {
       : false;
   const formattedActivityToday =
     activityToday === '' ? (
-      <FontAwesomeIcon
-        className={classNames(classes.statsIcon, classes.frownIcon)}
-        icon={faFrown}
-      />
+      !isPang ? (
+        <FontAwesomeIcon
+          className={classNames(classes.statsIcon, classes.frownIcon)}
+          icon={faFrown}
+        />
+      ) : (
+        <>
+          {[1, 2, 3, 4].map(i => (
+            <FontAwesomeIcon
+              key={`blind-icon-${i}`}
+              className={classNames(classes.statsIcon, classes.frownIcon)}
+              icon={faBlind}
+            />
+          ))}
+        </>
+      )
     ) : (
       activityToday
     );
