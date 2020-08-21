@@ -14,10 +14,10 @@ const styles = theme => ({
     background: theme.palette.primary.main
   },
   isPang: {
-    background: `repeating-linear-gradient(45deg, ${theme.palette.primary.light}, ${theme.palette.primary.light} 10px, ${theme.palette.primary.veryLight} 10px, ${theme.palette.primary.veryLight} 20px)`
+    background: `repeating-linear-gradient(135deg, ${theme.palette.primary.light}, ${theme.palette.primary.light} 10px, ${theme.palette.primary.veryLight} 10px, ${theme.palette.primary.veryLight} 20px)`
   },
   isPangAndActive: {
-    background: `repeating-linear-gradient(45deg, ${theme.palette.primary.light}, ${theme.palette.primary.light} 10px, ${theme.palette.primary.main} 10px, ${theme.palette.primary.main} 20px)`
+    background: `repeating-linear-gradient(135deg, ${theme.palette.primary.light}, ${theme.palette.primary.light} 10px, ${theme.palette.primary.main} 10px, ${theme.palette.primary.main} 20px)`
   },
   compactGrid: {
     lineHeight: '1.5em',
