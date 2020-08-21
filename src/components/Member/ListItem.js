@@ -19,6 +19,7 @@ import Grid from '@material-ui/core/Grid';
 import ListItem from 'app/components/List/Item';
 import Stats from 'app/components/Member/Stats';
 import getPlural from 'app/utils';
+import { GITHUB_URL } from 'app/config';
 import moment from 'moment';
 
 const styles = theme => ({
@@ -41,6 +42,41 @@ const styles = theme => ({
     fontSize: 'inherit',
     [theme.breakpoints.up('sm')]: {
       fontSize: '1.5rem'
+    }
+  },
+  smallGithubContributions: {
+    fontSize: '0.4rem'
+  },
+  smallGithubRepo: {
+    padding: '2px'
+  },
+  githubContainer: {
+    width: '60%',
+    [theme.breakpoints.down('lg')]: {
+      width: '80%'
+    },
+    [theme.breakpoints.down('md')]: {
+      width: '60%'
+    },
+    [theme.breakpoints.down('sm')]: {
+      width: '100%'
+    }
+  },
+  githubRepoName: {
+    color: 'white',
+    fontWeight: 'bold'
+  },
+  githubContributions: {
+    opacity: 0.6,
+    fontSize: '0.8rem',
+    [theme.breakpoints.down('lg')]: {
+      fontSize: '0.65rem'
+    },
+    [theme.breakpoints.down('md')]: {
+      fontSize: '0.5rem'
+    },
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.5rem'
     }
   },
   firstSeen: {
@@ -93,6 +129,7 @@ const Item = props => {
     avatar,
     name,
     github,
+    githubContributions,
     brusData,
     kaffeData,
     birthday,
@@ -141,11 +178,31 @@ const Item = props => {
       isLegoDay={isLegoDay}
     >
       <span>{name}</span>
-      <span>
+      <div className={classes.githubContainer}>
         <FontAwesomeIcon className={classes.statsIcon} icon={faGithub} />
         <span> </span>
-        <a href={`https://github.com/${github}`}>@{github}</a>
-      </span>
+        <a href={`${GITHUB_URL}/${github}`}>@{github}</a>
+        {width !== 'xs' && (
+          <Grid
+            container
+            direction={'row'}
+            justify={'space-between'}
+            className={classes.githubContributions}
+          >
+            {githubContributions.map(item => (
+              <div key={`contributions-${github}-${item.repository}`}>
+                <a
+                  href={`${GITHUB_URL}/${item.repository}`}
+                  className={classes.githubRepoName}
+                >
+                  {item.repository.replace('webkom/', '')}:
+                </a>{' '}
+                {item.contributions}
+              </div>
+            ))}
+          </Grid>
+        )}
+      </div>
       {width === 'xs' && (
         <Grid
           container
@@ -262,6 +319,7 @@ Item.propTypes = {
   kaffeData: PropTypes.object.isRequired,
   activityToday: PropTypes.string.isRequired,
   lastSeen: PropTypes.string.isRequired,
+  githubContributions: PropTypes.object,
   firstSeen: PropTypes.object,
   birthday: PropTypes.object,
   firstLegoCommit: PropTypes.object,

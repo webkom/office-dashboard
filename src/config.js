@@ -1,3 +1,7 @@
+// GitHub base URL
+export const GITHUB_URL =
+  process.env.REACT_APP_GITHUB_URL || 'https://github.com';
+
 // Brus API
 export const BRUS_URL =
   process.env.REACT_APP_BRUS_URL || 'https://brus.abakus.no';

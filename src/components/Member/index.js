@@ -20,6 +20,7 @@ const Member = props => {
       avatar={member.avatar}
       name={member.name}
       github={member.github}
+      githubContributions={member.github_contributions}
       brusData={member.brus_data}
       kaffeData={member.kaffe_data}
       birthday={
