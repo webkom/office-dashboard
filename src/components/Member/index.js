@@ -58,6 +58,7 @@ const Member = props => {
               .fromNow()
           : 'Ukjent'
       }
+      isPang={member.is_pang}
     />
   );
 };

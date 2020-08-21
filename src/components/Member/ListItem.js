@@ -98,7 +98,8 @@ const Item = props => {
     firstLegoCommit,
     activityToday,
     firstSeen,
-    lastSeen
+    lastSeen,
+    isPang
   } = props;
   const isActive = lastSeen === 'På kontoret!';
   const isBirthday =
@@ -122,6 +123,7 @@ const Item = props => {
     <ListItem
       avatar={avatar}
       isActive={isActive}
+      isPang={isPang}
       isBirthday={isBirthday}
       isLegoDay={isLegoDay}
     >

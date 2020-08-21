@@ -13,6 +13,12 @@ const styles = theme => ({
   isActive: {
     background: theme.palette.primary.main
   },
+  isPang: {
+    background: `repeating-linear-gradient(45deg, ${theme.palette.primary.light}, ${theme.palette.primary.light} 10px, ${theme.palette.primary.veryLight} 10px, ${theme.palette.primary.veryLight} 20px)`
+  },
+  isPangAndActive: {
+    background: `repeating-linear-gradient(45deg, ${theme.palette.primary.light}, ${theme.palette.primary.light} 10px, ${theme.palette.primary.main} 10px, ${theme.palette.primary.main} 20px)`
+  },
   compactGrid: {
     lineHeight: '1.5em',
     fontSize: '0.55rem',
@@ -143,6 +149,7 @@ const Item = props => {
     classes,
     children,
     isActive,
+    isPang,
     isBirthday,
     isLegoDay,
     avatar,
@@ -158,6 +165,8 @@ const Item = props => {
       className={classNames(
         isActive && classes.isActive,
         isBirthday && classes.birthday,
+        isPang && classes.isPang,
+        isPang && isActive && classes.isPangAndActive,
         width === 'xs' ? classes.compactListItem : classes.listItem
       )}
     >
