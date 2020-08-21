@@ -50,4 +50,4 @@ export const UPTIME_ROBOT_POST_DATA = {
 //-d "api_key=ur609187-58b7ee7d64ca62809bb5e902&monitors=780718562-782661964-780718556&custom_uptime_ratios=30
 
 // Office Environment Sensors
-export const OFFICE_SENSORS = ['sensors/208AAEC40A24'];
+export const OFFICE_SENSORS = ['sensors/B05DAFC40A24'];
