@@ -251,7 +251,8 @@ Item.propTypes = {
   lastSeen: PropTypes.string.isRequired,
   firstSeen: PropTypes.object,
   birthday: PropTypes.object,
-  firstLegoCommit: PropTypes.object
+  firstLegoCommit: PropTypes.object,
+  isPang: PropTypes.bool
 };
 
 export default withWidth()(withStyles(styles)(Item));

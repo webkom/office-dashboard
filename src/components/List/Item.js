@@ -344,6 +344,7 @@ Item.propTypes = {
   width: PropTypes.string.isRequired,
   avatar: PropTypes.string,
   isActive: PropTypes.bool,
+  isPang: PropTypes.bool,
   isBirthday: PropTypes.bool,
   isLegoDay: PropTypes.bool,
   header: PropTypes.array
