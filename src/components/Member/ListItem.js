@@ -182,7 +182,7 @@ const Item = props => {
         <FontAwesomeIcon className={classes.statsIcon} icon={faGithub} />
         <span> </span>
         <a href={`${GITHUB_URL}/${github}`}>@{github}</a>
-        {width !== 'xs' && (
+        {width !== 'xs' && githubContributions && (
           <Grid
             container
             direction={'row'}
