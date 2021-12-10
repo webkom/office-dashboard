@@ -1,39 +1,50 @@
-pipeline:
-  setup:
+---
+kind: pipeline
+type: docker
+name: defult
+
+steps:
+  - name: setup
     image: node:10
     when:
       event: push
     commands:
       - yarn
-  lint:
+
+  - name: lint
     image: node:10
     when:
       event: push
-    group: testing
+    depends_on: [setup]
     commands:
       - yarn lint
-  build:
+
+  - name: build
     image: node:10
     when:
       event: push
       branch:
-        exclude: [ master ]
-    group: testing
+        exclude: [master]
+    depends_on: [setup]
     commands:
       - yarn build
-  docker:
+
+  - name: docker
     image: plugins/docker
     when:
       branch:
         - master
       event: push
       status: success
-    registry: https://registry.webkom.dev
-    repo: registry.webkom.dev/webkom/office-dashboard
-    secrets: [ docker_username, docker_password ]
-    tags:
-      - ${DRONE_BRANCH}-${DRONE_COMMIT_SHA:0:7}
-      - latest
-    build_args:
-      - RELEASE=${DRONE_BRANCH}-${DRONE_COMMIT_SHA:0:7}
-
+    settings:
+      registry: https://registry.webkom.dev
+      repo: registry.webkom.dev/webkom/office-dashboard
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      tags:
+        - ${DRONE_BRANCH}-${DRONE_COMMIT_SHA:0:7}
+        - latest
+      build_args:
+        - RELEASE=${DRONE_BRANCH}-${DRONE_COMMIT_SHA:0:7}

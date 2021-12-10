@@ -47,6 +47,11 @@ export class DashboardGrid extends Component {
 
     return (
       <div className={classes.root}>
+        {Array(50)
+          .fill()
+          .map(i => (
+            <div key={i} className="snowflake" />
+          ))}
         <Grid
           container
           justify="center"
