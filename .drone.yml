@@ -5,14 +5,14 @@ name: defult
 
 steps:
   - name: setup
-    image: node:10
+    image: node:12
     when:
       event: push
     commands:
       - yarn
 
   - name: lint
-    image: node:10
+    image: node:12
     when:
       event: push
     depends_on: [setup]
@@ -20,7 +20,7 @@ steps:
       - yarn lint
 
   - name: build
-    image: node:10
+    image: node:12
     when:
       event: push
       branch:

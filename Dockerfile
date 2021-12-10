@@ -1,5 +1,5 @@
 # Build env
-FROM node:10.14.2 as builder
+FROM node:12 as builder
 
 RUN mkdir /app
 WORKDIR /app
@@ -25,4 +25,3 @@ COPY --from=builder /app/build /usr/share/nginx/html
 EXPOSE 80
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
-
