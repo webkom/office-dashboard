@@ -29,7 +29,7 @@ const statusColors = {
   paused: '#ff0000', // TODO
   not_checked: '#ff0000', // TODO
   up: '#80BA27',
-  seems_down: '#ff0000', // TODO
+  seems_down: '#ffd000',
   down: '#ff0000'
 };
 
@@ -156,7 +156,7 @@ export default withWidth()(
           'Content-Type': 'application/x-www-form-urlencoded'
         },
         url: UPTIME_ROBOT_URL,
-        refreshInterval: 5000,
+        refreshInterval: 300000,
         body: queryString.stringify(UPTIME_ROBOT_POST_DATA)
       }
     }))(StatusBar)
