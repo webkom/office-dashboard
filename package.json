@@ -19,7 +19,7 @@
     "js-yaml": "^3.13.1",
     "moment": "^2.29.2",
     "moment-duration-format": "^2.2.2",
-    "moment-timezone": "^0.5.23",
+    "moment-timezone": "^0.5.35",
     "moment-with-locales-es6": "^1.0.1",
     "npm": "^6.13.4",
     "query-string": "^6.5.0",
