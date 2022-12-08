@@ -4,8 +4,8 @@ import { withStyles, withTheme } from '@material-ui/core/styles';
 import withWidth from '@material-ui/core/withWidth';
 import AppBar from '@material-ui/core/AppBar';
 import Grid from '@material-ui/core/Grid';
-import darkLogo from 'app/static/abakus_logo_white_webkom.png';
-//import darkLogoChristmas from 'app/static/abakus_logo_white_webkom_christmas.png';
+//import darkLogo from 'app/static/abakus_logo_white_webkom.png';
+import darkLogoChristmas from 'app/static/abakus_logo_white_webkom_christmas.png';
 import Environment from 'app/components/Environment';
 import MediaInfo from 'app/components/MediaInfo';
 import Github from 'app/components/Github';
@@ -50,7 +50,7 @@ const Header = ({ classes, width, theme }) => {
               <img
                 alt="Abakus Linjeforening"
                 className={classes.logo}
-                src={darkLogo}
+                src={darkLogoChristmas}
               />
             </Grid>
           </Grid>
@@ -66,7 +66,7 @@ const Header = ({ classes, width, theme }) => {
               <img
                 alt="Abakus Linjeforening"
                 className={classes.logo}
-                src={darkLogo}
+                src={darkLogoChristmas}
               />
             </Grid>
             <Grid item container xs={isLarge ? 1 : 2} alignItems={'center'}>
