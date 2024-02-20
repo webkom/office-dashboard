@@ -33,7 +33,7 @@ export class Github extends Component {
     if (!isLoading && apiFetch.pending) {
       this.setState({ isLoading: true });
     } else if (isLoading && apiFetch.rejected) {
-      throw apiFetch.reason.message;
+      // throw apiFetch.reason.message;
     } else if (apiFetch.fulfilled) {
       const response = apiFetch.value;
       const newRepositories = Object.values(response.repositories);

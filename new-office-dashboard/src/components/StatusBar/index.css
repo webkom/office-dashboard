@@ -1,0 +1,17 @@
+.statuses {
+  padding: 10px 0px;
+  box-shadow: rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset;
+  background-color: var(--background-color-light);
+  gap: 50px;
+}
+
+.status-item {
+  gap: 5px;
+}
+
+.status-item-icon {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: gray;
+}

@@ -1,0 +1,25 @@
+.repo-header {
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  font-weight: bold;
+  letter-spacing: 4px;
+  padding-bottom: 5px;
+}
+
+.repo {
+  width: fit-content;
+}
+
+.repo-columns {
+  width: 100%;
+}
+
+.github-icon {
+  padding-right: 4px;
+  color: var(--secondary-dark);
+}
+
+.repo-column-left,
+.repo-column-right {
+  width: var(--repo-column-width);
+}

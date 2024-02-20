@@ -61,7 +61,7 @@ export class DashboardGrid extends Component {
         >
           <Grid item xs={12}>
             <Header />
-            <Paper className={classes.paper} square>
+            {/* <Paper className={classes.paper} square>
               <ErrorBoundary onError={this.handleError.bind(this)}>
                 <Content />
               </ErrorBoundary>
@@ -71,7 +71,7 @@ export class DashboardGrid extends Component {
               laget med{' '}
               <FontAwesomeIcon className={classes.beerIcon} icon={faBeer} /> av{' '}
               <a href="https://github.com/webkom/office-dashboard">webkom</a>
-            </p>
+            </p> */}
           </Grid>
         </Grid>
       </div>

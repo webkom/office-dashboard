@@ -1,0 +1,107 @@
+.members-item {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 0px;
+  box-sizing: border-box;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 10%);
+}
+
+.entry {
+  min-width: 0;
+  flex: 1;
+}
+
+.avatar {
+  display: flex;
+  flex: 0.5;
+  justify-content: start;
+  align-items: center;
+}
+
+.avatar img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 50%;
+  background-color: red;
+  overflow: hidden;
+}
+
+.name {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+
+.github {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+
+.kaffe {
+  display: flex;
+  flex-direction: column;
+}
+
+.office-activity {
+  display: flex;
+  flex-direction: column;
+
+  & div {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  & .first-seen {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    font-size: 0.6rem;
+    opacity: 0.7;
+  }
+}
+
+.last-seen {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-weight: bold;
+  padding: 20pxq;
+}
+
+.stats-entry {
+  display: flex;
+  flex: 0;
+  flex-direction: row;
+  align-items: center;
+
+  & .icon-wrapper {
+    width: 50px;
+    text-align: right;
+
+    & .icon {
+      min-width: var(--member-icon-size);
+      max-width: var(--member-icon-size);
+      min-height: var(--member-icon-size);
+      max-height: var(--member-icon-size);
+    }
+  }
+
+  & .value,
+  & .unit {
+    width: 60px;
+    min-width: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  & .value {
+    text-align: center;
+  }
+}

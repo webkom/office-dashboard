@@ -85,7 +85,7 @@ export class MediaInfo extends Component {
     if (!isLoading && apiFetch.pending) {
       this.setState({ isLoading: true });
     } else if (isLoading && apiFetch.rejected) {
-      throw apiFetch.reason.message;
+      // throw apiFetch.reason.message;
     } else if (apiFetch.fulfilled) {
       const response = apiFetch.value;
 
@@ -142,7 +142,7 @@ export class MediaInfo extends Component {
 
   render() {
     const { classes, width, theme } = this.props;
-    const { chromecast, mediaImage } = this.state;
+    const { chromecast, mediaImage, isLoading } = this.state;
     const isMobile = width !== undefined && width === 'xs';
 
     const mediaColor =
@@ -151,6 +151,8 @@ export class MediaInfo extends Component {
         : theme.palette.secondary.darkest;
     const mediaTextColor =
       mediaImage !== null ? mediaImage.getAttribute('textColor') : '#FFFFFF';
+
+    if (isLoading) return (<div></div>)
 
     return (
       <div>
@@ -197,7 +199,7 @@ export default withWidth()(
           method: 'GET',
           mode: 'cors',
           url: OFFICE_CHROMECAST_URL,
-          refreshInterval: 5000
+          refreshInterval: 5000,
         }
       }))(MediaInfo)
     )

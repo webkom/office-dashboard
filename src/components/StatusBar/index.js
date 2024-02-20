@@ -57,15 +57,15 @@ export class StatusBar extends Component {
   };
 
   componentDidUpdate(prevProps) {
-    const { officeDoorFetch, uptimeRobotFetch } = this.props;
+    const { uptimeRobotFetch } = this.props;
     const { isLoading, statuses } = this.state;
 
-    const allFetches = PromiseState.all([officeDoorFetch, uptimeRobotFetch]);
+    const allFetches = PromiseState.all([uptimeRobotFetch]);
 
     if (!isLoading && allFetches.pending) {
       this.setState({ isLoading: true });
     } else if (isLoading && allFetches.rejected) {
-      throw allFetches.reason.message;
+      // throw allFetches.reason.message;
     } else if (allFetches.fulfilled) {
       const [officeDoorValues, uptimeRobotValues] = allFetches.value;
 
@@ -79,10 +79,10 @@ export class StatusBar extends Component {
       };
       newStatuses.push(doorStatus);
 
-      const uptimeRobotStatuses = uptimeRobotValues.monitors.map(monitor => ({
+      const uptimeRobotStatuses = uptimeRobotValues ? uptimeRobotValues.monitors.map(monitor => ({
         name: monitor.friendly_name,
         color: getUptimeRobotColorFromStatus(monitor.status)
-      }));
+      })) : [];
       newStatuses = newStatuses.concat(uptimeRobotStatuses);
 
       if (JSON.stringify(statuses) !== JSON.stringify(newStatuses)) {
@@ -143,12 +143,12 @@ StatusBar.propTypes = {
 export default withWidth()(
   withStyles(styles)(
     connect(props => ({
-      officeDoorFetch: {
-        method: 'GET',
-        mode: 'cors',
-        url: OFFICE_DOOR_URL,
-        refreshInterval: 5000
-      },
+      // officeDoorFetch: {
+      //   method: 'GET',
+      //   mode: 'cors',
+      //   url: OFFICE_DOOR_URL,
+      //   refreshInterval: 5000
+      // },
       uptimeRobotFetch: {
         method: 'POST',
         mode: 'cors',

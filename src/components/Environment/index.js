@@ -41,7 +41,7 @@ export class Environment extends Component {
     if (!isLoading && apiFetch.pending) {
       this.setState({ isLoading: true });
     } else if (isLoading && apiFetch.rejected) {
-      throw apiFetch.reason.message;
+      // throw apiFetch.reason.message;
     } else if (apiFetch.fulfilled) {
       const response = apiFetch.value;
 
