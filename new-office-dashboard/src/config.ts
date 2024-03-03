@@ -19,6 +19,12 @@ export const ENVIRONMENT_URL =
 export const KAFFE_URL =
   import.meta.env.REACT_APP_KAFFE_URL || "https://kaffe-api.webkom.dev";
 
+// Github stats api
+export const GITHUB_STATS_API = "https://api.github.com/graphql";
+
+// Github access token
+export const GITHUB_ACCESS_TOKEN = process.env.GITHUB_ACCESS_TOKEN;
+
 // Office Door
 export const OFFICE_DOOR_URL =
   import.meta.env.REACT_APP_OFFICE_DOOR_URL ||
@@ -29,11 +35,6 @@ export const OFFICE_CHROMECAST_URL =
   import.meta.env.REACT_APP_OFFICE_CHROMECAST_URL ||
   "https://office-chromecast-api.webkom.dev";
 
-// GitHub stats
-export const GITHUB_STATS_URL =
-  import.meta.env.REACT_APP_GITHUB_STATS_URL ||
-  "https://github-stats.webkom.dev";
-
 // Uptime Robot
 export const UPTIME_ROBOT_URL =
   import.meta.env.REACT_APP_UPTIME_ROBOT_URL ||
@@ -43,13 +44,13 @@ export const UPTIME_ROBOT_MONITORS = (
   "WEBAPP=780718562,LEGO=782661964,WIKI=780718556"
 )
   .split(",")
-  .map((monitor) => monitor.split("="));
+  .map((monitor: any) => monitor.split("="));
 export const UPTIME_ROBOT_API_KEY =
   import.meta.env.REACT_APP_UPTIME_ROBOT_API_KEY ||
   "ur609187-58b7ee7d64ca62809bb5e902";
 export const UPTIME_ROBOT_POST_DATA = {
   api_key: UPTIME_ROBOT_API_KEY,
-  monitors: UPTIME_ROBOT_MONITORS.map((monitor) => monitor[1]).join("-"),
+  monitors: UPTIME_ROBOT_MONITORS.map((monitor: any) => monitor[1]).join("-"),
   custom_uptime_rations: 30,
 };
 

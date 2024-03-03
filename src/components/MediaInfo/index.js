@@ -152,7 +152,7 @@ export class MediaInfo extends Component {
     const mediaTextColor =
       mediaImage !== null ? mediaImage.getAttribute('textColor') : '#FFFFFF';
 
-    if (isLoading) return (<div></div>)
+    if (isLoading) return <div></div>;
 
     return (
       <div>
@@ -199,7 +199,7 @@ export default withWidth()(
           method: 'GET',
           mode: 'cors',
           url: OFFICE_CHROMECAST_URL,
-          refreshInterval: 5000,
+          refreshInterval: 5000
         }
       }))(MediaInfo)
     )

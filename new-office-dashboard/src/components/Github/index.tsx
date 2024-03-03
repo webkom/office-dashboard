@@ -3,11 +3,11 @@ import PropTypes from "prop-types";
 import { connect } from "react-refetch";
 import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-import { GITHUB_STATS_URL } from "app/config";
 import Repository from "app/components/Repository";
 import LoadingIcon from "app/components/LoadingIcon";
 import { useQuery } from "@tanstack/react-query";
 import "./index.css";
+import { useGithubStats } from "app/hooks/useGithub";
 
 // const styles = theme => ({
 //   root: {
@@ -22,46 +22,40 @@ import "./index.css";
 // });
 
 const Github = () => {
-  const {
-    status: statusGithub,
-    data: dataGithub,
-    error: errorGithub,
-  } = useQuery({
-    queryKey: ["github"],
-    queryFn: async () => {
-      return (await fetch(GITHUB_STATS_URL)).json();
-    },
-  });
+  const { data, isLoading } = useGithubStats();
 
-  const [repositories, setRepositories] = useState<unknown[]>([
-    { name: "lego-webapp" },
-  ]);
+  if (isLoading) return <div>asdf</div>;
 
-  useEffect(() => {
-    if (!dataGithub) return;
-
-    const newRepositories = Object.values(dataGithub.repositories);
-    if (JSON.stringify(repositories) !== JSON.stringify(newRepositories)) {
-      setRepositories(newRepositories);
-    }
-  }, [dataGithub]);
-
-  // if (statusGithub == "pending") return <LoadingIcon />;
+  const laodingStatsObjects = {
+    name: "loading",
+    created_at: "loading",
+    updated_at: "loading",
+    pushed_at: "loading",
+    forks: "loading",
+    stars: "loading",
+    disk_usage: "loading",
+    watchers: "loading",
+    commits: "loading",
+    commit_comments: "loading",
+    pull_requests_total: "loading",
+    pull_requests_merged: "loading",
+    pull_requests_open: "loading",
+    pull_requests_closed: "loading",
+    issues_total: "loading",
+    issues_open: "loading",
+    issues_closed: "loading",
+  };
 
   return (
     <div className="github  g-flex-row g-height-full">
-      {repositories?.map((repository) => (
-        <Repository
-          key={`repository-${repository.name}`}
-          repository={repository}
-        />
-      ))}
-      {repositories?.map((repository) => (
-        <Repository
-          key={`repository-${repository.name}`}
-          repository={repository}
-        />
-      ))}
+      <Repository
+        key={"repository-lego"}
+        repository={data === undefined ? laodingStatsObjects : data["lego"]}
+      />
+      <Repository
+        key={"repository-webapp"}
+        repository={data === undefined ? laodingStatsObjects : data["lego"]}
+      />
     </div>
   );
 };
