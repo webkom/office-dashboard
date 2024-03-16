@@ -1,16 +1,16 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import withWidth from '@material-ui/core/withWidth';
-import { withStyles } from '@material-ui/core/styles';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import TableIconRow from 'app/components/Table/IconRow';
+import React from "react";
+import PropTypes from "prop-types";
+import withWidth from "@material-ui/core/withWidth";
+import { withStyles } from "@material-ui/core/styles";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import TableIconRow from "app/components/Table/IconRow";
 
 const styles = theme => ({
   icon: {
     color: theme.palette.secondary.main,
     opacity: 0.8,
-    paddingRight: '4px',
-    fontSize: '12px'
+    paddingRight: "4px",
+    fontSize: "12px"
   }
 });
 

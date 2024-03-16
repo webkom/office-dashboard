@@ -5,7 +5,6 @@ import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBeer } from "@fortawesome/free-solid-svg-icons";
-import ErrorBoundary from "app/components/ErrorBoundary";
 // import Header from 'app/components/Dashboard/Header';
 import Content from "app/components/Content";
 import Snackbar, { notify } from "app/components/Dashboard/Snackbar";
@@ -70,7 +69,6 @@ const Dashboard: React.FC = () => {
             </p> */}
       {/* </Grid>
       </Grid> */}
-
       <Content />
     </div>
   );

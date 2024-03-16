@@ -79,10 +79,12 @@ export class StatusBar extends Component {
       };
       newStatuses.push(doorStatus);
 
-      const uptimeRobotStatuses = uptimeRobotValues ? uptimeRobotValues.monitors.map(monitor => ({
-        name: monitor.friendly_name,
-        color: getUptimeRobotColorFromStatus(monitor.status)
-      })) : [];
+      const uptimeRobotStatuses = uptimeRobotValues
+        ? uptimeRobotValues.monitors.map(monitor => ({
+            name: monitor.friendly_name,
+            color: getUptimeRobotColorFromStatus(monitor.status)
+          }))
+        : [];
       newStatuses = newStatuses.concat(uptimeRobotStatuses);
 
       if (JSON.stringify(statuses) !== JSON.stringify(newStatuses)) {
