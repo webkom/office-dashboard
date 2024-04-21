@@ -139,21 +139,33 @@ const fetchGithubStats = async () => {
   };
 };
 
+export type GithubContributor = {
+  total: number;
+  login: string;
+  avatar_url: string;
+  html_url: string;
+};
+
 const fetchGithubCollaborators = async () => {
-  const data = await fetch(
+  const res = await fetch(
     "https://api.github.com/repos/webkom/lego/stats/contributors?per_page=100",
     {
       headers: {
         Authorization: `token ${GITHUB_ACCESS_TOKEN}`,
       },
     },
-  ).then((res) => res.json());
+  );
 
-  data.forEach((element: any) => {
-    delete element.weeks;
-    element.author = element.author.login;
+  const rawData = (await res.json()) as any[];
+
+  const data = rawData.map<GithubContributor>((user)  => {
+    return {
+      total: user.total,
+      login: user.author.login,
+      avatar_url: user.author.avatar_url,
+      html_url: user.author.html_url,
+    };
   });
-
   return data;
 };
 
@@ -171,6 +183,7 @@ function useGithubContributors() {
     queryKey: ["contributors"],
     queryFn: fetchGithubCollaborators,
     retry: 1,
+    refetchInterval: 1000 * 60 * 2,
   });
 
   return useQueryResult;

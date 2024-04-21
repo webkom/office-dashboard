@@ -26,7 +26,7 @@ const Github = () => {
 
   if (isLoading) return <div>asdf</div>;
 
-  const laodingStatsObjects = {
+  const loadingStatsObjects = {
     name: "loading",
     created_at: "loading",
     updated_at: "loading",
@@ -50,11 +50,11 @@ const Github = () => {
     <div className="github  g-flex-row g-height-full">
       <Repository
         key={"repository-lego"}
-        repository={data === undefined ? laodingStatsObjects : data["lego"]}
+        repository={data === undefined ? loadingStatsObjects : data["lego"]}
       />
       <Repository
         key={"repository-webapp"}
-        repository={data === undefined ? laodingStatsObjects : data["lego"]}
+        repository={data === undefined ? loadingStatsObjects : data["lego"]}
       />
     </div>
   );

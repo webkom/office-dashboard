@@ -17,6 +17,7 @@ import LoadingIcon from "app/components/LoadingIcon";
 import MediaInfo from "../MediaInfo";
 import StatusBar from "../StatusBar";
 import MembersList from "../MembersList/MembersList";
+import { useGithubContributors } from "app/hooks/useGithub";
 
 const styles = (theme: Theme) => ({
   tableFooter: {
@@ -100,6 +101,8 @@ const Content: React.FC<ContentProps> = (props: ContentProps) => {
     [statusPresence, statusBrus, statusKaffe],
   );
 
+  const githubContributorsQuery = useGithubContributors();
+
   const anyError =
     statusPresence === "error" ||
     statusBrus === "error" ||
@@ -108,14 +111,14 @@ const Content: React.FC<ContentProps> = (props: ContentProps) => {
     <div className="g-width-full">
       <MediaInfo />
       <StatusBar />
-      <MembersList />
       {statusPresence === "success" ? dataPresence : statusPresence}
       {statusBrus === "success" ? dataBrus : statusBrus}
       {statusKaffe === "success" ? dataKaffe : statusKaffe}
-      {allLoading ? (
+      {githubContributorsQuery.isLoading ? (
         <LoadingIcon /> //TODO: ?? Make List take in fetch results individually?
       ) : (
-        "<List members={members} brusData={dataBrus} kaffeData={dataKaffe} lastDatetime={lastDatetime} />"
+        <MembersList githubContributors={githubContributorsQuery.data!} />
+        // "<List members={members} brusData={dataBrus} kaffeData={dataKaffe} lastDatetime={lastDatetime} />"
       )}
     </div>
   );
