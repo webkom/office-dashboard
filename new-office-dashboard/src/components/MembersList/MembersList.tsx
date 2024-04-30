@@ -1,5 +1,6 @@
 import MembersListItem from "./MembersListItem/MembersListItem";
 import "./MembersList.css";
+import { GithubContributor } from "app/hooks/useGithub";
 
 export type Member = {
   name: string;
@@ -21,52 +22,35 @@ export type Member = {
   is_pang: string;
 };
 
-const MembersList = () => {
-  const members = [
-    {
-      name: "spfksepfok",
-      avatar: "",
-      github: "githuef",
-      github_contributions: 2,
-      brus_data: "",
-      kaffe_data: {
-        jugs_brewed: 3,
-        volume_brewed: 3,
-      },
-      birthday: "",
-      joined: "",
-      first_lego_commit: "",
-      activity_today: "",
-      first_seen: "",
-      is_active: "",
-      last_seen: "",
-      is_pang: "",
+const MembersList = ({
+  githubContributors,
+}: {
+  githubContributors: GithubContributor[];
+}) => {
+  const members: Member[] = githubContributors.map((contributor) => ({
+    name: contributor.login,
+    avatar: contributor.avatar_url,
+    github: contributor.html_url,
+    github_contributions: contributor.total,
+    brus_data: "",
+    kaffe_data: {
+      jugs_brewed: 3,
+      volume_brewed: 3,
     },
-    {
-      name: "spfksepfok",
-      avatar: "",
-      github: "githuef",
-      github_contributions: 2,
-      brus_data: "",
-      kaffe_data: {
-        jugs_brewed: 3,
-        volume_brewed: 3,
-      },
-      birthday: "",
-      joined: "",
-      first_lego_commit: "",
-      activity_today: "",
-      first_seen: "",
-      is_active: "",
-      last_seen: "",
-      is_pang: "",
-    },
-  ];
+    birthday: "",
+    joined: "",
+    first_lego_commit: "",
+    activity_today: "",
+    first_seen: "",
+    is_active: "",
+    last_seen: "",
+    is_pang: "",
+  }));
 
   return (
     <div className="members-list g-flex-col">
       {members.map((member) => (
-        <MembersListItem member={member} />
+        <MembersListItem key={member.name} member={member} />
       ))}
     </div>
   );
