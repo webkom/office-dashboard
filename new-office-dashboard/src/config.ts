@@ -2,6 +2,9 @@
 export const GITHUB_URL =
   import.meta.env.REACT_APP_GITHUB_URL || "https://github.com";
 
+export const MEMBERS_URL =
+  import.meta.env.REACT_APP_GITHUB_URL || "https://members.webkom.dev";
+
 // Brus API
 export const BRUS_URL =
   import.meta.env.REACT_APP_BRUS_URL || "https://brus.abakus.no/api/liste";

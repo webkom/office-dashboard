@@ -1,11 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Member } from "../MembersList";
+import { MemberWithGithubStats } from "../MembersList";
 import "./MembersListItem.css";
 import { faCoffee, faFlask } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 type Props = {
-  member: Member;
+  member: MemberWithGithubStats;
 };
 const MembersListItem = ({ member }: Props) => {
   type StatsEntryProps = {

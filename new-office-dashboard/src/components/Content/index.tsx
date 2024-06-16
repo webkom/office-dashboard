@@ -47,77 +47,79 @@ const styles = (theme: Theme) => ({
   },
 });
 
-type ContentProps = {};
+const Content: React.FC = () => {
+  // const queryClient = useQueryClient();
 
-const Content: React.FC<ContentProps> = (props: ContentProps) => {
-  const queryClient = useQueryClient();
+  // const [isLoading, setIsLoading] = useState<boolean>(true);
+  // const [lastDatetime, setLastDatetime] = useState<Date | undefined>(undefined);
+  // const [members, setMembers] = useState<Array<any>>([]);
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [lastDatetime, setLastDatetime] = useState<Date | undefined>(undefined);
-  const [members, setMembers] = useState<Array<any>>([]);
+  // const test = async () => {
+  //   return (await fetch(PRESENCE_URL)).json();
+  // };
 
-  const test = async () => {
-    return (await fetch(PRESENCE_URL)).json();
-  };
+  // const {
+  //   status: statusPresence,
+  //   data: dataPresence,
+  //   error: errorPresence,
+  // } = useQuery({
+  //   queryKey: ["presence"],
+  //   queryFn: async () => {
+  //     return (await fetch(PRESENCE_URL)).json();
+  //   },
+  // });
 
-  const {
-    status: statusPresence,
-    data: dataPresence,
-    error: errorPresence,
-  } = useQuery({
-    queryKey: ["presence"],
-    queryFn: async () => {
-      return (await fetch(PRESENCE_URL)).json();
-    },
-  });
+  // const {
+  //   status: statusBrus,
+  //   data: dataBrus,
+  //   error: errorBrus,
+  // } = useQuery({
+  //   queryKey: ["brus"],
+  //   queryFn: async () => {
+  //     return (await fetch(BRUS_URL)).json();
+  //   },
+  // });
 
-  const {
-    status: statusBrus,
-    data: dataBrus,
-    error: errorBrus,
-  } = useQuery({
-    queryKey: ["brus"],
-    queryFn: async () => {
-      return (await fetch(BRUS_URL)).json();
-    },
-  });
+  // const {
+  //   status: statusKaffe,
+  //   data: dataKaffe,
+  //   error: errorKaffe,
+  // } = useQuery({
+  //   queryKey: ["kaffe"],
+  //   queryFn: async () => {
+  //     return (await fetch(KAFFE_URL)).json();
+  //   },
+  // });
 
-  const {
-    status: statusKaffe,
-    data: dataKaffe,
-    error: errorKaffe,
-  } = useQuery({
-    queryKey: ["kaffe"],
-    queryFn: async () => {
-      return (await fetch(KAFFE_URL)).json();
-    },
-  });
-
-  const allLoading = useMemo(
-    () =>
-      statusPresence === "pending" &&
-      statusBrus === "pending" &&
-      statusKaffe === "pending",
-    [statusPresence, statusBrus, statusKaffe],
-  );
+  // const allLoading = useMemo(
+  //   () =>
+  //     statusPresence === "pending" &&
+  //     statusBrus === "pending" &&
+  //     statusKaffe === "pending",
+  //   [statusPresence, statusBrus, statusKaffe],
+  // );
 
   const githubContributorsQuery = useGithubContributors();
 
-  const anyError =
-    statusPresence === "error" ||
-    statusBrus === "error" ||
-    statusKaffe === "error";
+  // const anyError =
+  //   statusPresence === "error" ||
+  //   statusBrus === "error" ||
+  //   statusKaffe === "error";
   return (
     <div className="g-width-full">
       <MediaInfo />
       <StatusBar />
-      {statusPresence === "success" ? dataPresence : statusPresence}
+      {/* {statusPresence === "success" ? dataPresence : statusPresence}
       {statusBrus === "success" ? dataBrus : statusBrus}
-      {statusKaffe === "success" ? dataKaffe : statusKaffe}
+      {statusKaffe === "success" ? dataKaffe : statusKaffe} */}
       {githubContributorsQuery.isLoading ? (
         <LoadingIcon /> //TODO: ?? Make List take in fetch results individually?
       ) : (
-        <MembersList githubContributors={githubContributorsQuery.data!} />
+        <>
+          {githubContributorsQuery.isSuccess && (
+            <MembersList githubContributors={githubContributorsQuery.data!} />
+          )}
+        </>
         // "<List members={members} brusData={dataBrus} kaffeData={dataKaffe} lastDatetime={lastDatetime} />"
       )}
     </div>

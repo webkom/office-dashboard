@@ -1,8 +1,9 @@
 import MembersListItem from "./MembersListItem/MembersListItem";
 import "./MembersList.css";
 import { GithubContributor } from "app/hooks/useGithub";
+import { Member } from "app/hooks/useMembers";
 
-export type Member = {
+export type MemberWithGithubStats = {
   name: string;
   avatar: string;
   github: string;
@@ -24,32 +25,49 @@ export type Member = {
 
 const MembersList = ({
   githubContributors,
+  members,
 }: {
   githubContributors: GithubContributor[];
+  members: Member[];
 }) => {
-  const members: Member[] = githubContributors.map((contributor) => ({
-    name: contributor.login,
-    avatar: contributor.avatar_url,
-    github: contributor.html_url,
-    github_contributions: contributor.total,
-    brus_data: "",
-    kaffe_data: {
-      jugs_brewed: 3,
-      volume_brewed: 3,
+  const findGithubStatsOrDefault = (member: Member) => {
+    return githubContributors.find(
+      (contributor) => contributor.login === member.github,
+    );
+  };
+
+  const createGithubUrl = (username: string) =>
+    `https://github.com/${username};`;
+
+  const membersWithGithubStats: MemberWithGithubStats[] = members.map(
+    (member) => {
+      const contributionStats = findGithubStatsOrDefault(member);
+
+      return {
+        name: member.github,
+        avatar: member.avatar,
+        github: createGithubUrl(member.github),
+        github_contributions: contributionStats?.total ?? 0,
+        brus_data: "",
+        kaffe_data: {
+          jugs_brewed: 0,
+          volume_brewed: 0,
+        },
+        birthday: "",
+        joined: member.joined,
+        first_lego_commit: "",
+        activity_today: "",
+        first_seen: "",
+        is_active: member.active,
+        last_seen: "",
+        is_pang: member.active,
+      };
     },
-    birthday: "",
-    joined: "",
-    first_lego_commit: "",
-    activity_today: "",
-    first_seen: "",
-    is_active: "",
-    last_seen: "",
-    is_pang: "",
-  }));
+  );
 
   return (
     <div className="members-list g-flex-col">
-      {members.map((member) => (
+      {membersWithGithubStats.map((member) => (
         <MembersListItem key={member.name} member={member} />
       ))}
     </div>
