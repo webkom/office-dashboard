@@ -1,11 +1,4 @@
-import React, {
-  Component,
-  ReactEventHandler,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { ReactEventHandler, useEffect, useState } from "react";
 // import PropTypes from "prop-types";
 import Color from "color";
 import ColorThief from "colorthief/dist/color-thief.mjs";
@@ -18,66 +11,6 @@ import ColorThief from "colorthief/dist/color-thief.mjs";
 // import lightLogo from 'app/static/abakus_logo_black_webkom.png';
 // import Data from "app/components/MediaInfo/Data";
 import "./index.css";
-import { CssStyleClass } from "@fortawesome/fontawesome-svg-core";
-
-const styles = (theme) => ({
-  root: {
-    flexGrow: 1,
-  },
-  grow: {
-    flexGrow: 1,
-  },
-  toolbar: {
-    justifyContent: "center",
-    flex: "1 1 auto",
-    textAlign: "center",
-    padding: 20,
-    fontSize: "1rem",
-    [theme.breakpoints.down("sm")]: {
-      fontSize: "0.9rem",
-    },
-  },
-  leftAlign: {
-    textAlign: "left",
-  },
-  rightAlign: {
-    textAlign: "right",
-  },
-  loading: {
-    color: theme.palette.secondary.dark,
-  },
-  logo: {
-    height: "50px",
-  },
-  webkom: {
-    height: "60px",
-  },
-  clock: {
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  clockDay: {
-    textTransform: "capitalize",
-    fontSize: "1rem",
-  },
-  clockTime: {
-    fontFamily: "monospace",
-    fontSize: "3rem",
-  },
-  mediaContainer: {
-    padding: "10px 0",
-    backgroundColor: theme.palette.secondary.darkest,
-    boxShadow: "rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset",
-    transition: "all 1s ease-in",
-  },
-  githubContainer: {
-    display: "flex",
-    height: "100%",
-  },
-});
 
 const MediaInfo = () => {
   const [mediaColors, setMediaColors] = useState({
@@ -128,9 +61,12 @@ const MediaInfo = () => {
     }
 
     // Infer final colors based on base colors
-    let imageShadowColor = Color(textColor).darken(0.2).hsl().string();
-    let progressBarColor = Color(textColor).fade(0.3).hsl().string();
-    let progressBarBackgroundColor = Color(textColor).fade(0.8).hsl().string();
+    const imageShadowColor = Color(textColor).darken(0.2).hsl().string();
+    const progressBarColor = Color(textColor).fade(0.3).hsl().string();
+    const progressBarBackgroundColor = Color(textColor)
+      .fade(0.8)
+      .hsl()
+      .string();
 
     setMediaColors({
       backgroundColor,

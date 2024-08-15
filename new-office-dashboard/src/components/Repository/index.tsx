@@ -1,9 +1,8 @@
-import React from "react";
 import bytes from "bytes";
-import PropTypes from "prop-types";
-import withWidth from "@material-ui/core/withWidth";
-import { withStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
+// import PropTypes from "prop-types";
+// import withWidth from "@material-ui/core/withWidth";
+// import { withStyles } from "@material-ui/core/styles";
+// import Grid from "@material-ui/core/Grid";
 import {
   HistoryIcon,
   GitPullRequestIcon,
@@ -15,59 +14,21 @@ import {
 } from "@primer/octicons-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import moment from "moment";
-import Table from "app/components/Table";
-import TableHeader from "app/components/Table/Header";
-import TableBody from "app/components/Table/Body";
-import TableColumn from "app/components/Table/Column";
-import Stats from "app/components/Github/Stats";
+// import Table from "app/components/Table";
+// import TableHeader from "app/components/Table/Header";
+// import TableBody from "app/components/Table/Body";
+// import TableColumn from "app/components/Table/Column";
+// import Stats from "app/components/Github/Stats";
 import "./index.css";
 import RepositoryStatistic from "../RepositoryStatistic";
+import React from "react";
+import { RepositoryStats } from "app/hooks/useDashboardData";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
-const styles = (theme) => ({
-  leftAlign: {
-    textAlign: "left",
-  },
-  rightAlign: {
-    textAlign: "right",
-  },
-  githubIcon: {
-    color: theme.palette.secondary.dark,
-    paddingRight: "4px",
-  },
-  container: {
-    padding: "var(--container-padding)",
-    whiteSpace: "pre",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    height: "25%",
-    letterSpacing: "4px",
-    fontSize: "0.9rem",
-    textTransform: "uppercase",
-    fontWeight: "bold",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.10)",
-  },
-  values: {
-    height: "75%",
-    flexFlow: "column",
-  },
-  valuesLeft: {
-    paddingRight: "5px",
-  },
-  valuesRight: {
-    borderLeft: "1px solid rgba(255, 255, 255, 0.10)",
-    paddingLeft: "5px",
-  },
-});
-
-const Repository = (props) => {
+const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
   const {
     // classes,
-    width,
+    // width,
     repository: {
       name,
       commits,
@@ -81,7 +42,7 @@ const Repository = (props) => {
     },
   } = props;
   const formattedName = name.replace("webkom/", "").replace("lego-", "");
-  const isLarge = width !== undefined && ["lg", "xl"].includes(width);
+  // const isLarge = width !== undefined && ["lg", "xl"].includes(width);
   const statsItems = [
     {
       name: "Commits",
@@ -113,7 +74,7 @@ const Repository = (props) => {
     {
       name: "Siste Push",
       icon: HistoryIcon,
-      value: moment(updated_at).format("YYYY-MM-DD"),
+      value: new Date(updated_at).toISOString().split("T")[0],
     },
   ];
   if (formattedName !== "webapp") {
@@ -135,7 +96,10 @@ const Repository = (props) => {
     <>
       <div className="repo g-flex g-flex-col g-height-full">
         <div className="repo-header g-flex-row g-flex-justify-center g-table-header-border">
-          <FontAwesomeIcon className="github-icon" icon={faGithub} />
+          <FontAwesomeIcon
+            className="github-icon"
+            icon={faGithub as IconProp}
+          />
           <span>{formattedName}</span>
         </div>
         <div className="repo-columns g-flex g-flex-row">

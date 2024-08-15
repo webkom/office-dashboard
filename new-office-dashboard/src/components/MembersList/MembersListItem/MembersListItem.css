@@ -1,9 +1,13 @@
 .members-item {
   flex: 1;
   min-width: 0;
-  padding: 7px 0px;
+  padding: 7px 10px;
   box-sizing: border-box;
   border-bottom: 0.5px solid rgba(255, 255, 255, 10%);
+}
+
+.is-active {
+  background-color: var(--primary);
 }
 
 .entry {
@@ -13,7 +17,9 @@
 
 .avatar {
   display: flex;
-  flex: 0.5;
+  flex: 0;
+  min-width: fit-content;
+  padding-right: 20px;
   justify-content: start;
   align-items: center;
 }
@@ -31,12 +37,22 @@
   display: flex;
   justify-content: start;
   align-items: center;
+  max-width: 170px;
 }
 
 .github {
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
+}
+
+.contributions {
+  align-items: center;
+  justify-content: center;
+
+  & div {
+    width: fit-content;
+  }
 }
 
 .kaffe {

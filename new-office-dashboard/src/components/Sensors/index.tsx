@@ -1,33 +1,16 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { connect } from "react-refetch";
-import { withStyles, withTheme } from "@material-ui/core/styles";
-import withWidth from "@material-ui/core/withWidth";
-import Grid from "@material-ui/core/Grid";
-import { faThermometerHalf } from "@fortawesome/free-solid-svg-icons";
+import {
+  faThermometerHalf,
+  IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
 import { faCloud } from "@fortawesome/free-solid-svg-icons";
 import { faSkull } from "@fortawesome/free-solid-svg-icons";
 import { faIndustry } from "@fortawesome/free-solid-svg-icons";
-import { ENVIRONMENT_URL, OFFICE_SENSORS } from "app/config";
-import Measurement from "app/components/Environment/Measurement";
-import LoadingIcon from "app/components/LoadingIcon";
 
-import Table from "app/components/Table";
-import TableHeader from "app/components/Table/Header";
-import TableBody from "app/components/Table/Body";
-import TableColumn from "app/components/Table/Column";
 import RepositoryStatistic from "../RepositoryStatistic";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./index.css";
-
-const styles = (theme) => ({
-  rightAlign: {
-    textAlign: "right",
-  },
-  loading: {
-    color: theme.palette.secondary.dark,
-  },
-});
+import React from "react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 const Sensors = () => {
   const sensorItems = [
@@ -63,10 +46,14 @@ const Sensors = () => {
   const maxItems = 4;
   const valueHeight = 100 / maxItems;
 
-  const SensorMeasurement = ({ icon, value, name }) => (
+  const SensorMeasurement: React.FC<{
+    icon: IconDefinition;
+    value: string | number;
+    name: string;
+  }> = ({ icon, value, name }) => (
     <RepositoryStatistic
       Icon={({ className }) => (
-        <FontAwesomeIcon className={className} icon={icon} />
+        <FontAwesomeIcon className={className} icon={icon as IconProp} />
       )}
       height={valueHeight}
       name={name}

@@ -25,7 +25,7 @@ const Clock = () => {
   });
 
   return (
-    <div className="g-flex-col g-align-center g-text-center">
+    <div className="g-flex-col g-flex-align-center g-text-center">
       <div className="date g-flex g-capitalize">{dayString}</div>
       <div className="time g-flex g-capitalize g-font-size-3">{timeString}</div>
     </div>

@@ -1,0 +1,14 @@
+services:
+  dashboard-webapp:
+    build:
+      context: new-office-dashboard
+      dockerfile: Dockerfile
+    ports:
+      - '8000:80'
+
+  dashboard-api:
+    build:
+      context: new-office-dashboard-backend
+      dockerfile: Dockerfile
+    ports:
+      - '3000:8000'
