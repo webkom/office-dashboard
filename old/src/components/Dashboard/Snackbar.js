@@ -1,17 +1,17 @@
-import React from "react";
-import PropTypes from "prop-types";
-import classNames from "classnames";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ErrorIcon from "@material-ui/icons/Error";
-import InfoIcon from "@material-ui/icons/Info";
-import CloseIcon from "@material-ui/icons/Close";
-import green from "@material-ui/core/colors/green";
-import amber from "@material-ui/core/colors/amber";
-import IconButton from "@material-ui/core/IconButton";
-import Snackbar from "@material-ui/core/Snackbar";
-import SnackbarContent from "@material-ui/core/SnackbarContent";
-import WarningIcon from "@material-ui/icons/Warning";
-import { withStyles } from "@material-ui/core/styles";
+import React from 'react';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ErrorIcon from '@material-ui/icons/Error';
+import InfoIcon from '@material-ui/icons/Info';
+import CloseIcon from '@material-ui/icons/Close';
+import green from '@material-ui/core/colors/green';
+import amber from '@material-ui/core/colors/amber';
+import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
+import WarningIcon from '@material-ui/icons/Warning';
+import { withStyles } from '@material-ui/core/styles';
 
 let notifyFn;
 
@@ -43,9 +43,9 @@ const styles1 = theme => ({
     marginRight: theme.spacing.unit
   },
   message: {
-    color: "#fff",
-    display: "flex",
-    alignItems: "center"
+    color: '#fff',
+    display: 'flex',
+    alignItems: 'center'
   }
 });
 
@@ -84,7 +84,7 @@ DashboardSnackbarContent.propTypes = {
   className: PropTypes.string,
   message: PropTypes.node,
   onClose: PropTypes.func,
-  variant: PropTypes.oneOf(["success", "warning", "error", "info"]).isRequired
+  variant: PropTypes.oneOf(['success', 'warning', 'error', 'info']).isRequired
 };
 
 const DashboardSnackbarContentWrapper = withStyles(styles1)(
@@ -114,7 +114,7 @@ class DashboardSnackbar extends React.Component {
   };
 
   handleClose = (event, reason) => {
-    if (reason === "clickaway") {
+    if (reason === 'clickaway') {
       return;
     }
 
@@ -159,8 +159,8 @@ class DashboardSnackbar extends React.Component {
         <Snackbar
           key={messageInfo.key}
           anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left"
+            vertical: 'bottom',
+            horizontal: 'left'
           }}
           open={this.state.open}
           autoHideDuration={10000}
@@ -182,7 +182,7 @@ DashboardSnackbar.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export function notify(message, variant = "info") {
+export function notify(message, variant = 'info') {
   notifyFn(message, variant);
 }
 

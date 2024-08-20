@@ -1,18 +1,5 @@
-flow-typed
-.DS_Store
-node_modules
-npm-debug.log
+# Ignore artifacts:
 build
-src/serviceWorker.js
-public/bundle.js
-public/bundle.css
-compiler.jar
-tiny-lr.pid
-coverage
 dist
-dist-client
-.env
-styleguide
-.css.tmp.md
-*.log
-
+node_modules
+.yarn
