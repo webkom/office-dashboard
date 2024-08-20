@@ -34,6 +34,7 @@ steps:
     when:
       branch:
         - master
+        - new-office-dashboard
       event: push
       status: success
     settings:
@@ -48,8 +49,30 @@ steps:
         - latest
       build_args:
         - RELEASE=${DRONE_BRANCH}-${DRONE_COMMIT_SHA:0:7}
+
+  - name: docker-backend
+    image: plugins/docker
+    when:
+      branch:
+        - master
+        - new-office-dashboard
+      event: push
+      status: success
+    settings:
+      registry: https://registry.webkom.dev
+      dockerfile: office-dashboard-backend/Dockerfile
+      repo: registry.webkom.dev/webkom/office-dashboard-backend
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      tags:
+        - ${DRONE_BRANCH}-${DRONE_COMMIT_SHA:0:7}
+        - latest
+      build_args:
+        - RELEASE=${DRONE_BRANCH}-${DRONE_COMMIT_SHA:0:7}
 ---
 kind: signature
-hmac: 1c6247cf8cce9a5c16a9f5bfcbd3fd1744e21229ad7765236f0b484f8f27b515
+hmac: a6a61747dd7576219d4209c86314fedc640488c76320bf659766a48edb30b653
 
 ...

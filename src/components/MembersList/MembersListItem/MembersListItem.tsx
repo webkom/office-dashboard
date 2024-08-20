@@ -1,11 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MemberWithGithubStats } from "../MembersList";
 import "./MembersListItem.css";
-import {
+// import {
   // faCoffee,
   // faFlask,
-  type IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
+//   type IconDefinition,
+// } from "@fortawesome/free-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
@@ -13,20 +13,20 @@ type Props = {
   member: MemberWithGithubStats;
 };
 const MembersListItem = ({ member }: Props) => {
-  type StatsEntryProps = {
-    icon: IconDefinition;
-    unit: string;
-    value: string | number;
-  };
-  const StatEntry = ({ icon, unit, value }: StatsEntryProps) => (
-    <div className="stats-entry">
-      <div className="icon-wrapper">
-        <FontAwesomeIcon className="icon" icon={icon as IconProp} />
-      </div>
-      <div className="value">{value}</div>
-      <div className="unit">{unit}</div>
-    </div>
-  );
+  // type StatsEntryProps = {
+  //   icon: IconDefinition;
+  //   unit: string;
+  //   value: string | number;
+  // };
+  // const StatEntry = ({ icon, unit, value }: StatsEntryProps) => (
+  //   <div className="stats-entry">
+  //     <div className="icon-wrapper">
+  //       <FontAwesomeIcon className="icon" icon={icon as IconProp} />
+  //     </div>
+  //     <div className="value">{value}</div>
+  //     <div className="unit">{unit}</div>
+  //   </div>
+  // );
 
   return (
     <div
