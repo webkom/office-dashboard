@@ -44,13 +44,13 @@ export const UPTIME_ROBOT_MONITORS = (
   "WEBAPP=780718562,LEGO=782661964,WIKI=780718556"
 )
   .split(",")
-  .map((monitor: any) => monitor.split("="));
+  .map((monitor: string) => monitor.split("="));
 export const UPTIME_ROBOT_API_KEY =
   import.meta.env.REACT_APP_UPTIME_ROBOT_API_KEY ||
   "ur609187-58b7ee7d64ca62809bb5e902";
 export const UPTIME_ROBOT_POST_DATA = {
   api_key: UPTIME_ROBOT_API_KEY,
-  monitors: UPTIME_ROBOT_MONITORS.map((monitor: any) => monitor[1]).join("-"),
+  monitors: UPTIME_ROBOT_MONITORS.map((monitor: [string, string]) => monitor[1]).join("-"),
   custom_uptime_rations: 30,
 };
 

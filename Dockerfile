@@ -1,27 +1,15 @@
-# Build env
-FROM node:16 as builder
+FROM node:18-alpine as build
 
-RUN mkdir /app
 WORKDIR /app
-ENV PATH /app/node_modules/.bin:$PATH
-COPY package.json /app/package.json
-RUN apt update && apt install --no-install-recommends -y libgif-dev
-RUN rm -rf /var/lib/apt/lists/*
-RUN yarn --ignore-scripts --silent
-RUN npm install -g react-scripts@2.1.1 --silent
 
-ARG RELEASE
-ENV NODE_ENV production
-ENV RELEASE ${RELEASE}
+COPY . .
 
-COPY . /app
+RUN yarn --frozen-lockfile
+
 RUN yarn build
 
-# Production env
-FROM nginx:1.14.2-alpine
-MAINTAINER Abakus Webkom <webkom@abakus.no>
+FROM nginx:1-alpine
 
-COPY --from=builder /app/build /usr/share/nginx/html
-EXPOSE 80
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
+COPY --from=build /app/dist/. /usr/share/nginx/html
