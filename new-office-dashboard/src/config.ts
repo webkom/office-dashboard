@@ -1,6 +1,6 @@
-// GitHub base URL
-export const GITHUB_URL =
-  import.meta.env.REACT_APP_GITHUB_URL || "https://github.com";
+// Dashboard API (defined in main.py)
+export const DASHBOARD_API =
+  import.meta.env.DASHBOARD_API || "http://localhost:5000";
 
 // Brus API
 export const BRUS_URL =

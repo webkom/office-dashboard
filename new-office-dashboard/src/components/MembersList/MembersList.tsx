@@ -1,12 +1,16 @@
 import MembersListItem from "./MembersListItem/MembersListItem";
 import "./MembersList.css";
-import { GithubContributor } from "app/hooks/useGithub";
+import { GithubContributor } from "app/hooks/useDashboardData";
+import { Member } from "app/hooks/useDashboardData";
 
-export type Member = {
+export type MemberWithGithubStats = {
   name: string;
   avatar: string;
   github: string;
-  github_contributions: number;
+  github_contributions: {
+    lego: number;
+    webapp: number;
+  };
   brus_data: string;
   kaffe_data: {
     jugs_brewed: number;
@@ -17,39 +21,56 @@ export type Member = {
   first_lego_commit: string;
   activity_today: string;
   first_seen: string;
-  is_active: string;
+  is_active: boolean;
   last_seen: string;
-  is_pang: string;
+  is_pang: boolean;
 };
 
 const MembersList = ({
   githubContributors,
+  members,
 }: {
   githubContributors: GithubContributor[];
+  members: Member[];
 }) => {
-  const members: Member[] = githubContributors.map((contributor) => ({
-    name: contributor.login,
-    avatar: contributor.avatar_url,
-    github: contributor.html_url,
-    github_contributions: contributor.total,
-    brus_data: "",
-    kaffe_data: {
-      jugs_brewed: 3,
-      volume_brewed: 3,
-    },
-    birthday: "",
-    joined: "",
-    first_lego_commit: "",
-    activity_today: "",
-    first_seen: "",
-    is_active: "",
-    last_seen: "",
-    is_pang: "",
-  }));
+  const findGithubStatsOrDefault = (member: Member) => {
+    return githubContributors.find(
+      (contributor) => contributor.login === member.github,
+    );
+  };
+
+  const membersWithGithubStats: MemberWithGithubStats[] = members
+    .map((member) => {
+      const contributionStats = findGithubStatsOrDefault(member);
+
+      return {
+        name: member.name,
+        avatar: member.avatar,
+        github: member.github,
+        github_contributions: {
+          lego: contributionStats?.lego ?? 0,
+          webapp: contributionStats?.webapp ?? 0,
+        },
+        brus_data: "",
+        kaffe_data: {
+          jugs_brewed: 0,
+          volume_brewed: 0,
+        },
+        birthday: "",
+        joined: member.joined,
+        first_lego_commit: "",
+        activity_today: "",
+        first_seen: "",
+        is_active: member.active,
+        last_seen: "",
+        is_pang: !member.active,
+      };
+    })
+    .sort((m1, m2) => (m2.is_active && !m1.is_active ? 1 : 0));
 
   return (
-    <div className="members-list g-flex-col">
-      {members.map((member) => (
+    <div className="members-list g-width-full g-flex-col">
+      {membersWithGithubStats.map((member) => (
         <MembersListItem key={member.name} member={member} />
       ))}
     </div>
