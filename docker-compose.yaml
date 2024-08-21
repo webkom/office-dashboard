@@ -1,14 +1,17 @@
+########################################################
+# Test building/running dockerfiles in production mode #
+########################################################
 services:
   dashboard-webapp:
     build:
-      context: new-office-dashboard
+      context: .
       dockerfile: Dockerfile
     ports:
-      - '8000:80'
+      - '80:80'
 
   dashboard-api:
     build:
-      context: new-office-dashboard-backend
+      context: office-dashboard-backend
       dockerfile: Dockerfile
     ports:
-      - '3000:8000'
+      - '8000:8000'
