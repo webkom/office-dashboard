@@ -1,6 +1,7 @@
 // Dashboard API (defined in main.py)
-export const DASHBOARD_API =
-  import.meta.env.DASHBOARD_API || "http://localhost:5000";
+export const DASHBOARD_API = import.meta.env.PROD
+  ? "https://dashboard-backend.webkom.dev"
+  : "http://localhost:5000";
 
 // Brus API
 export const BRUS_URL =
@@ -50,7 +51,9 @@ export const UPTIME_ROBOT_API_KEY =
   "ur609187-58b7ee7d64ca62809bb5e902";
 export const UPTIME_ROBOT_POST_DATA = {
   api_key: UPTIME_ROBOT_API_KEY,
-  monitors: UPTIME_ROBOT_MONITORS.map((monitor: [string, string]) => monitor[1]).join("-"),
+  monitors: UPTIME_ROBOT_MONITORS.map(
+    (monitor: [string, string]) => monitor[1],
+  ).join("-"),
   custom_uptime_rations: 30,
 };
 
