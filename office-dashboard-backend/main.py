@@ -1,8 +1,10 @@
+import importlib.util
 from flask import Flask
 from flask_caching import Cache
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
 from getters import get_public_members, get_repo_contibutors, get_repo_stats
+import importlib
 
 app = Flask(__name__)
 
@@ -11,7 +13,8 @@ config = {
     "CACHE_DEFAULT_TIMEOUT": 300,
 }
 app.config.from_mapping(config)
-app.config.from_object("config.DevelopmentConfig")
+if importlib.util.find_spec("config") is not None:
+    app.config.from_object("config.DevelopmentConfig")
 app.config.from_prefixed_env()
 
 cache = Cache(app)
