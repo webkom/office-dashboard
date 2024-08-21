@@ -26,7 +26,7 @@ const Header = () => {
           <img alt="Abakus Linjeforening" className="logo" src={darkLogo} />
         </HeaderCell>
       </div>
-      <div className="header-cells g-not-mobile g-flex g-flex-row g-flex-justify-evenly g-flex-align-center g-p-2">
+      <div className="g-not-mobile g-flex g-flex-row g-flex-justify-evenly g-flex-align-center g-p-2">
         <div className="logo-and-clock g-flex g-flex-row g-flex-justify-start g-flex-align-center">
           <HeaderCell>
             <img alt="Abakus Linjeforening" className="logo" src={darkLogo} />

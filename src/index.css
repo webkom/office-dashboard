@@ -24,7 +24,7 @@
   --border-color: rgba(255, 255, 255, 0.1);
   --header-icon-size: 16px;
   --member-icon-size: 20px;
-  --repo-column-width: 250px;
+  --repo-column-width: 230px;
 }
 
 #root {

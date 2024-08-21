@@ -17,7 +17,7 @@ export type MemberWithGithubStats = {
     volume_brewed: number;
   };
   birthday: string;
-  joined: string;
+  joined: "" | string;
   first_lego_commit: string;
   activity_today: string;
   first_seen: string;
@@ -66,12 +66,30 @@ const MembersList = ({
         is_pang: !member.active,
       };
     })
-    .sort((m1, m2) => (m2.is_active && !m1.is_active ? 1 : 0));
+    .sort((m1, m2) => {
+      if (m1.is_active != m2.is_active) {
+        return m2.is_active && !m1.is_active ? 1 : -1;
+      }
+
+      if (m1.joined != m2.joined) {
+        if (m2.joined == "") {
+          return -1;
+        }
+
+        if (m1.joined == "") {
+          return 1;
+        }
+
+        return new Date(m2.joined).getTime() - new Date(m1.joined).getTime();
+      }
+
+      return 0;
+    });
 
   return (
     <div className="members-list g-width-full g-flex-col">
       {membersWithGithubStats.map((member) => (
-        <MembersListItem key={member.name} member={member} />
+        <MembersListItem key={member.github} member={member} />
       ))}
     </div>
   );
