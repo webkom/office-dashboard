@@ -5,7 +5,7 @@ export type Member = {
   name: string;
   full_name: string;
   birthday: string;
-  joined: string;
+  joined: "" | string;
   first_lego_commit: string;
   avatar: string;
   slack: string;

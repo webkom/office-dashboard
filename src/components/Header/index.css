@@ -6,11 +6,7 @@
   background-color: var(--header-color);
 }
 
-.header-cells {
-  gap: 20px;
-}
-
 .logo-and-clock {
-  gap: 50px;
-  padding: 0px 20px;
+  gap: 30px;
+  padding: 0px 10px;
 }
