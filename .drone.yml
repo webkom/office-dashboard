@@ -1,7 +1,7 @@
 ---
 kind: pipeline
 type: docker
-name: defult
+name: default
 
 steps:
   - name: setup
@@ -74,6 +74,6 @@ steps:
         - RELEASE=${DRONE_BRANCH}-${DRONE_COMMIT_SHA:0:7}
 ---
 kind: signature
-hmac: 5201b2e6e177335e02d4759721e261d420dd8dec5e4accd77c2a8b8d51362b19
+hmac: 411970b9e00d96eacf1b0dba1412a9fbd0178d60aaefb7b860cf816ebba0c904
 
 ...

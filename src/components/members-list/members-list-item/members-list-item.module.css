@@ -46,6 +46,11 @@
   align-items: center;
 }
 
+.github-icon {
+  padding-right: 4px;
+  color: var(--secondary-dark);
+}
+
 .contributions {
   align-items: center;
   justify-content: center;

@@ -6,9 +6,9 @@ import { faCloud } from "@fortawesome/free-solid-svg-icons";
 import { faSkull } from "@fortawesome/free-solid-svg-icons";
 import { faIndustry } from "@fortawesome/free-solid-svg-icons";
 
-import RepositoryStatistic from "../RepositoryStatistic";
+import RepositoryStatistic from "../repository-statistic/repository-statistic.component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import "./index.css";
+import styles from "./sensors.module.css";
 import React from "react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
@@ -62,11 +62,13 @@ const Sensors = () => {
   );
 
   return (
-    <div className="sensors g-flex-col">
-      <div className="sensors-header g-flex-row g-flex-justify-center g-table-header-border">
+    <div className={`${styles["sensors"]} g-flex-col`}>
+      <div
+        className={`${styles["sensors-header"]} g-flex-row g-flex-justify-center g-table-header-border`}
+      >
         <span>Sensorer</span>
       </div>
-      <div className="sensors-column g-flex g-flex-col">
+      <div className={`${styles["sensors-column"]} g-flex g-flex-col`}>
         {sensorItems.map(({ name, value, icon }) => (
           <SensorMeasurement icon={icon} name={name} value={value} key={name} />
         ))}

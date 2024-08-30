@@ -1,7 +1,7 @@
-import MembersListItem from "./MembersListItem/MembersListItem";
-import "./MembersList.css";
-import { GithubContributor } from "app/hooks/useDashboardData";
-import { Member } from "app/hooks/useDashboardData";
+import MembersListItem from "./members-list-item/members-list-item.component";
+import styles from "./members-list.module.css";
+import { GithubContributor } from "app/hooks/dashboard-data.hook";
+import { Member } from "app/hooks/dashboard-data.hook";
 
 export type MemberWithGithubStats = {
   name: string;
@@ -87,7 +87,7 @@ const MembersList = ({
     });
 
   return (
-    <div className="members-list g-width-full g-flex-col">
+    <div className={`${styles["members-list"]} g-width-full g-flex-col`}>
       {membersWithGithubStats.map((member) => (
         <MembersListItem key={member.github} member={member} />
       ))}

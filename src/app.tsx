@@ -1,4 +1,4 @@
-import Dashboard from ".//components/Dashboard";
+import Dashboard from "./components/dashboard/dashboard-component";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();

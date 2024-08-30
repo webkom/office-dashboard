@@ -19,10 +19,10 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons";
 // import TableBody from "app/components/Table/Body";
 // import TableColumn from "app/components/Table/Column";
 // import Stats from "app/components/Github/Stats";
-import "./index.css";
-import RepositoryStatistic from "../RepositoryStatistic";
+import styles from "./repository.module.css";
+import RepositoryStatistic from "../repository-statistic/repository-statistic.component";
 import React from "react";
-import { RepositoryStats } from "app/hooks/useDashboardData";
+import { RepositoryStats } from "app/hooks/dashboard-data.hook";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
@@ -94,16 +94,20 @@ const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
   const statsHeight = 100 / maxItems;
   return (
     <>
-      <div className="repo g-flex g-flex-col g-height-full">
-        <div className="repo-header g-flex-row g-flex-justify-center g-table-header-border">
+      <div className={`${styles["repo"]} g-flex g-flex-col g-height-full`}>
+        <div
+          className={`${styles["repo-header"]} g-flex-row g-flex-justify-center g-table-header-border`}
+        >
           <FontAwesomeIcon
-            className="github-icon"
+            className={styles["github-icon"]}
             icon={faGithub as IconProp}
           />
           <span>{formattedName}</span>
         </div>
-        <div className="repo-columns g-flex g-flex-row">
-          <div className="repo-column-left g-flex-col g-table-column-border">
+        <div className={`${styles["repo-columns"]} g-flex g-flex-row`}>
+          <div
+            className={`${styles["repo-column-left"]} g-flex-col g-table-column-border`}
+          >
             {statsItems.map(({ name, icon, value }) => (
               <RepositoryStatistic
                 key={`github-stats-${name}`}
