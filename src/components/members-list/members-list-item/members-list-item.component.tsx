@@ -1,9 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { MemberWithGithubStats } from "../MembersList";
-import "./MembersListItem.css";
+import { MemberWithGithubStats } from "../members-list.component";
+import styles from "./members-list-item.module.css";
 // import {
-  // faCoffee,
-  // faFlask,
+// faCoffee,
+// faFlask,
 //   type IconDefinition,
 // } from "@fortawesome/free-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -32,19 +32,24 @@ const MembersListItem = ({ member }: Props) => {
     <div
       className={
         member.is_active
-          ? "members-item is-active g-flex-row"
-          : "members-item g-flex-row"
+          ? `${styles["members-item"]} ${styles["is-active"]} g-flex-row`
+          : `${styles["members-item"]} g-flex-row`
       }
     >
-      <div className="entry avatar">
+      <div className={`${styles["entry"]} ${styles["avatar"]}`}>
         <img src={member.avatar} />
       </div>
-      <div className="entry name">{member.name}</div>
-      <div className="entry github">
-        <FontAwesomeIcon className="github-icon" icon={faGithub as IconProp} />
+      <div className={`${styles["entry"]} ${styles["name"]}`}>
+        {member.name}
+      </div>
+      <div className={`${styles["entry"]} ${styles["github"]}`}>
+        <FontAwesomeIcon
+          className={styles["github-icon"]}
+          icon={faGithub as IconProp}
+        />
         <a>{member.github}</a>
       </div>
-      <div className="entry contributions">
+      <div className={`${styles["entry"]} ${styles["contributions"]}`}>
         <div>
           <div>lego: {member.github_contributions.lego}</div>
           <div>webapp: {member.github_contributions.webapp}</div>

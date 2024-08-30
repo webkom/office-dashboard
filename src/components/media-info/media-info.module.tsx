@@ -10,7 +10,7 @@ import ColorThief from "colorthief/dist/color-thief.mjs";
 // import { OFFICE_CHROMECAST_URL } from "app/config";
 // import lightLogo from 'app/static/abakus_logo_black_webkom.png';
 // import Data from "app/components/MediaInfo/Data";
-import "./index.css";
+import styles from "./media-info.module.css";
 
 const MediaInfo = () => {
   const [mediaColors, setMediaColors] = useState({
@@ -93,11 +93,11 @@ const MediaInfo = () => {
     progressColor,
   }: ProgressBarProps) => (
     <div
-      className={`progress-bar-background`}
+      className={styles["progress-bar-background"]}
       style={{ backgroundColor: backgroundColor }}
     >
       <div
-        className="progress-bar-line"
+        className={styles["progress-bar-line"]}
         style={{ width: `${progress * 100}%`, backgroundColor: progressColor }}
       />
     </div>
@@ -107,14 +107,16 @@ const MediaInfo = () => {
 
   return (
     <div
-      className="media-wrapper g-width-full"
+      className={`${styles["media-wrapper"]} g-width-full`}
       style={{
         backgroundColor: mediaColors.backgroundColor,
         transform: showMedia ? "scale(1)" : "",
       }}
     >
-      <div className="media-content g-flex-row g-flex-justify-center">
-        <a href="" className="media-image-link g-flex-row">
+      <div
+        className={`${styles["media-content"]} g-flex-row g-flex-justify-center`}
+      >
+        <a href="" className={`${styles["media-image-link"]} g-flex-row`}>
           <img
             onLoad={handleImageLoad}
             className="media-image"
@@ -122,20 +124,24 @@ const MediaInfo = () => {
           />
         </a>
         <div
-          className="media-meta g-flex g-flex-col"
+          className={`${styles["media-meta"]} g-flex g-flex-col`}
           style={{ color: mediaColors.textColor }}
         >
-          <div className="media-title-and-artist">Eg er fet - Pellepingu</div>
-          <div className="media-album">Kult album</div>
-          <div className="media-progress g-flex-row g-flex-align-end g-height-full">
+          <div className={styles["media-title-and-artist"]}>
+            Eg er fet - Pellepingu
+          </div>
+          <div className={styles["media-title-and-artist"]}>Kult album</div>
+          <div
+            className={`${styles["media-progress"]} g-flex-row g-flex-align-end g-height-full`}
+          >
             <div className="g-flex-row g-width-full g-flex-align-center">
-              <div className="progress-start">08:00</div>
+              <div className={styles["progress-start"]}>08:00</div>
               <ProgressBar
                 backgroundColor={mediaColors.progressBarBackgroundColor}
                 progressColor={mediaColors.progressBarColor}
                 progress={progress}
               />
-              <div className="progress-end">12:25</div>
+              <div className={styles["progress-end"]}>12:25</div>
             </div>
           </div>
         </div>

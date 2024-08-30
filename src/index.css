@@ -1,3 +1,5 @@
+@import url(./globals.css);
+
 :root {
   /* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -36,9 +38,9 @@
 }
 
 @media (max-width: 600px) {
-  .g-mobile {
+  /* .g-mobile {
     display: initial;
-  }
+  } */
   .g-not-mobile {
     display: none !important;
   }
@@ -48,81 +50,9 @@
   .g-mobile {
     display: none !important;
   }
-  .g-not-mobile {
+  /* .g-not-mobile {
     display: initial;
-  }
-}
-
-@keyframes spin {
-  100% {
-    transform: rotate3d(1, -1, 1, 360deg);
-  }
-}
-
-.g-bg-red {
-  background-color: red;
-}
-
-.g-flex-row {
-  display: flex;
-  flex-direction: row;
-}
-
-.g-flex {
-  flex: 1;
-}
-
-.g-flex-col {
-  display: flex;
-  flex-direction: column;
-}
-
-.g-flex-align-center {
-  align-items: center;
-}
-
-.g-flex-align-end {
-  align-items: flex-end;
-}
-
-.g-flex-justify-center {
-  justify-content: center;
-}
-
-.g-flex-justify-evenly {
-  justify-content: space-evenly;
-}
-
-.g-p-2 {
-  padding: 20px;
-}
-
-.g-width-full {
-  width: 100%;
-}
-
-.g-height-full {
-  height: 100%;
-}
-
-.g-text-center {
-  text-align: center;
-}
-
-.g-capitalize {
-  text-transform: capitalize;
-}
-
-.g-font-size-3 {
-  font-size: 3rem;
-}
-
-.g-table-header-border {
-  border-bottom: 1px solid var(--border-color);
-}
-
-.g-table-column-border:not(:last-child) {
-  border-right: 1px solid var(--border-color);
+  } */
 }
 
 a {

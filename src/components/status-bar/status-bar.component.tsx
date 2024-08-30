@@ -1,6 +1,6 @@
 // import { useState } from "react";
-import { useUptimeStatus } from "app/hooks/useUptimeStatus";
-import "./index.css";
+import { useUptimeStatus } from "app/hooks/uptime-status.hook";
+import styles from "./status-bar.module.css";
 
 const statusColors = {
   paused: "#ff0000", // TODO
@@ -45,17 +45,19 @@ const StatusBar = () => {
   };
 
   const StatusItem = ({ name, color }: StatusItemProps) => (
-    <div className="status-item g-flex-row g-flex-align-center">
+    <div className={`${styles["status-item"]} g-flex-row g-flex-align-center`}>
       <div
-        className="status-item-icon"
+        className={`${styles["status-item-icon"]}`}
         style={{ backgroundColor: color }}
       ></div>
-      <div className="status-item-name">{name}</div>
+      <div className={`${styles["status-item-name"]}`}>{name}</div>
     </div>
   );
 
   return (
-    <div className="statuses g-width-full g-flex-row g-flex-justify-center g-flex-align-center">
+    <div
+      className={`${styles["statuses"]} g-width-full g-flex-row g-flex-justify-center g-flex-align-center`}
+    >
       {statuses.map(({ name, color }) => (
         <StatusItem key={name} name={name} color={color} />
       ))}

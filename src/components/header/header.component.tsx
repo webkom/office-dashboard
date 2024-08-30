@@ -1,8 +1,8 @@
-import Clock from "app/components/Clock";
+import Clock from "./clock/clock.component";
 import darkLogo from "/abakus_logo_white_webkom.png";
-import "./index.css";
+import styles from "./header.module.css";
 import { PropsWithChildren } from "react";
-import Github from "app/components/Github";
+import Github from "./github/github.component";
 
 const Header = () => {
   // const isMobile = width !== undefined && width === 'xs';
@@ -13,23 +13,33 @@ const Header = () => {
     className,
   }) => (
     <span
-      className={`${className} g-flex-row g-flex-justify-center g-flex-align-center g-height-full`}
+      className={`${className ?? ""} g-flex-row g-flex-justify-center g-flex-align-center g-height-full`}
     >
       {children}
     </span>
   );
 
   return (
-    <div className="header g-flex-row">
+    <div className={`${styles["header"]} g-flex-row`}>
       <div className="g-mobile g-flex g-flex-row g-flex-justify-center g-flex-align-center g-p-2">
         <HeaderCell className="g-flex">
-          <img alt="Abakus Linjeforening" className="logo" src={darkLogo} />
+          <img
+            alt="Abakus Linjeforening"
+            className={styles["logo"]}
+            src={darkLogo}
+          />
         </HeaderCell>
       </div>
       <div className="g-not-mobile g-flex g-flex-row g-flex-justify-evenly g-flex-align-center g-p-2">
-        <div className="logo-and-clock g-flex g-flex-row g-flex-justify-start g-flex-align-center">
+        <div
+          className={`${styles["logo-and-clock"]} g-flex g-flex-row g-flex-justify-start g-flex-align-center`}
+        >
           <HeaderCell>
-            <img alt="Abakus Linjeforening" className="logo" src={darkLogo} />
+            <img
+              alt="Abakus Linjeforening"
+              className={styles["logo"]}
+              src={darkLogo}
+            />
           </HeaderCell>
           <HeaderCell>
             <Clock />

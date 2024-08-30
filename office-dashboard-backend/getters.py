@@ -68,7 +68,6 @@ def get_repo_contibutors(app: Flask):
         contribution_webapp_res = requests.get(url=url_webapp, headers=headers)
         contribution_webapp_json = contribution_webapp_res.json()
 
-        print(contribution_webapp_json)
         for contributor in contribution_webapp_json:
             if contributor["author"]["login"] not in contributors:
                 contributors[contributor["author"]["login"]] = {
