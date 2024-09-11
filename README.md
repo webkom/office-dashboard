@@ -1,8 +1,33 @@
 # Office Dashboard
 
+![Node 18](https://img.shields.io/badge/node-18-green.svg)
+![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
+
+![screenshot-wide](./images/screenshot-wide.png)
+
 The webkom office dashboard uses different data sources to display information about the office, its environment, and the members of the office.
 
 _Do note that the dashboard and data sources require you to be on the NTNU network, either through VPN or at campus._
+
+## Setup
+
+```bash
+# Teminal 1
+yarn # install depedencies (do this once)
+yarn dev # run frontend
+
+# Terminal 2
+cd office-dashboard-backend
+
+cp config.template.py config.py # Add environment variabes for backend (do this once)
+python -m venv venv # create venv (do this once)
+source venv/bin/activate # enter venv
+pip install -r requirements.txt # install dependencies (do this once)
+python main.py # run backend
+```
+
+<details>
+<summary>Archived docs</summary>
 
 <img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/dashboard.png?raw=true" width="1920" /> <img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/dashboard_mobile.png?raw=true" height="585"/>
 
@@ -50,3 +75,5 @@ _<p align="center">laget med :beer: av webkom</p>_
   Presence broadcasts (every 60 seconds) the list of (whitelisted) nearby devices to MQTT, which is then stored in InfluxDB via. Telegraf.
 
   The dashboard uses the [Presence API](https://presence.webkom.dev) to retrieve the data stored in InfluxDB and uses our [MaaS (Medlemmer as a Service)](https://github.com/webkom/medlemmer) to connect the devices to each member. It then calculates how long each member has been at the office since 06:00 AM, but also when the member was first seen (since 06:00 AM) and last seen at the office (as seen in the dashboard image above). The API also returns the name, avatar, GitHub username, Brus username and Slack username of each member.
+
+</details>
