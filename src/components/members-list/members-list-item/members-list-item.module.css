@@ -60,6 +60,15 @@
   }
 }
 
+.office_times {
+  align-items: center;
+  justify-content: center;
+
+  & div {
+    width: fit-content;
+  }
+}
+
 .kaffe {
   display: flex;
   flex-direction: column;

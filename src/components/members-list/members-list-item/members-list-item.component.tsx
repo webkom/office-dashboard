@@ -55,6 +55,11 @@ const MembersListItem = ({ member }: Props) => {
           <div>webapp: {member.github_contributions.webapp}</div>
         </div>
       </div>
+      <div className={`${styles["entry"]} ${styles["office_times"]}`}>
+        <div className="first-seen">In session: 00:00:00</div>
+        <div className="">Total tid:  12t</div>
+      </div>
+      <div className={`${styles["last-seen"]}`}>På kontoret!</div>
       {/* <div className="entry kaffe">
         <StatEntry
           icon={faCoffee}
