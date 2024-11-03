@@ -24,6 +24,9 @@ export type MemberWithGithubStats = {
   is_active: boolean;
   last_seen: string;
   is_pang: boolean;
+  total_time: number;
+  start_time: Date;
+  end_time: Date;
 };
 
 const MembersList = ({
@@ -64,6 +67,9 @@ const MembersList = ({
         is_active: member.active,
         last_seen: "",
         is_pang: !member.active,
+        total_time: member.total_time,
+        start_time: member.start_time,
+        end_time: member.end_time,
       };
     })
     .sort((m1, m2) => {

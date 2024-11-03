@@ -1,15 +1,19 @@
 // Dashboard API (defined in main.py)
 export const DASHBOARD_API = import.meta.env.PROD
   ? "https://dashboard-backend.webkom.dev"
-  : "http://localhost:5000";
+  : "http://localhost:5010";
 
 // Brus API
 export const BRUS_URL =
   import.meta.env.REACT_APP_BRUS_URL || "https://brus.abakus.no/api/liste";
 
-// Presence API
+// Presence API  ! Do not work
 export const PRESENCE_URL =
   import.meta.env.REACT_APP_PRESENCE_URL || "https://presence.webkom.dev";
+
+// Palantir API ! NEW Presence
+export const PALANTIR_URL =
+  import.meta.env.REACT_APP_PALANTIR || "http://127.0.0.1:5005/online_members";
 
 // Environment API
 export const ENVIRONMENT_URL =

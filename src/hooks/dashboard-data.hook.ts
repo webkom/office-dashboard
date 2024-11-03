@@ -15,6 +15,9 @@ export type Member = {
   brus: string;
   active: boolean;
   new: string;
+  total_time: number;
+  start_time: Date;
+  end_time: Date;
 };
 
 export type RepositoryStats = {
