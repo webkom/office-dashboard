@@ -102,7 +102,21 @@
   justify-content: flex-end;
   align-items: center;
   font-weight: bold;
-  padding: 20pxq;
+  padding-right: 10px;
+  color: #32cd32; /* Nice online green */
+  font-weight: bold;
+  padding-left: 8px;
+  text-shadow: 0 0 3px rgba(50, 205, 50, 0.5), 0 0 6px rgba(50, 205, 50, 0.3);
+  animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 3px rgba(50, 205, 50, 0.5), 0 0 6px rgba(50, 205, 50, 0.3);
+  }
+  to {
+    text-shadow: 0 0 6px rgba(50, 255, 50, 0.6), 0 0 12px rgba(50, 255, 50, 0.4);
+  }
 }
 
 .stats-entry {

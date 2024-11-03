@@ -56,10 +56,12 @@ const MembersListItem = ({ member }: Props) => {
         </div>
       </div>
       <div className={`${styles["entry"]} ${styles["office_times"]}`}>
-        <div className="first-seen">In session: 00:00:00</div>
-        <div className="">Total tid:  12t</div>
+        <div className={`${styles["longest-session"]}`}>Total: 00t 00min</div>
+        <div className={`${styles["total-time"]}`}>Longest session: 00:00</div>
       </div>
-      <div className={`${styles["last-seen"]}`}>På kontoret!</div>
+      <div className={`${styles["last-seen"]}`}>
+        In session: <br /> 00H 00M
+      </div>
       {/* <div className="entry kaffe">
         <StatEntry
           icon={faCoffee}
