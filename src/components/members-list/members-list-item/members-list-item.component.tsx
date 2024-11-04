@@ -60,7 +60,7 @@ const MembersListItem = ({ member }: Props) => {
         <div className={`${styles["total-time"]}`}>Longest session: 00:00</div>
       </div>
       <div className={`${styles["last-seen"]}`}>
-        In session: <br /> 00H 00M
+        In session:<br />00H 00M
       </div>
       {/* <div className="entry kaffe">
         <StatEntry
