@@ -225,3 +225,32 @@ def parse_repo_stats(name, repository):
         "issues_open": repository["openIssues"]["totalCount"],
         "issues_closed": repository["closedIssues"]["totalCount"],
     }
+
+
+def get_office_times(app: Flask):
+    """
+    Request data from Palantir API, get members office times
+    """
+
+    url = "http://192.168.1.60:5005/online_members"
+
+    try:
+        member_times_res = requests.get(url=url)
+        member_times_json = member_times_res.json()
+
+        return [
+            {
+                "github_name": member["github_name"],
+                "start_time": member["start_time"],
+                "end_time": member["end_time"],
+                "total_time": member["total_time"],
+                "is_office_active": member["is_office_active"],
+            }
+            for member in member_times_json
+        ]
+
+    except Exception as e:
+        if app.config["DEBUG"]:
+            raise Exception("Exception thrown while fetching members times", e)
+        else:
+            raise Exception("Exception thrown while fetching members times")

@@ -3,7 +3,7 @@ from flask import Flask
 from flask_caching import Cache
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
-from getters import get_public_members, get_repo_contibutors, get_repo_stats
+from getters import get_public_members, get_repo_contibutors, get_repo_stats, get_office_times
 import importlib
 
 app = Flask(__name__)
@@ -31,11 +31,13 @@ class OfficeDashboard(Resource):
         members = get_public_members(app)
         repo_contributors = get_repo_contibutors(app)
         repo_stats = get_repo_stats(app)
+        office_times = get_office_times(app)
 
         return {
             "members": members,
             "repository_contributors": repo_contributors,
             "repository_stats": repo_stats,
+            "office_times": office_times,
         }
 
 
