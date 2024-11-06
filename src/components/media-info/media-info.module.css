@@ -1,0 +1,62 @@
+.media-wrapper {
+  box-shadow: rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset;
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+
+  transition:
+    transform,
+    0.3s ease-in-out;
+  transform: scale(0);
+}
+
+.media-content {
+  max-width: 100%;
+  width: 640px;
+  margin: 10px 0px;
+  gap: 7px;
+}
+
+.media-image {
+  margin-left: 15px;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.media-meta {
+  margin-right: 20px;
+  min-width: 0; /* https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container */
+}
+
+.media-album,
+.progress-start,
+.progress-end {
+  opacity: 0.7;
+}
+
+.progress-start,
+.progress-end {
+  font-size: 0.7rem;
+}
+
+.media-title-and-artist,
+.media-album {
+  height: fit-content;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.progress-bar-background {
+  width: 100%;
+  height: 7px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 0px 5px;
+}
+
+.progress-bar-line {
+  height: 7px;
+}

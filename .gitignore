@@ -1,11 +1,25 @@
-/coverage
-/build
-/dist
-/node_modules
-/.firebase
+# Logs
+logs
+*.log
 npm-debug.log*
-yarn-error.log
-package-lock.json
-.DS_Store
-.env
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
+node_modules
+dist
+dist-ssr
+*.local
+.yarn
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

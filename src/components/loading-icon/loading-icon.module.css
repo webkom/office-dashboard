@@ -1,0 +1,5 @@
+@import "app/globals.css";
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
