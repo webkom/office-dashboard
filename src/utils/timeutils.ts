@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment, { Moment } from "moment";
 
 const TIMEZONE_ADJUSTMENT_OFFSET_MS = -3600000; //adjust for wrong timezones
 
@@ -13,10 +13,6 @@ function formatSecondsToDaysHours(seconds: number) {
   return formatted;
 }
 
-function lastTimeExist(lastTime: Date) {
-  return lastTime !== undefined && lastTime !== null;
-}
-
 function timeAgo(lastSeen: Date) {
   moment.locale("no");
   const lastSeenTime = moment(lastSeen).add(TIMEZONE_ADJUSTMENT_OFFSET_MS);
@@ -24,13 +20,9 @@ function timeAgo(lastSeen: Date) {
   return lastSeenTime.fromNow();
 }
 
-function inSession(isActive: boolean) {
-  return isActive;
-}
-
-function calculateSessionTime(startTime: Date) {
+function calculateSessionTime(startTime: Date, currentTime: Moment) {
   // Might want to remove this if raspberry pi and presence happen to both have the same timezone
-  const nowTime = moment(); // Current time
+  const nowTime = currentTime; // Current time
 
   // Parse the start time using Moment.js
   const startDate = moment(startTime).add(TIMEZONE_ADJUSTMENT_OFFSET_MS); //Adjust for wrong timezone
@@ -52,6 +44,4 @@ function calculateSessionTime(startTime: Date) {
 
 export { calculateSessionTime };
 export { formatSecondsToDaysHours };
-export { lastTimeExist };
 export { timeAgo };
-export { inSession };

@@ -4,8 +4,6 @@ import { GithubContributor } from "app/hooks/dashboard-data.hook";
 import { Member } from "app/hooks/dashboard-data.hook";
 import { OfficeTimes } from "app/hooks/dashboard-data.hook";
 
-const MS_PER_HOUR = 3600000;
-
 export type MemberWithGithubStats = {
   name: string;
   avatar: string;
@@ -30,8 +28,8 @@ export type MemberWithGithubStats = {
   office_times: {
     github_name: string;
     total_time: number;
-    start_time: Date | undefined;
-    end_time: Date | undefined;
+    start_time?: Date;
+    end_time?: Date;
     is_office_active: boolean;
   };
 };
@@ -87,10 +85,11 @@ const MembersList = ({
         last_seen: "",
         is_pang: !member.active,
         office_times: {
+          github_name: officeTimes?.github_name ?? "",
           total_time: officeTimes?.total_time ?? 0,
           start_time: officeTimes?.start_time,
           end_time: officeTimes?.end_time,
-          is_office_active: officeTimes?.is_office_active,
+          is_office_active: officeTimes?.is_office_active ?? false,
         },
       };
     })
