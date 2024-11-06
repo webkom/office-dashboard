@@ -10,9 +10,6 @@ import MembersList from "app/components/members-list/members-list.component";
 import { useDashboardData } from "app/hooks/dashboard-data.hook";
 import StatusBar from "app/components/status-bar/status-bar.component";
 
-import type { DashboardData } from "app/hooks/dashboard-data.hook";
-import { UseQueryResult } from "@tanstack/react-query";
-
 const Content: React.FC = () => {
   const dasboardData = useDashboardData();
 
