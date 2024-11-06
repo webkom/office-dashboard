@@ -25,6 +25,7 @@ const Content: React.FC = () => {
             <MembersList
               githubContributors={dasboardData.data.repository_contributors!}
               members={dasboardData.data.members}
+              officeTimes={dasboardData.data.office_times}
             />
           )}
         </>

@@ -60,15 +60,6 @@
   }
 }
 
-.office_times {
-  align-items: center;
-  justify-content: center;
-
-  & div {
-    width: fit-content;
-  }
-}
-
 .kaffe {
   display: flex;
   flex-direction: column;
@@ -94,28 +85,6 @@
     justify-content: flex-end;
     font-size: 0.6rem;
     opacity: 0.7;
-  }
-}
-
-.last-seen {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  font-weight: bold;
-  padding-right: 10px;
-  color: #32cd32; /* Nice online green */
-  font-weight: bold;
-  padding-left: 8px;
-  text-shadow: 0 0 3px rgba(50, 205, 50, 0.5), 0 0 6px rgba(50, 205, 50, 0.3);
-  animation: glow 1.5s infinite alternate;
-}
-
-@keyframes glow {
-  from {
-    text-shadow: 0 0 3px rgba(50, 205, 50, 0.5), 0 0 6px rgba(50, 205, 50, 0.3);
-  }
-  to {
-    text-shadow: 0 0 6px rgba(50, 255, 50, 0.6), 0 0 12px rgba(50, 255, 50, 0.4);
   }
 }
 
@@ -147,5 +116,63 @@
 
   & .value {
     text-align: center;
+  }
+}
+
+.total-time {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.last-seen {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.last-seen-offline {
+  color: #fb3737;
+  animation: glow-red 3s ease-in-out infinite alternate;
+  font-weight: bold;
+}
+
+.in-session {
+  color: rgb(50, 205, 50); /* Lime Green */
+  animation: glow-green 3s ease-in-out infinite alternate;
+  font-weight: bold;
+}
+
+@keyframes glow-green {
+  0% {
+    text-shadow:
+      0 0 2px rgba(50, 205, 50, 0.6),
+      0 0 10px rgb(50, 205, 50, 0.6),
+      0 0 15px rgb(144, 238, 144, 0.6),
+      0 0 20px rgb(144, 238, 144, 0.6);
+  }
+  100% {
+    text-shadow:
+      0 0 10px rgb(50, 205, 50, 0.6),
+      0 0 20px rgb(144, 238, 144, 0.6),
+      0 0 30px rgb(144, 238, 144, 0.6),
+      0 0 40px rgb(144, 238, 144, 0.6);
+  }
+}
+
+@keyframes glow-red {
+  0% {
+    text-shadow:
+      0 0 5px rgba(255, 0, 0, 0.6),
+      0 0 10px rgba(255, 0, 0, 0.6),
+      0 0 15px rgba(139, 0, 0, 0.6),
+      0 0 20px rgba(139, 0, 0, 0.6);
+  }
+  100% {
+    text-shadow:
+      0 0 10px rgba(255, 0, 0, 0.6),
+      0 0 20px rgba(139, 0, 0, 0.6),
+      0 0 30px rgba(139, 0, 0, 0.6),
+      0 0 40px rgba(139, 0, 0, 0.6);
   }
 }

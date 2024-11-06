@@ -1,6 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MemberWithGithubStats } from "../members-list.component";
 import styles from "./members-list-item.module.css";
+import {
+  formatSecondsToDaysHours,
+  lastTimeExist,
+  timeAgo,
+  inSession,
+  calculateSessionTime,
+} from "app/utils/timeutils";
+
 // import {
 // faCoffee,
 // faFlask,
@@ -55,12 +63,33 @@ const MembersListItem = ({ member }: Props) => {
           <div>webapp: {member.github_contributions.webapp}</div>
         </div>
       </div>
-      <div className={`${styles["entry"]} ${styles["office_times"]}`}>
-        <div className={`${styles["longest-session"]}`}>Total: 00t 00min</div>
-        <div className={`${styles["total-time"]}`}>Longest session: 00:00</div>
+      <div className={`${styles["entry"]} ${styles["total-time"]}`}>
+        <div>
+          Total Tid: <br />{" "}
+          {formatSecondsToDaysHours(member.office_times.total_time)}
+        </div>
       </div>
-      <div className={`${styles["last-seen"]}`}>
-        In session:<br />00H 00M
+      <div className={`${styles["entry"]} ${styles["last-seen"]}`}>
+        {inSession(member.office_times.is_office_active) ? (
+          // Show if inSession is true
+          <div className={styles["in-session"]}>
+            In Session: <br />
+            {calculateSessionTime(member.office_times.start_time)}
+          </div>
+        ) : lastTimeExist(member.office_times.end_time) ? (
+          <div
+            className={`${styles["last-seen-time"]} ${styles["last-seen-offline"]}`}
+          >
+            Sist Sett: <br />
+            {timeAgo(member.office_times.end_time)}
+          </div>
+        ) : (
+          <div
+            className={`${styles["last-seen-never"]} ${styles["last-seen-offline"]}`}
+          >
+            Sist Sett: <br /> Aldri Sett
+          </div>
+        )}
       </div>
       {/* <div className="entry kaffe">
         <StatEntry

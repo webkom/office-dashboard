@@ -15,9 +15,14 @@ export type Member = {
   brus: string;
   active: boolean;
   new: string;
-  total_time: number;
+};
+
+export type OfficeTimes = {
+  github_name: string;
   start_time: Date;
   end_time: Date;
+  total_time: number;
+  is_office_active: boolean;
 };
 
 export type RepositoryStats = {
@@ -44,6 +49,7 @@ export type DashboardData = {
   members: Member[];
   repository_stats: { lego: RepositoryStats; webapp: RepositoryStats };
   repository_contributors: GithubContributor[];
+  office_times: OfficeTimes[];
 };
 
 export type GithubContributor = {
