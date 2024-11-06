@@ -13,22 +13,17 @@ import {
 //   type IconDefinition,
 // } from "@fortawesome/free-solid-svg-icons";
 
-
-
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { useEffect, useState } from "react";
 import moment from "moment-timezone";
 
-
-
 type Props = {
   member: MemberWithGithubStats;
 };
 
-
 const MembersListItem = ({ member }: Props) => {
-  const [currentTime, setCurrentTime] = useState (moment())
+  const [currentTime, setCurrentTime] = useState(moment());
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -51,7 +46,6 @@ const MembersListItem = ({ member }: Props) => {
   //     <div className="unit">{unit}</div>
   //   </div>
   // );
-
 
   return (
     <div
@@ -87,7 +81,8 @@ const MembersListItem = ({ member }: Props) => {
         </div>
       </div>
       <div className={`${styles["entry"]} ${styles["last-seen"]}`}>
-        {member.office_times.is_office_active && member.office_times.start_time ? (
+        {member.office_times.is_office_active &&
+        member.office_times.start_time ? (
           // Show if inSession is true
           <div className={styles["in-session"]}>
             In Session: <br />

@@ -24,8 +24,8 @@ const Content: React.FC = () => {
           {dasboardData.isSuccess && (
             <MembersList
               githubContributors={dasboardData.data.repository_contributors!}
-                members={dasboardData.data.members}
-                officeTimes={dasboardData.data.office_times}
+              members={dasboardData.data.members}
+              officeTimes={dasboardData.data.office_times}
             />
           )}
         </>

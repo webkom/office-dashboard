@@ -9,7 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:prettier": "npx prettier . --check",
     "preview": "vite preview",
-    "prettier": "yarn prettier . --write"
+    "prettier": "prettier . --write"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
