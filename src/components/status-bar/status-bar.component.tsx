@@ -56,11 +56,13 @@ const StatusBar = () => {
 
   return (
     <div
-      className={`${styles["statuses"]} g-width-full g-flex-row g-flex-justify-center g-flex-align-center`}
+      className={`${styles["statuses-background"]} g-flex-row g-flex-align-center`}
     >
-      {statuses.map(({ name, color }) => (
-        <StatusItem key={name} name={name} color={color} />
-      ))}
+      <div className={`${styles["statuses"]} g-flex-row g-flex-align-center`}>
+        {statuses.map(({ name, color }) => (
+          <StatusItem key={name} name={name} color={color} />
+        ))}
+      </div>
     </div>
   );
 };
