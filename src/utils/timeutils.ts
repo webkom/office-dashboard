@@ -1,6 +1,6 @@
 import moment, { Moment } from "moment";
 
-const TIMEZONE_ADJUSTMENT_OFFSET_MS = -3600000; //adjust for wrong timezones
+const TIMEZONE_ADJUSTMENT_OFFSET_MS = 3600000; //adjust for wrong timezones
 
 function formatSecondsToDaysHours(seconds: number) {
   const duration = moment.duration(seconds * 1000);
@@ -31,7 +31,7 @@ export const calculateSessionTime = (
   const nowTime = currentTime; // Current time
 
   // Parse the start time using Moment.js
-  const lastSeenDate = moment(lastSeen).add(TIMEZONE_ADJUSTMENT_OFFSET_MS * -1); //Adjust for wrong timezone
+  const lastSeenDate = moment(lastSeen).add(TIMEZONE_ADJUSTMENT_OFFSET_MS); //Adjust for wrong timezone
 
   // Calculate the difference in seconds
   const updatedDuration = sessionDuration + nowTime.diff(lastSeenDate) / 1000;

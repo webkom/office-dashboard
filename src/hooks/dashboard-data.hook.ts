@@ -22,7 +22,7 @@ export type OfficeTimes = {
   total_time: number;
   last_seen: Date;
   current_session_duration: number;
-  is_active: boolean;
+  is_active: 1 | 0;
 };
 
 export type RepositoryStats = {
