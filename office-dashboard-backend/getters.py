@@ -7,10 +7,10 @@ def get_public_members(app: Flask):
     Request data from members, and only include fields which may be public (i.e. NOT MAC/Bluetooth addresses)
     """
 
-    url = f'https://{app.config["MEMBERS_USER"]}:{app.config["MEMBERS_PASSWORD"]}@{app.config["MEMBERS_URI"]}'
+    url = f'https://{app.config["MEMBERS_URI"]}'
 
     try:
-        members_res = requests.get(url=url)
+        members_res = requests.get(url=url, auth=(app.config["MEMBERS_USER"], app.config["MEMBERS_PASSWORD"]))
         members_json = members_res.json()
 
         return [
@@ -232,10 +232,10 @@ def get_office_times(app: Flask):
     Request data from Palantir API, get members office times
     """
 
-    url = "http://192.168.1.60:5005/online_members"
+    url = f"https://{app.config["PALANTIR_URI"]}/members"
 
     try:
-        member_times_res = requests.get(url=url)
+        member_times_res = requests.get(url=url, auth=(app.config["PALANTIR_USER"], app.config["PALANTIR_PASSWORD"]))
         member_times_json = member_times_res.json()
 
         return [
