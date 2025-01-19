@@ -81,19 +81,22 @@ const MembersListItem = ({ member }: Props) => {
         </div>
       </div>
       <div className={`${styles["entry"]} ${styles["last-seen"]}`}>
-        {member.office_times.is_office_active &&
-        member.office_times.start_time ? (
+        {member.office_times.is_active ? (
           // Show if inSession is true
           <div className={styles["in-session"]}>
             In Session: <br />
-            {calculateSessionTime(member.office_times.start_time, currentTime)}
+            {calculateSessionTime(
+              member.office_times.current_session_duration,
+              currentTime,
+              member.office_times.last_seen,
+            )}
           </div>
-        ) : member.office_times.end_time ? (
+        ) : member.office_times.last_seen ? (
           <div
             className={`${styles["last-seen-time"]} ${styles["last-seen-offline"]}`}
           >
             Sist Sett: <br />
-            {timeAgo(member.office_times.end_time)}
+            {timeAgo(member.office_times.last_seen)}
           </div>
         ) : (
           <div
