@@ -20,28 +20,33 @@ function timeAgo(lastSeen: Date) {
   return lastSeenTime.fromNow();
 }
 
-function calculateSessionTime(startTime: Date, currentTime: Moment) {
+export const calculateSessionTime = (
+  sessionDuration: number, // Current duration calculated by the backend
+  currentTime: Moment,
+  lastSeen?: Date,
+) => {
+  if (!lastSeen) return "";
+
   // Might want to remove this if raspberry pi and presence happen to both have the same timezone
   const nowTime = currentTime; // Current time
 
   // Parse the start time using Moment.js
-  const startDate = moment(startTime).add(TIMEZONE_ADJUSTMENT_OFFSET_MS); //Adjust for wrong timezone
+  const lastSeenDate = moment(lastSeen).add(TIMEZONE_ADJUSTMENT_OFFSET_MS * -1); //Adjust for wrong timezone
 
-  // Calculate the difference in milliseconds
-  const sessionDuration = nowTime.diff(startDate);
+  // Calculate the difference in seconds
+  const updatedDuration = sessionDuration + nowTime.diff(lastSeenDate) / 1000;
 
   // Convert milliseconds to hours, minutes, and seconds
-  const hours = Math.floor(sessionDuration / 3600000); // 1 hour = 3600000 ms
-  const minutes = Math.floor((sessionDuration % 3600000) / 60000); // 1 minute = 60000 ms
-  const seconds = Math.floor((sessionDuration % 60000) / 1000); // 1 second = 1000 ms
+  const hours = Math.floor(updatedDuration / 3600); // 1 hour = 3600000 ms
+  const minutes = Math.floor((updatedDuration % 3600) / 60); // 1 minute = 60000 ms
+  const seconds = Math.floor(updatedDuration % 60); // 1 second = 1000 ms
 
   if (hours > 0) {
     return `${hours} t ${minutes} min`;
   } else {
     return `${minutes} min ${seconds} s`;
   }
-}
+};
 
-export { calculateSessionTime };
 export { formatSecondsToDaysHours };
 export { timeAgo };

@@ -19,10 +19,10 @@ export type Member = {
 
 export type OfficeTimes = {
   github_name: string;
-  start_time: Date;
-  end_time: Date;
   total_time: number;
-  is_office_active: boolean;
+  last_seen: Date;
+  current_session_duration: number;
+  is_active: boolean;
 };
 
 export type RepositoryStats = {

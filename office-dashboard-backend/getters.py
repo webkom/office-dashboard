@@ -241,10 +241,10 @@ def get_office_times(app: Flask):
         return [
             {
                 "github_name": member["github_name"],
-                "start_time": member["start_time"],
-                "end_time": member["end_time"],
+                "last_seen": member["last_seen"],
+                "current_session_duration": member["current_session_duration"],
+                "is_active": member["is_active"],
                 "total_time": member["total_time"],
-                "is_office_active": member["is_office_active"],
             }
             for member in member_times_json["members"]
         ]
