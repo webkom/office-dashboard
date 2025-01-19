@@ -232,7 +232,7 @@ def get_office_times(app: Flask):
     Request data from Palantir API, get members office times
     """
 
-    url = f"https://{app.config["PALANTIR_URI"]}/online_members"
+    url = f"https://{app.config["PALANTIR_URI"]}/members"
 
     try:
         member_times_res = requests.get(url=url, auth=(app.config["PALANTIR_USER"], app.config["PALANTIR_PASSWORD"]))
