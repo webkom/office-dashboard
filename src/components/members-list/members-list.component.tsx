@@ -84,25 +84,33 @@ const MembersList = ({
           total_time: officeTimes?.total_time ?? 0,
           last_seen: officeTimes?.last_seen,
           current_session_duration: officeTimes?.current_session_duration ?? 0,
-          is_active: officeTimes?.is_active ?? false,
+          is_active: officeTimes?.is_active === 1,
         },
       };
     })
     .sort((m1, m2) => {
-      // Order present members first
-      if (m1.office_times.is_active !== m2.office_times.is_active) {
-        return !m1.office_times.is_active ? 1 : -1;
-      }
       // Order present members by current session duration
       if (m1.office_times.is_active && m2.office_times.is_active) {
         return (
-          m1.office_times.current_session_duration -
-          m2.office_times.current_session_duration
+          m2.office_times.current_session_duration -
+          m1.office_times.current_session_duration
         );
       }
+      // Order present members before absent members
+      if (m1.office_times.is_active !== m2.office_times.is_active) {
+        return !m1.office_times.is_active ? 1 : -1;
+      }
       // Order absent members by last seen date
-      if (!!m1.office_times.last_seen && !!m2.office_times.last_seen) {
-        return m1.office_times.last_seen < m2.office_times.last_seen ? 1 : -1;
+      if (!m1.office_times.is_active && !m2.office_times.is_active) {
+        if (m1.office_times.last_seen && m2.office_times.last_seen) {
+          return m1.office_times.last_seen < m2.office_times.last_seen ? 1 : -1;
+        }
+        if (m1.office_times.last_seen) {
+          return -1;
+        }
+        if (m2.office_times.last_seen) {
+          return 1;
+        }
       }
       // Order absent members with no last seen date by active status
       if (m1.is_active !== m2.is_active) {
