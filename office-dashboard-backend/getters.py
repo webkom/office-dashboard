@@ -246,7 +246,7 @@ def get_office_times(app: Flask):
                 "total_time": member["total_time"],
                 "is_office_active": member["is_office_active"],
             }
-            for member in member_times_json
+            for member in member_times_json["members"]
         ]
 
     except Exception as e:
