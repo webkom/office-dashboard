@@ -2,9 +2,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MemberWithGithubStats } from "../members-list.component";
 import styles from "./members-list-item.module.css";
 import {
-  formatSecondsToDaysHours,
   timeAgo,
   calculateSessionTime,
+  formatSecondsToHours,
 } from "app/utils/timeutils";
 
 // import {
@@ -77,7 +77,7 @@ const MembersListItem = ({ member }: Props) => {
       <div className={`${styles["entry"]} ${styles["total-time"]}`}>
         <div>
           Total Tid: <br />{" "}
-          {formatSecondsToDaysHours(member.office_times.total_time)}
+          {formatSecondsToHours(member.office_times.total_time)}
         </div>
       </div>
       <div className={`${styles["entry"]} ${styles["last-seen"]}`}>
