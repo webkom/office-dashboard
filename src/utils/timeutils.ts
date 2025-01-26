@@ -2,13 +2,12 @@ import moment, { Moment } from "moment";
 
 const TIMEZONE_ADJUSTMENT_OFFSET_MS = 3600000; //adjust for wrong timezones
 
-function formatSecondsToDaysHours(seconds: number) {
+function formatSecondsToHours(seconds: number) {
   const duration = moment.duration(seconds * 1000);
 
-  const days = Math.floor(duration.asDays());
-  const hours = Math.floor(duration.asHours() % 24);
+  const hours = Math.floor(duration.asHours());
 
-  const formatted = `${days > 0 ? days + (days > 1 ? " dager, " : " dag, ") : ""}${hours} ${hours === 1 ? "time" : "timer"}`;
+  const formatted = `${hours} ${hours === 1 ? "time" : "timer"}`;
 
   return formatted;
 }
@@ -48,5 +47,5 @@ export const calculateSessionTime = (
   }
 };
 
-export { formatSecondsToDaysHours };
+export { formatSecondsToHours };
 export { timeAgo };
