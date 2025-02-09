@@ -1,4 +1,5 @@
 import moment, { Moment } from "moment";
+import "moment/dist/locale/nb";
 
 const TIMEZONE_ADJUSTMENT_OFFSET_MS = 3600000; //adjust for wrong timezones
 
@@ -13,7 +14,7 @@ function formatSecondsToHours(seconds: number) {
 }
 
 function timeAgo(lastSeen: Date) {
-  moment.locale("no");
+  moment.locale("nb");
   const lastSeenTime = moment(lastSeen).add(TIMEZONE_ADJUSTMENT_OFFSET_MS);
 
   return lastSeenTime.fromNow();
