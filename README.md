@@ -1,6 +1,6 @@
 # Office Dashboard
 
-![Node 18](https://img.shields.io/badge/node-18-green.svg)
+![Node 22](https://img.shields.io/badge/node-22-green.svg)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 
 ![screenshot-wide](./images/screenshot-wide.png)
