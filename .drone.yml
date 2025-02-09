@@ -5,38 +5,37 @@ name: default
 
 steps:
   - name: setup
-    image: node:18
+    image: node:22-alpine
     when:
-      event: push
+      event: [push]
     commands:
       - yarn
 
   - name: lint
-    image: node:18
+    image: node:22-alpine
     when:
-      event: push
+      event: [push]
     depends_on: [setup]
     commands:
       - yarn lint
 
   - name: build
-    image: node:18
+    image: node:22-alpine
     when:
-      event: push
+      event: [push]
       branch:
         exclude: [master]
     depends_on: [setup]
     commands:
       - yarn build
 
-  - name: docker
+  - name: docker-frontend
     image: plugins/docker
     when:
       branch:
         - master
-        - new-office-dashboard
-      event: push
-      status: success
+      event: [push]
+      status: [success]
     settings:
       registry: https://registry.webkom.dev
       repo: registry.webkom.dev/webkom/office-dashboard
@@ -55,9 +54,8 @@ steps:
     when:
       branch:
         - master
-        - new-office-dashboard
-      event: push
-      status: success
+      event: [push]
+      status: [success]
     settings:
       registry: https://registry.webkom.dev
       dockerfile: office-dashboard-backend/Dockerfile
@@ -72,6 +70,31 @@ steps:
         - latest
       build_args:
         - RELEASE=${DRONE_BRANCH}-${DRONE_COMMIT_SHA:0:7}
+
+  - name: Deploy
+    image: abakus/ansible-deploy
+    when:
+      branch:
+        - master
+      event: [push]
+      status: [success]
+    settings:
+      playbook: /infrastructure/office/playbooks/deploy.yml
+      repository:
+        from_secret: infra_repository
+      tags:
+        - dashboard
+      inventory: /infrastructure/inventory
+      vault_password:
+        from_secret: ansible_vault_password
+      private_key:
+        from_secret: infra_deploy_key
+    depends_on:
+      - docker-frontend
+      - docker-backend
+
 ---
 kind: signature
-hmac: 411970b9e00d96eacf1b0dba1412a9fbd0178d60aaefb7b860cf816ebba0c904
+hmac: cdfcd18914d68aa47548b2db59cda69a51bc960902a68d732d5bd3e211ce31c4
+
+...
