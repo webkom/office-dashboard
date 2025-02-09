@@ -1,15 +1,17 @@
 .statuses {
   gap: 50px;
-  padding: 10px 0px;
+  padding: 10px 1rem;
 
   width: fit-content;
   margin: auto;
+
+  font-size: 1.25rem;
 }
 
 .statuses-background {
   box-shadow: rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset;
   background-color: var(--background-color-light);
-  overflow-x: scroll;
+  overflow-x: auto;
   width: 100%;
 }
 
@@ -22,4 +24,11 @@
   height: 15px;
   border-radius: 50%;
   background-color: gray;
+}
+
+@media screen and (max-width: 600px) {
+  .statuses {
+    font-size: 1rem;
+    gap: 1rem;
+  }
 }
