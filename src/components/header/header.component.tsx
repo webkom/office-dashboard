@@ -13,7 +13,7 @@ const Header = () => {
     className,
   }) => (
     <span
-      className={`${className ?? ""} g-flex-row g-flex-justify-center g-flex-align-center g-height-full`}
+      className={`g-flex-row g-flex-justify-center g-flex-align-center g-height-full ${className ?? ""}`}
     >
       {children}
     </span>
@@ -34,14 +34,12 @@ const Header = () => {
         <div
           className={`${styles["logo-and-clock"]} g-flex g-flex-row g-flex-justify-start g-flex-align-center`}
         >
-          <HeaderCell>
+          <HeaderCell className="g-flex-col">
             <img
               alt="Abakus Linjeforening"
               className={styles["logo"]}
               src={darkLogo}
             />
-          </HeaderCell>
-          <HeaderCell>
             <Clock />
           </HeaderCell>
         </div>

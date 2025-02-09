@@ -1,9 +1,10 @@
 .members-item {
   flex: 1;
   min-width: 0;
-  padding: 7px 10px;
+  padding: 1rem 1.5rem;
   box-sizing: border-box;
   border-bottom: 0.5px solid rgba(255, 255, 255, 10%);
+  gap: 1.5rem;
 }
 
 .is-active {
@@ -13,20 +14,20 @@
 .entry {
   min-width: 0;
   flex: 1;
+  word-break: break-all;
 }
 
 .avatar {
   display: flex;
   flex: 0;
   min-width: fit-content;
-  padding-right: 20px;
   justify-content: start;
   align-items: center;
 }
 
 .avatar img {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
   border-radius: 50%;
   background-color: red;
@@ -44,6 +45,7 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  gap: 0.25rem;
 }
 
 .github-icon {
@@ -132,47 +134,30 @@
 }
 
 .last-seen-offline {
-  color: #fb3737;
-  animation: glow-red 3s ease-in-out infinite alternate;
-  font-weight: bold;
+  color: #f76b6b;
 }
 
 .in-session {
   color: rgb(50, 205, 50); /* Lime Green */
-  animation: glow-green 3s ease-in-out infinite alternate;
-  font-weight: bold;
+  font-weight: 600;
 }
 
-@keyframes glow-green {
-  0% {
-    text-shadow:
-      0 0 2px rgba(50, 205, 50, 0.6),
-      0 0 10px rgb(50, 205, 50, 0.6),
-      0 0 15px rgb(144, 238, 144, 0.6),
-      0 0 20px rgb(144, 238, 144, 0.6);
+@media screen and (max-width: 600px) {
+  .members-item {
+    padding: 0.5rem 1rem;
+    gap: 1rem;
   }
-  100% {
-    text-shadow:
-      0 0 10px rgb(50, 205, 50, 0.6),
-      0 0 20px rgb(144, 238, 144, 0.6),
-      0 0 30px rgb(144, 238, 144, 0.6),
-      0 0 40px rgb(144, 238, 144, 0.6);
-  }
-}
 
-@keyframes glow-red {
-  0% {
-    text-shadow:
-      0 0 5px rgba(255, 0, 0, 0.6),
-      0 0 10px rgba(255, 0, 0, 0.6),
-      0 0 15px rgba(139, 0, 0, 0.6),
-      0 0 20px rgba(139, 0, 0, 0.6);
+  .avatar img {
+    width: 40px;
+    height: 40px;
   }
-  100% {
-    text-shadow:
-      0 0 10px rgba(255, 0, 0, 0.6),
-      0 0 20px rgba(139, 0, 0, 0.6),
-      0 0 30px rgba(139, 0, 0, 0.6),
-      0 0 40px rgba(139, 0, 0, 0.6);
+
+  .github {
+    display: none;
+  }
+
+  .contributions {
+    display: none;
   }
 }

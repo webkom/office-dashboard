@@ -1,12 +1,12 @@
 .logo {
-  height: 50px;
+  height: 40px;
 }
 
 .header {
   background-color: var(--header-color);
 }
 
-.logo-and-clock {
-  gap: 30px;
-  padding: 0px 10px;
+.logo-and-clock span {
+  gap: 1rem;
+  padding: 0.5rem 1rem;
 }
