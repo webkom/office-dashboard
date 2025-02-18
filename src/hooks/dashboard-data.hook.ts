@@ -15,6 +15,7 @@ export type Member = {
   brus: string;
   active: boolean;
   new: string;
+  welcome_messages: string[];
 };
 
 export type OfficeTimes = {

@@ -27,6 +27,7 @@ def get_public_members(app: Flask):
                 "brus": member["brus"],
                 "active": member["active"],
                 "new": member["new"],
+                "welcome_messages": member["welcome_messages"],
             }
             for member in members_json
         ]

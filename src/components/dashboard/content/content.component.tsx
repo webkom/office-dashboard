@@ -9,9 +9,14 @@ import LoadingIcon from "app/components/loading-icon/loading-icon.component";
 import MembersList from "app/components/members-list/members-list.component";
 import { useDashboardData } from "app/hooks/dashboard-data.hook";
 import StatusBar from "app/components/status-bar/status-bar.component";
+import usePlayWelcomeMessage from "app/hooks/usePlayWelcomeMessage.ts";
 
 const Content: React.FC = () => {
   const dasboardData = useDashboardData();
+  usePlayWelcomeMessage(
+    dasboardData.data?.members,
+    dasboardData.data?.office_times,
+  );
 
   return (
     <div className="g-width-full g-flex-col g-flex-align-center">
