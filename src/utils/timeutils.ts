@@ -1,7 +1,5 @@
-import moment, { Moment } from "moment";
+import moment, { Moment } from "moment-timezone";
 import "moment/dist/locale/nb";
-
-const TIMEZONE_ADJUSTMENT_OFFSET_MS = 3600000; //adjust for wrong timezones
 
 function formatSecondsToHours(seconds: number) {
   const duration = moment.duration(seconds * 1000);
@@ -15,7 +13,7 @@ function formatSecondsToHours(seconds: number) {
 
 function timeAgo(lastSeen: Date) {
   moment.locale("nb");
-  const lastSeenTime = moment(lastSeen).add(TIMEZONE_ADJUSTMENT_OFFSET_MS);
+  const lastSeenTime = moment.tz(lastSeen, "Europe/Oslo");
 
   return lastSeenTime.fromNow();
 }
@@ -27,26 +25,21 @@ export const calculateSessionTime = (
 ) => {
   if (!lastSeen) return "";
 
-  // Might want to remove this if raspberry pi and presence happen to both have the same timezone
-  const nowTime = currentTime; // Current time
-
   // Parse the start time using Moment.js
-  const lastSeenDate = moment(lastSeen).add(TIMEZONE_ADJUSTMENT_OFFSET_MS); //Adjust for wrong timezone
+  const lastSeenDate = moment.tz(lastSeen, "Europe/Oslo");
 
   // Calculate the difference in seconds
-  const updatedDuration = sessionDuration + nowTime.diff(lastSeenDate) / 1000;
+  const updatedDuration =
+    sessionDuration + currentTime.diff(lastSeenDate, "seconds");
 
   // Convert milliseconds to hours, minutes, and seconds
   const hours = Math.floor(updatedDuration / 3600); // 1 hour = 3600000 ms
   const minutes = Math.floor((updatedDuration % 3600) / 60); // 1 minute = 60000 ms
   const seconds = Math.floor(updatedDuration % 60); // 1 second = 1000 ms
 
-  if (hours > 0) {
-    return `${hours} t ${minutes} min`;
-  } else {
-    return `${minutes} min ${seconds} s`;
-  }
+  return hours > 0
+    ? `${hours} t ${minutes} min`
+    : `${minutes} min ${seconds} s`;
 };
 
-export { formatSecondsToHours };
-export { timeAgo };
+export { formatSecondsToHours, timeAgo };
