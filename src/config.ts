@@ -1,7 +1,7 @@
 // Dashboard API (defined in main.py)
 export const DASHBOARD_API = import.meta.env.PROD
   ? "https://dashboard-backend.webkom.dev"
-  : import.meta.env.VITE_DASHBOARD_API ?? "http://localhost:5012";
+  : import.meta.env.VITE_DASHBOARD_API ?? "http://localhost:5000";
 
 // Brus API
 export const BRUS_URL =
