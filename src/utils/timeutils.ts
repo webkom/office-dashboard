@@ -1,28 +1,25 @@
 import moment, { Moment } from "moment-timezone";
 import "moment/dist/locale/nb";
 
-function formatSecondsToHours(seconds: number) {
+const formatSecondsToHours = (seconds: number): string => {
   const duration = moment.duration(seconds * 1000);
-
   const hours = Math.floor(duration.asHours());
 
-  const formatted = `${hours} ${hours === 1 ? "time" : "timer"}`;
+  return `${hours} ${hours === 1 ? "time" : "timer"}`;
+};
 
-  return formatted;
-}
-
-function timeAgo(lastSeen: Date) {
+const timeAgo = (lastSeen: Date): string => {
   moment.locale("nb");
   const lastSeenTime = moment.tz(lastSeen, "Europe/Oslo");
 
   return lastSeenTime.fromNow();
-}
+};
 
-export const calculateSessionTime = (
+const calculateSessionTime = (
   sessionDuration: number, // Current duration calculated by the backend
   currentTime: Moment,
   lastSeen?: Date,
-) => {
+): string => {
   if (!lastSeen) return "";
 
   // Convert lastSeen and currentTime to the same time zone
@@ -44,4 +41,4 @@ export const calculateSessionTime = (
     : `${minutes} min ${seconds} s`;
 };
 
-export { formatSecondsToHours, timeAgo };
+export { formatSecondsToHours, timeAgo, calculateSessionTime };

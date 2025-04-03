@@ -127,6 +127,21 @@
   align-items: center;
 }
 
+.total-time-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crown-icon {
+  color: #ffd700;
+  margin-right: 5px;
+  min-width: var(--member-icon-size);
+  max-width: var(--member-icon-size);
+  min-height: var(--member-icon-size);
+  max-height: var(--member-icon-size);
+}
+
 .last-seen {
   display: flex;
   justify-content: flex-start;

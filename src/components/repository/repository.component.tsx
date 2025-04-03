@@ -69,7 +69,7 @@ const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
     {
       name: "Diskforbruk",
       icon: DatabaseIcon,
-      value: bytes(disk_usage * 1024) || '',
+      value: bytes(disk_usage * 1024) || "",
     },
     {
       name: "Siste Push",
