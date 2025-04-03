@@ -13,10 +13,11 @@ import {
 //   type IconDefinition,
 // } from "@fortawesome/free-solid-svg-icons";
 
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { useEffect, useState } from "react";
 import moment from "moment-timezone";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faCrown } from "@fortawesome/free-solid-svg-icons";
 
 type Props = {
   member: MemberWithGithubStats;
@@ -25,12 +26,13 @@ type Props = {
 const MembersListItem = ({ member }: Props) => {
   const [currentTime, setCurrentTime] = useState(moment());
 
+  // Updates the current time every second
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentTime(moment());
     }, 1000); // Update every second
 
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
   // type StatsEntryProps = {
   //   icon: IconDefinition;
@@ -77,7 +79,15 @@ const MembersListItem = ({ member }: Props) => {
       <div className={`${styles["entry"]} ${styles["total-time"]}`}>
         <div>
           Total Tid: <br />{" "}
-          {formatSecondsToHours(member.office_times.total_time)}
+          <div className={`${styles["total-time-info"]}`}>
+            {member.office_times.is_office_time_leader && (
+              <FontAwesomeIcon
+                className={styles["crown-icon"]}
+                icon={faCrown}
+              />
+            )}
+            {formatSecondsToHours(member.office_times.total_time)}
+          </div>
         </div>
       </div>
       <div className={`${styles["entry"]} ${styles["last-seen"]}`}>

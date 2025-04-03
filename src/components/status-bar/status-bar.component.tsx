@@ -34,10 +34,10 @@ const StatusBar = () => {
 
   const statuses = isLoading
     ? []
-    : (data?.monitors.map((monitor) => ({
+    : data?.monitors.map((monitor) => ({
         name: monitor.friendly_name,
         color: getUptimeRobotColorFromStatus(monitor.status),
-      })) ?? []);
+      })) ?? [];
 
   type StatusItemProps = {
     name: string;
