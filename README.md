@@ -3,7 +3,7 @@
 ![Node 22](https://img.shields.io/badge/node-22-green.svg)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 
-![screenshot-wide](./images/screenshot-wide.png)
+![Screenshot 2025-04-04 at 15 23 38](https://github.com/user-attachments/assets/1026ae8d-065e-4bbb-a0a5-0341847506e0)
 
 The webkom office dashboard uses different data sources to display information about the office, its environment, and the members of the office.
 
