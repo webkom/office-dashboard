@@ -27,6 +27,7 @@ export type MemberWithGithubStats = {
   is_pang: boolean;
   office_times: {
     total_time: number;
+    is_office_time_leader: boolean;
     current_session_duration: number;
     last_seen?: Date;
     is_active: boolean;
@@ -54,10 +55,32 @@ const MembersList = ({
     );
   };
 
+  const isOfficeTimeLeader = (member: Member): boolean => {
+    // Find the office time record for the member
+    const officeTimeForActiveMember = officeTimes.find(
+      (officeTime) => officeTime.github_name === member.github && member.active,
+    );
+
+    if (!officeTimeForActiveMember) {
+      // If no office time record is found, return false
+      return false;
+    }
+
+    // Check if the member has the highest total_time
+    const leaderOfficeTime = officeTimes.reduce((leader, current) =>
+      current.total_time > leader.total_time ? current : leader,
+    );
+
+    return (
+      officeTimeForActiveMember.github_name === leaderOfficeTime.github_name
+    );
+  };
+
   const membersWithGithubStats = members
     .map<MemberWithGithubStats>((member) => {
       const contributionStats = findGithubStatsOrDefault(member);
       const officeTimes = findOfficeTimesForMember(member);
+      const officeTimeLeader = isOfficeTimeLeader(member);
 
       return {
         name: member.name,
@@ -85,6 +108,7 @@ const MembersList = ({
           last_seen: officeTimes?.last_seen,
           current_session_duration: officeTimes?.current_session_duration ?? 0,
           is_active: officeTimes?.is_active === 1,
+          is_office_time_leader: officeTimeLeader,
         },
       };
     })
