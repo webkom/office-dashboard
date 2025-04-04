@@ -3,6 +3,7 @@ import React from "react";
 //import LoadingIcon from 'app/components/LoadingIcon';
 // import type { Theme } from "@material-ui/core/styles";
 import LoadingIcon from "app/components/loading-icon/loading-icon.component";
+import CarouselInfo from "../carousel/carousel.component";
 
 // import MediaInfo from "../MediaInfo";
 // import StatusBar from "../StatusBar";
@@ -27,11 +28,14 @@ const Content: React.FC = () => {
       ) : (
         <>
           {dasboardData.isSuccess && (
-            <MembersList
-              githubContributors={dasboardData.data.repository_contributors!}
-              members={dasboardData.data.members}
-              officeTimes={dasboardData.data.office_times}
-            />
+            <>
+              <CarouselInfo members={dasboardData.data.members} />
+              <MembersList
+                githubContributors={dasboardData.data.repository_contributors!}
+                members={dasboardData.data.members}
+                officeTimes={dasboardData.data.office_times}
+              />
+            </>
           )}
         </>
       )}
