@@ -69,3 +69,7 @@
     transform: rotate3d(1, -1, 1, 360deg);
   }
 }
+
+body::-webkit-scrollbar {
+  display: none; /* Hide scrollbar in Chrome, Safari, and Edge */
+}
