@@ -1,6 +1,6 @@
 Flask==3.0.3
 Flask-Caching==2.3.0
-Flask-Cors==4.0.1
+Flask-Cors==4.0.2
 Flask-RESTful==0.3.10
 gunicorn==23.0.0
 requests==2.32.3
