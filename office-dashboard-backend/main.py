@@ -1,21 +1,22 @@
-import importlib.util
 from flask import Flask
 from flask_caching import Cache
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
 from getters import get_public_members, get_repo_contibutors, get_repo_stats, get_office_times
 import importlib
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+
+load_dotenv()
 
 config = {
     "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
     "CACHE_DEFAULT_TIMEOUT": 300,
 }
+
 app.config.from_mapping(config)
-if importlib.util.find_spec("config") is not None:
-    app.config.from_object("config.DevelopmentConfig")
-app.config.from_prefixed_env()
+app.config.from_prefixed_env("APP")
 
 cache = Cache(app)
 api = Api(app)
