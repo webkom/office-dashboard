@@ -7,8 +7,6 @@
 
 The webkom office dashboard uses different data sources to display information about the office, its environment, and the members of the office.
 
-_Do note that the dashboard and data sources require you to be on the NTNU network, either through VPN or at campus._
-
 ## Setup
 
 ```bash
@@ -75,5 +73,11 @@ _<p align="center">laget med :beer: av webkom</p>_
   Presence broadcasts (every 60 seconds) the list of (whitelisted) nearby devices to MQTT, which is then stored in InfluxDB via. Telegraf.
 
   The dashboard uses the [Presence API](https://presence.webkom.dev) to retrieve the data stored in InfluxDB and uses our [MaaS (Medlemmer as a Service)](https://github.com/webkom/medlemmer) to connect the devices to each member. It then calculates how long each member has been at the office since 06:00 AM, but also when the member was first seen (since 06:00 AM) and last seen at the office (as seen in the dashboard image above). The API also returns the name, avatar, GitHub username, Brus username and Slack username of each member.
+
+- #### Palantir
+
+  Palantir is the successor to the outdated Presence. Ironic enough it still runs on our dear raspberry pie, Presence. Unlike Presence it does not run on MQTT. Palantir scans the local network and gather MAC-address while cross-matching it with addresses in [MaaS (Medlemmer as a Service](https://github.com/webkom/medlemmer). Aswell as ascanning it host its own API on the local network, which is then fetched by dashboard. 
+
+  The dashboard uses [Palantir API](https://palantir.webkom.dev) to get data about "current_session_duration", "last_seen", "is_active" and "total_time".
 
 </details>
