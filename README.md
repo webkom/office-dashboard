@@ -74,10 +74,21 @@ _<p align="center">laget med :beer: av webkom</p>_
 
   The dashboard uses the [Presence API](https://presence.webkom.dev) to retrieve the data stored in InfluxDB and uses our [MaaS (Medlemmer as a Service)](https://github.com/webkom/medlemmer) to connect the devices to each member. It then calculates how long each member has been at the office since 06:00 AM, but also when the member was first seen (since 06:00 AM) and last seen at the office (as seen in the dashboard image above). The API also returns the name, avatar, GitHub username, Brus username and Slack username of each member.
 
-- #### Palantir
+- #### Palantir · [<img src="https://raw.githubusercontent.com/webkom/office-dashboard/assets/GitHub-Mark-32px.png?raw=true" width="16" /> GitHub](https://github.com/webkom/palantir) · [:shipit: API](https://palantir.webkom.dev)
 
-  Palantir is the successor to the outdated Presence. Ironic enough it still runs on our dear raspberry pie, Presence. Unlike Presence it does not run on MQTT. Palantir scans the local network and gather MAC-address while cross-matching it with addresses in [MaaS (Medlemmer as a Service](https://github.com/webkom/medlemmer). Aswell as ascanning it host its own API on the local network, which is then fetched by dashboard. 
+  **Palantir** is the successor to the now-outdated **Presence**—ironically, it still runs on our beloved Raspberry Pi, *Presence*. Unlike Presence, Palantir does not rely on MQTT. Instead, it scans the local network to gather MAC addresses and cross-references them with entries in [MaaS (Medlemmer as a Service)](https://github.com/webkom/medlemmer).
 
-  The dashboard uses [Palantir API](https://palantir.webkom.dev) to get data about "current_session_duration", "last_seen", "is_active" and "total_time".
+  In addition to scanning the network, Palantir hosts its own API on the local network, which is consumed by the dashboard.
+
+  The dashboard uses the [Palantir API](https://palantir.webkom.dev) to retrieve data such as:
+
+  - `"current_session_duration"`
+  - `"last_seen"`
+  - `"is_active"`
+  - `"total_time"`
+
+  It calculates the current session time by comparing `"last_seen"` with the current time, provided `"is_active"` is `true`.
+
+  A Webkom member simply needs to add their MAC address to [MaaS (Medlemmer as a Service)](https://github.com/webkom/medlemmer) to start tracking their time in the office!
 
 </details>
