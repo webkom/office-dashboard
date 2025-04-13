@@ -1,0 +1,56 @@
+.carousel {
+  background-color: var(--header-color);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-bottom: 5px solid var(--background-color-light);
+  position: relative;
+}
+
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: scrollMarquee 15s linear infinite;
+}
+
+.marquee-inner {
+  display: flex;
+}
+
+.text-birthday {
+  display: flex;
+  align-items: center;
+  margin-right: 50px;
+  white-space: nowrap;
+}
+
+.main-text-birthday {
+  font-weight: bold;
+  background: linear-gradient(45deg, #ff6b81, #f7a8b8, #ffbc42, #9b59b6);
+  background-size: 400% 400%;
+  color: transparent;
+  background-clip: text;
+  animation: gradientAnimation 3s ease infinite;
+  margin: 0 15px;
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes scrollMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
