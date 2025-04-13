@@ -83,7 +83,7 @@ const MembersListItem = ({ member }: Props) => {
             {member.office_times.is_office_time_leader && (
               <FontAwesomeIcon
                 className={styles["crown-icon"]}
-                icon={faCrown}
+                icon={faCrown as IconProp}
               />
             )}
             {formatSecondsToHours(member.office_times.total_time)}
