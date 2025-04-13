@@ -136,10 +136,7 @@
 .crown-icon {
   color: #ffd700;
   margin-right: 5px;
-  min-width: var(--member-icon-size);
-  max-width: var(--member-icon-size);
-  min-height: var(--member-icon-size);
-  max-height: var(--member-icon-size);
+  font-size: 0.8rem;
 }
 
 .last-seen {
