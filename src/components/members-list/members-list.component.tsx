@@ -1,6 +1,7 @@
+import { IsEmpty } from "app/helpers/is-empty";
 import MembersListItem from "./members-list-item/members-list-item.component";
 import styles from "./members-list.module.css";
-import { GithubContributor } from "app/hooks/dashboard-data.hook";
+import { GithubContributor, MaybeEmpty } from "app/hooks/dashboard-data.hook";
 import { Member } from "app/hooks/dashboard-data.hook";
 import { OfficeTimes } from "app/hooks/dashboard-data.hook";
 
@@ -8,15 +9,9 @@ export type MemberWithGithubStats = {
   name: string;
   avatar: string;
   github: string;
-  github_contributions: {
-    lego: number;
-    webapp: number;
-  };
+  github_contributions: { lego: number; webapp: number };
   brus_data: string;
-  kaffe_data: {
-    jugs_brewed: number;
-    volume_brewed: number;
-  };
+  kaffe_data: { jugs_brewed: number; volume_brewed: number };
   birthday: string;
   joined: "" | string;
   first_lego_commit: string;
@@ -39,11 +34,15 @@ const MembersList = ({
   members,
   officeTimes,
 }: {
-  githubContributors: GithubContributor[];
+  githubContributors: MaybeEmpty<GithubContributor[]>;
   members: Member[];
   officeTimes: OfficeTimes[];
 }) => {
   const findGithubStatsOrDefault = (member: Member) => {
+    if (IsEmpty(githubContributors)) {
+      return null;
+    }
+
     return githubContributors.find(
       (contributor) => contributor.login === member.github,
     );
@@ -91,10 +90,7 @@ const MembersList = ({
           webapp: contributionStats?.webapp ?? 0,
         },
         brus_data: "",
-        kaffe_data: {
-          jugs_brewed: 0,
-          volume_brewed: 0,
-        },
+        kaffe_data: { jugs_brewed: 0, volume_brewed: 0 },
         birthday: "",
         joined: member.joined,
         first_lego_commit: "",

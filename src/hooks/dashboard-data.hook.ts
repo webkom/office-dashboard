@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { DASHBOARD_API } from "app/config";
 
+export type MaybeEmpty<T> = T | Record<string, never>;
+
 export type Member = {
   name: string;
   full_name: string;
@@ -48,8 +50,11 @@ export type RepositoryStats = {
 
 export type DashboardData = {
   members: Member[];
-  repository_stats: { lego: RepositoryStats; webapp: RepositoryStats };
-  repository_contributors: GithubContributor[];
+  repository_stats: MaybeEmpty<{
+    lego: RepositoryStats;
+    webapp: RepositoryStats;
+  }>;
+  repository_contributors: MaybeEmpty<GithubContributor[]>;
   office_times: OfficeTimes[];
 };
 
