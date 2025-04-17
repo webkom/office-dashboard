@@ -2,7 +2,12 @@ from flask import Flask
 from flask_caching import Cache
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
-from getters import get_public_members, get_repo_contibutors, get_repo_stats, get_office_times
+from getters import (
+    get_public_members,
+    get_repo_contibutors,
+    get_repo_stats,
+    get_office_times,
+)
 import importlib
 from dotenv import load_dotenv
 

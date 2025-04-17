@@ -1,15 +1,18 @@
 import Repository from "app/components/repository/repository.component";
 import styles from "./github.module.css";
 import { useDashboardData } from "app/hooks/dashboard-data.hook";
+import NoData from "app/components/nodata/nodata.component";
+import { IsEmpty } from "app/helpers/is-empty";
 
 const Github = () => {
   const { data, isLoading } = useDashboardData();
 
-  if (isLoading) return <></>;
+  if (isLoading || !data) return <></>;
 
+  const { repository_stats } = data;
   return (
     <div className={`${styles["github-repos"]} g-flex-row g-height-full`}>
-      {!!data && (
+      {!IsEmpty(repository_stats) ? (
         <>
           <Repository
             key={"repository-lego"}
@@ -20,6 +23,8 @@ const Github = () => {
             repository={data.repository_stats["webapp"]}
           />
         </>
+      ) : (
+        <NoData cause="Missing field `repository_stats` from backend" />
       )}
     </div>
   );

@@ -1,5 +1,7 @@
 from flask import Flask
 import requests
+import sys
+import traceback
 
 
 def get_public_members(app: Flask):
@@ -10,7 +12,9 @@ def get_public_members(app: Flask):
     url = f'https://{app.config["MEMBERS_URI"]}'
 
     try:
-        members_res = requests.get(url=url, auth=(app.config["MEMBERS_USER"], app.config["MEMBERS_PASSWORD"]))
+        members_res = requests.get(
+            url=url, auth=(app.config["MEMBERS_USER"], app.config["MEMBERS_PASSWORD"])
+        )
         members_json = members_res.json()
 
         return [
@@ -47,9 +51,7 @@ def get_repo_contibutors(app: Flask):
     url_lego = (
         "https://api.github.com/repos/webkom/lego/stats/contributors?per_page=100"
     )
-    url_webapp = (
-        "https://api.github.com/repos/webkom/lego-webapp/stats/contributors?per_page=100"
-    )
+    url_webapp = "https://api.github.com/repos/webkom/lego-webapp/stats/contributors?per_page=100"
     headers = {"Authorization": f'token {app.config["GITHUB_API_TOKEN"]}'}
 
     contributors = {}
@@ -81,13 +83,18 @@ def get_repo_contibutors(app: Flask):
                 "total"
             ]
 
-        return [ contributor for contributor in contributors.values()] 
+        return [contributor for contributor in contributors.values()]
 
     except Exception as e:
         if app.config["DEBUG"]:
-            raise Exception("Exception thrown while fetching github contributors", e)
+            traceback.print_exc()
         else:
-            raise Exception("Exception thrown while fetching github contributors")
+            print(
+                Exception("Exception thrown while fetching github contributors"),
+                file=sys.stderr,
+            )
+
+        return {}
 
 
 def get_repo_stats(app: Flask):
@@ -196,9 +203,15 @@ def get_repo_stats(app: Flask):
         }
     except Exception as e:
         if app.config["DEBUG"]:
-            raise Exception("Exception thrown while fetching github status", e)
+            traceback.print_exc()
+
         else:
-            raise Exception("Exception thrown while fetching github status")
+            print(
+                Exception("Exception thrown while fetching github repo stats"),
+                file=sys.stderr,
+            )
+
+        return {}
 
 
 """
@@ -236,7 +249,9 @@ def get_office_times(app: Flask):
     url = f'https://{app.config["PALANTIR_URI"]}/members'
 
     try:
-        member_times_res = requests.get(url=url, auth=(app.config["PALANTIR_USER"], app.config["PALANTIR_PASSWORD"]))
+        member_times_res = requests.get(
+            url=url, auth=(app.config["PALANTIR_USER"], app.config["PALANTIR_PASSWORD"])
+        )
         member_times_json = member_times_res.json()
 
         return [
