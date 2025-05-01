@@ -10,7 +10,7 @@ const formatSecondsToHours = (seconds: number): string => {
 
 const timeAgo = (lastSeen: Date): string => {
   moment.locale("nb");
-  const lastSeenTime = moment.tz(lastSeen, "Europe/Oslo");
+  const lastSeenTime = moment.utc(lastSeen).tz("Europe/Oslo");
 
   return lastSeenTime.fromNow();
 };
