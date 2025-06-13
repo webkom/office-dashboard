@@ -68,7 +68,13 @@ const MembersListItem = ({ member }: Props) => {
           className={styles["github-icon"]}
           icon={faGithub as IconProp}
         />
-        <a>{member.github}</a>
+        <a
+          href={`https://github.com/${member.github}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {member.github}
+        </a>
       </div>
       <div className={`${styles["entry"]} ${styles["contributions"]}`}>
         <div>
