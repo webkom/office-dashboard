@@ -109,34 +109,78 @@ const MembersList = ({
       };
     })
     .sort((m1, m2) => {
-      // Order present members by current session duration
+      // Order online members on longest session duration (longest first)
       if (m1.office_times.is_active && m2.office_times.is_active) {
         return (
           m2.office_times.current_session_duration -
           m1.office_times.current_session_duration
         );
       }
-      // Order present members before absent members
+      // If only one online show the online member first
       if (m1.office_times.is_active !== m2.office_times.is_active) {
         return !m1.office_times.is_active ? 1 : -1;
       }
-      // Order absent members by last seen date
-      if (!m1.office_times.is_active && !m2.office_times.is_active) {
-        if (m1.office_times.last_seen && m2.office_times.last_seen) {
-          return m1.office_times.last_seen < m2.office_times.last_seen ? 1 : -1;
-        }
-        if (m1.office_times.last_seen) {
-          return -1;
-        }
-        if (m2.office_times.last_seen) {
-          return 1;
-        }
+
+      // Members are offline:
+      // a) Members are active (newest first)
+      if (
+        m1.is_active &&
+        m2.is_active &&
+        m1.office_times.last_seen &&
+        m2.office_times.last_seen
+      ) {
+        return m1.office_times.last_seen < m2.office_times.last_seen ? 1 : -1;
       }
-      // Order absent members with no last seen date by active status
+
+      // b) One of the members has a last_seen (last_seen first)
+      if (
+        m1.is_active &&
+        m1.office_times.last_seen &&
+        !m2.office_times.last_seen
+      )
+        return -1;
+      if (
+        m2.is_active &&
+        m2.office_times.last_seen &&
+        !m1.office_times.last_seen
+      )
+        return 1;
+
+      // 3. Active member without last_seen (before inactive)
       if (m1.is_active !== m2.is_active) {
-        return m2.is_active ? 1 : -1;
+        return m1.is_active ? -1 : 1;
       }
-      // Lastly, order by name
+
+      // 5. If both is inactive (newest last_seen first)
+      if (
+        !m1.is_active &&
+        !m2.is_active &&
+        m1.office_times.last_seen &&
+        m2.office_times.last_seen
+      ) {
+        return m1.office_times.last_seen < m2.office_times.last_seen ? 1 : -1;
+      }
+
+      // 6. One inactive with last_seen (one with last_seen first)
+      if (
+        !m1.is_active &&
+        m1.office_times.last_seen &&
+        !m2.office_times.last_seen
+      )
+        return -1;
+      if (
+        !m2.is_active &&
+        m2.office_times.last_seen &&
+        !m1.office_times.last_seen
+      )
+        return 1;
+
+      // 7. Active without last seen should be before inactives
+      if (m1.is_active !== m2.is_active) {
+        return m1.is_active ? -1 : 1;
+      }
+
+      // Alphabetic fallback
       return m1.name.localeCompare(m2.name);
     });
 
