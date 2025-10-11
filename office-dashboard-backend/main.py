@@ -10,6 +10,7 @@ from getters import (
 )
 import importlib
 from dotenv import load_dotenv
+from mock import Mock
 
 app = Flask(__name__)
 
@@ -34,10 +35,21 @@ class OfficeDashboard(Resource):
     @cross_origin()
     def get(self):
         print("Using non-cached request")
-        members = get_public_members(app)
-        repo_contributors = get_repo_contibutors(app)
-        repo_stats = get_repo_stats(app)
-        office_times = get_office_times(app)
+        
+        if app.config["MOCK_REQUESTS"]: 
+            members = Mock.get_public_users()
+            repo_contributors = Mock.get_repo_contributors()
+            repo_stats = Mock.get_repo_stats()
+            office_times = Mock.get_office_times()
+        else: 
+            members = {}
+            repo_contributors = {}
+            repo_stats = {}
+            office_times = {}
+            # members = get_public_members(app)
+            # repo_contributors = get_repo_contibutors(app)
+            # repo_stats = get_repo_stats(app)
+            # office_times = get_office_times(app)
 
         return {
             "members": members,
