@@ -18,6 +18,9 @@ const Content: React.FC = () => {
     dasboardData.data?.members,
     dasboardData.data?.office_times,
   );
+  
+  // Use old data even if most recent call failed
+  const dataExists = dasboardData.isSuccess || !!dasboardData?.data
 
   return (
     <div className="g-width-full g-flex-col g-flex-align-center">
@@ -27,7 +30,7 @@ const Content: React.FC = () => {
         <LoadingIcon />
       ) : (
         <>
-          {dasboardData.isSuccess && (
+          {dataExists && (
             <>
               <CarouselInfo members={dasboardData.data.members} />
               <MembersList
