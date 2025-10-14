@@ -37,19 +37,16 @@ class OfficeDashboard(Resource):
         print("Using non-cached request")
         
         if app.config["MOCK_REQUESTS"]: 
+            print("* Using mock data")
             members = Mock.get_public_users()
             repo_contributors = Mock.get_repo_contributors()
             repo_stats = Mock.get_repo_stats()
             office_times = Mock.get_office_times()
         else: 
-            members = {}
-            repo_contributors = {}
-            repo_stats = {}
-            office_times = {}
-            # members = get_public_members(app)
-            # repo_contributors = get_repo_contibutors(app)
-            # repo_stats = get_repo_stats(app)
-            # office_times = get_office_times(app)
+            members = get_public_members(app)
+            repo_contributors = get_repo_contibutors(app)
+            repo_stats = get_repo_stats(app)
+            office_times = get_office_times(app)
 
         return {
             "members": members,
@@ -62,4 +59,4 @@ class OfficeDashboard(Resource):
 api.add_resource(OfficeDashboard, "/")
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=8080)
