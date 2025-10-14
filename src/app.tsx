@@ -9,7 +9,7 @@ function App() {
     <>
       <QueryClientProvider client={queryClient}>
         <Dashboard />
-        <ReactQueryDevtools initialIsOpen={true} />
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </>
   );

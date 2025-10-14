@@ -1,7 +1,5 @@
 from flask import Flask
 import requests
-import sys
-import traceback
 
 
 def get_public_members(app: Flask):
@@ -11,39 +9,33 @@ def get_public_members(app: Flask):
 
     url = f'https://{app.config["MEMBERS_URI"]}'
 
-    try:
-        members_res = requests.get(
-            url=url, auth=(app.config["MEMBERS_USER"], app.config["MEMBERS_PASSWORD"])
-        )
-        members_json = members_res.json()
+    members_res = requests.get(
+        url=url, auth=(app.config["MEMBERS_USER"], app.config["MEMBERS_PASSWORD"])
+    )
+    members_json = members_res.json()
 
-        return [
-            {
-                "name": member["name"],
-                "full_name": member["full_name"],
-                "birthday": member["birthday"],
-                "joined": member["joined"],
-                "first_lego_commit": member["first_lego_commit"],
-                "avatar": member["avatar"],
-                "slack": member["slack"],
-                "phone_number": member["phone_number"],
-                "github": member["github"],
-                "brus": member["brus"],
-                "active": member["active"],
-                "new": member["new"],
-                "welcome_messages": member["welcome_messages"],
-            }
-            for member in members_json
-        ]
-
-    except Exception as e:
-        if app.config["DEBUG"]:
-            raise Exception("Exception thrown while fetching members", e)
-        else:
-            raise Exception("Exception thrown while fetching members")
+    return [
+        {
+            "name": member["name"],
+            "full_name": member["full_name"],
+            "birthday": member["birthday"],
+            "joined": member["joined"],
+            "first_lego_commit": member["first_lego_commit"],
+            "avatar": member["avatar"],
+            "slack": member["slack"],
+            "phone_number": member["phone_number"],
+            "github": member["github"],
+            "brus": member["brus"],
+            "active": member["active"],
+            "new": member["new"],
+            "welcome_messages": member["welcome_messages"],
+        }
+        for member in members_json
+    ]
 
 
-def get_repo_contibutors(app: Flask):
+
+def get_repo_contributors(app: Flask):
     """
     Use access token to fetch repository contribution statistics
     """
@@ -56,45 +48,34 @@ def get_repo_contibutors(app: Flask):
 
     contributors = {}
 
-    try:
-        contribution_lego_res = requests.get(url=url_lego, headers=headers)
-        contribution_lego_json = contribution_lego_res.json()
+    contribution_lego_res = requests.get(url=url_lego, headers=headers)
+    contribution_lego_json = contribution_lego_res.json()
 
-        for contributor in contribution_lego_json:
+    for contributor in contribution_lego_json:
+        contributors[contributor["author"]["login"]] = {
+            "login": contributor["author"]["login"],
+            "avatar_url": contributor["author"]["avatar_url"],
+            "html_url": contributor["author"]["html_url"],
+            "lego": contributor["total"],
+        }
+
+    contribution_webapp_res = requests.get(url=url_webapp, headers=headers)
+    contribution_webapp_json = contribution_webapp_res.json()
+
+    for contributor in contribution_webapp_json:
+        if contributor["author"]["login"] not in contributors:
             contributors[contributor["author"]["login"]] = {
                 "login": contributor["author"]["login"],
                 "avatar_url": contributor["author"]["avatar_url"],
                 "html_url": contributor["author"]["html_url"],
-                "lego": contributor["total"],
             }
 
-        contribution_webapp_res = requests.get(url=url_webapp, headers=headers)
-        contribution_webapp_json = contribution_webapp_res.json()
+        contributors[contributor["author"]["login"]]["webapp"] = contributor[
+            "total"
+        ]
 
-        for contributor in contribution_webapp_json:
-            if contributor["author"]["login"] not in contributors:
-                contributors[contributor["author"]["login"]] = {
-                    "login": contributor["author"]["login"],
-                    "avatar_url": contributor["author"]["avatar_url"],
-                    "html_url": contributor["author"]["html_url"],
-                }
+    return [contributor for contributor in contributors.values()]
 
-            contributors[contributor["author"]["login"]]["webapp"] = contributor[
-                "total"
-            ]
-
-        return [contributor for contributor in contributors.values()]
-
-    except Exception as e:
-        if app.config["DEBUG"]:
-            traceback.print_exc()
-        else:
-            print(
-                Exception("Exception thrown while fetching github contributors"),
-                file=sys.stderr,
-            )
-
-        return {}
 
 
 def get_repo_stats(app: Flask):
@@ -191,27 +172,40 @@ def get_repo_stats(app: Flask):
     }
     """
 
-    try:
-        repo_stats_res = requests.post(
-            url=url, json={"query": query_string}, headers=headers
-        )
-        repo_stats_json = repo_stats_res.json()
+    repo_stats_res = requests.post(
+        url=url, json={"query": query_string}, headers=headers
+    )
+    repo_stats_json = repo_stats_res.json()
 
-        return {
-            "lego": parse_repo_stats("lego", repo_stats_json["data"]["lego"]),
-            "webapp": parse_repo_stats("webapp", repo_stats_json["data"]["webapp"]),
+    return {
+        "lego": parse_repo_stats("lego", repo_stats_json["data"]["lego"]),
+        "webapp": parse_repo_stats("webapp", repo_stats_json["data"]["webapp"]),
+    }
+
+
+def get_office_times(app: Flask):
+    """
+    Request data from Palantir API, get members office times
+    """
+
+    url = f'https://{app.config["PALANTIR_URI"]}/members'
+
+    member_times_res = requests.get(
+        url=url, auth=(app.config["PALANTIR_USER"], app.config["PALANTIR_PASSWORD"])
+    )
+    member_times_json = member_times_res.json()
+
+    return [
+        {
+            "github_name": member["github_name"],
+            "last_seen": member["last_seen"],
+            "current_session_duration": member["current_session_duration"],
+            "is_active": member["is_active"],
+            "total_time": member["total_time"],
         }
-    except Exception as e:
-        if app.config["DEBUG"]:
-            traceback.print_exc()
+        for member in member_times_json["members"]
+    ]
 
-        else:
-            print(
-                Exception("Exception thrown while fetching github repo stats"),
-                file=sys.stderr,
-            )
-
-        return {}
 
 
 """
@@ -241,32 +235,3 @@ def parse_repo_stats(name, repository):
     }
 
 
-def get_office_times(app: Flask):
-    """
-    Request data from Palantir API, get members office times
-    """
-
-    url = f'https://{app.config["PALANTIR_URI"]}/members'
-
-    try:
-        member_times_res = requests.get(
-            url=url, auth=(app.config["PALANTIR_USER"], app.config["PALANTIR_PASSWORD"])
-        )
-        member_times_json = member_times_res.json()
-
-        return [
-            {
-                "github_name": member["github_name"],
-                "last_seen": member["last_seen"],
-                "current_session_duration": member["current_session_duration"],
-                "is_active": member["is_active"],
-                "total_time": member["total_time"],
-            }
-            for member in member_times_json["members"]
-        ]
-
-    except Exception as e:
-        if app.config["DEBUG"]:
-            raise Exception("Exception thrown while fetching members times", e)
-        else:
-            raise Exception("Exception thrown while fetching members times")

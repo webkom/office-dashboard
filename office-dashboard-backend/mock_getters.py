@@ -1,5 +1,5 @@
 
-def createUser(i):
+def createMember(i):
     return {
           "active": True,
           "avatar": "",
@@ -63,22 +63,16 @@ def createOfficeTimes(i):
         "total_time": 1000
     }
 
-class Mock():
+num_users = 3
 
-    num_users = 3
+def get_public_members(_app):
+    return [createMember(i) for i in range(num_users)]
 
-    @staticmethod
-    def get_public_users():
-        return [createUser(i) for i in range(Mock.num_users)]
+def get_repo_contributors(_app):
+    return [createRepoContributors(i) for i in range(num_users)]
 
-    @staticmethod
-    def get_repo_contributors():
-        return [createRepoContributors(i) for i in range(Mock.num_users)]
+def get_repo_stats(_app):
+    return createRepoStats()
 
-    @staticmethod
-    def get_repo_stats():
-        return createRepoStats()
-
-    @staticmethod
-    def get_office_times():
-        return [createOfficeTimes(i) for i in range(Mock.num_users)]
+def get_office_times(_app):
+    return [createOfficeTimes(i) for i in range(num_users)]
