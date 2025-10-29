@@ -2,14 +2,9 @@ from flask import Flask
 from flask_caching import Cache
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
-from getters import (
-    get_public_members,
-    get_repo_contibutors,
-    get_repo_stats,
-    get_office_times,
-)
 import importlib
 from dotenv import load_dotenv
+from fallback_call import FallbackCall
 
 app = Flask(__name__)
 
@@ -27,6 +22,19 @@ cache = Cache(app)
 api = Api(app)
 cors = CORS(app, origins="*")
 
+if app.config["MOCK_REQUESTS"] == 'True':
+    import mock_getters as getters
+    print("Using mocked requests")
+else:
+    import getters
+
+debug = app.config["DEBUG"] == 'True'
+
+safe_get_public_members = FallbackCall(getters.get_public_members, debug=debug, default_value=[])
+safe_get_repo_contributors = FallbackCall(getters.get_repo_contributors, debug=debug, default_value=[])
+safe_get_repo_stats = FallbackCall(getters.get_repo_stats, debug=debug, default_value=[])
+safe_get_office_times = FallbackCall(getters.get_office_times, debug=debug, default_value=[])
+
 
 class OfficeDashboard(Resource):
 
@@ -34,10 +42,11 @@ class OfficeDashboard(Resource):
     @cross_origin()
     def get(self):
         print("Using non-cached request")
-        members = get_public_members(app)
-        repo_contributors = get_repo_contibutors(app)
-        repo_stats = get_repo_stats(app)
-        office_times = get_office_times(app)
+        
+        members, _ = safe_get_public_members(app)
+        repo_contributors, _ = safe_get_repo_contributors(app)
+        repo_stats, _ = safe_get_repo_stats(app)
+        office_times, _ = safe_get_office_times(app)
 
         return {
             "members": members,
@@ -50,4 +59,6 @@ class OfficeDashboard(Resource):
 api.add_resource(OfficeDashboard, "/")
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=8080)
+
+
