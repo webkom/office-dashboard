@@ -56,11 +56,11 @@ def createRepoStats():
 
 def createOfficeTimes(i):
     return {
-        "current_session_duration": 2,
+        "current_session_duration": 0,
         "github_name": f"gh_user{i}",
-        "is_active": True,
-        "last_seen": "2020-01-01T00:00:00Z",
-        "total_time": 1000
+        "is_active": 1,
+        "last_seen": "2026-04-24T08:30:00Z",
+        "total_time": 1000 * 3600
     }
 
 num_users = 3
