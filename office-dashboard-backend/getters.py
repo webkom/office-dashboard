@@ -185,26 +185,43 @@ def get_repo_stats(app: Flask):
 
 def get_office_times(app: Flask):
     """
-    Request data from Palantir API, get members office times
+    Request data from Palantir API and map it to the legacy office_times shape
+    the frontend expects.
+
+    The new API splits what used to be one endpoint: GET /members gives presence,
+    GET /stats/leaderboard.all_time gives lifetime hours per member. For active
+    members we expose arrived_at as last_seen and leave current_session_duration
+    at 0 so the frontend's calculateSessionTime ticks forward from arrival.
     """
 
-    url = f'https://{app.config["PALANTIR_URI"]}/members'
+    base_url = f'https://{app.config["PALANTIR_URI"]}'
 
-    member_times_res = requests.get(
-        url=url, auth=(app.config["PALANTIR_USER"], app.config["PALANTIR_PASSWORD"])
-    )
-    member_times_json = member_times_res.json()
+    members_res = requests.get(url=f"{base_url}/members")
+    members_json = members_res.json()
 
-    return [
-        {
-            "github_name": member["github_name"],
-            "last_seen": member["last_seen"],
-            "current_session_duration": member["current_session_duration"],
-            "is_active": member["is_active"],
-            "total_time": member["total_time"],
-        }
-        for member in member_times_json["members"]
-    ]
+    leaderboard_res = requests.get(url=f"{base_url}/stats/leaderboard")
+    leaderboard_json = leaderboard_res.json()
+
+    total_hours_by_member = {
+        entry["member"]: entry["hours"]
+        for entry in leaderboard_json.get("all_time", [])
+    }
+
+    office_times = []
+    for member in members_json:
+        is_in = member.get("status") == "in"
+        last_seen = member.get("arrived_at") if is_in else member.get("last_seen")
+        total_hours = total_hours_by_member.get(member["member"], 0)
+
+        office_times.append({
+            "github_name": member["member"],
+            "last_seen": last_seen,
+            "current_session_duration": 0,
+            "is_active": 1 if is_in else 0,
+            "total_time": int(total_hours * 3600),
+        })
+
+    return office_times
 
 
 
