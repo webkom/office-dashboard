@@ -21,7 +21,6 @@
     "@tanstack/react-query-devtools": "^5.90.2",
     "bytes": "^3.1.2",
     "color": "^5.0.0",
-    "colorthief": "^2.6.0",
     "dotenv": "^16.4.7",
     "graphql": "^16.10.0",
     "graphql-request": "^7.1.2",
