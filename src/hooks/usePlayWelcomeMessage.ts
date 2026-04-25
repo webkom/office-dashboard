@@ -13,11 +13,12 @@ const usePlayWelcomeMessage = (
 
   useEffect(() => {
     for (const member of members) {
+      const handle = member.github.toLowerCase();
       const officeTime = officeTimes.find(
-        (ot) => ot.github_name === member.github,
+        (ot) => ot.github_name.toLowerCase() === handle,
       );
       const previousOfficeTime = previousOfficeTimes.find(
-        (ot) => ot.github_name === member.github,
+        (ot) => ot.github_name.toLowerCase() === handle,
       );
       if (officeTime && previousOfficeTime) {
         if (officeTime?.is_active && !previousOfficeTime?.is_active) {

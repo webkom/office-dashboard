@@ -48,30 +48,32 @@ const MembersList = ({
     );
   };
 
+  const matchesGithub = (officeTimeHandle: string, memberHandle: string) =>
+    officeTimeHandle.toLowerCase() === memberHandle.toLowerCase();
+
   const findOfficeTimesForMember = (member: Member) => {
-    return officeTimes.find(
-      (officeTime) => officeTime.github_name === member.github,
+    return officeTimes.find((officeTime) =>
+      matchesGithub(officeTime.github_name, member.github),
     );
   };
 
   const isOfficeTimeLeader = (member: Member): boolean => {
-    // Find the office time record for the member
     const officeTimeForActiveMember = officeTimes.find(
-      (officeTime) => officeTime.github_name === member.github && member.active,
+      (officeTime) =>
+        matchesGithub(officeTime.github_name, member.github) && member.active,
     );
 
     if (!officeTimeForActiveMember) {
-      // If no office time record is found, return false
       return false;
     }
 
-    // Check if the member has the highest total_time
     const leaderOfficeTime = officeTimes.reduce((leader, current) =>
       current.total_time > leader.total_time ? current : leader,
     );
 
-    return (
-      officeTimeForActiveMember.github_name === leaderOfficeTime.github_name
+    return matchesGithub(
+      officeTimeForActiveMember.github_name,
+      leaderOfficeTime.github_name,
     );
   };
 
