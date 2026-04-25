@@ -9,16 +9,19 @@ import CarouselInfo from "../carousel/carousel.component";
 // import StatusBar from "../StatusBar";
 import MembersList from "app/components/members-list/members-list.component";
 import { useDashboardData } from "app/hooks/dashboard-data.hook";
+import { usePalantirData } from "app/hooks/palantir-data.hook";
 import StatusBar from "app/components/status-bar/status-bar.component";
 import usePlayWelcomeMessage from "app/hooks/usePlayWelcomeMessage.ts";
 
 const Content: React.FC = () => {
   const dasboardData = useDashboardData();
+  const palantirData = usePalantirData();
+
   usePlayWelcomeMessage(
     dasboardData.data?.members,
-    dasboardData.data?.office_times,
+    palantirData.data,
   );
-  
+
   // Use old data even if most recent call failed
   const dataExists = dasboardData.isSuccess || !!dasboardData?.data
 
@@ -36,7 +39,7 @@ const Content: React.FC = () => {
               <MembersList
                 githubContributors={dasboardData.data.repository_contributors!}
                 members={dasboardData.data.members}
-                officeTimes={dasboardData.data.office_times}
+                officeTimes={palantirData.data ?? []}
               />
             </>
           )}

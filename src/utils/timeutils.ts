@@ -8,7 +8,7 @@ const formatSecondsToHours = (seconds: number): string => {
   return `${hours} ${hours === 1 ? "time" : "timer"}`;
 };
 
-const timeAgo = (lastSeen: Date): string => {
+const timeAgo = (lastSeen: string | Date): string => {
   moment.locale("nb");
   const lastSeenTime = moment.utc(lastSeen).tz("Europe/Oslo");
 
@@ -16,9 +16,9 @@ const timeAgo = (lastSeen: Date): string => {
 };
 
 const calculateSessionTime = (
-  sessionDuration: number, // Current duration calculated by the backend
+  sessionDuration: number,
   currentTime: Moment,
-  lastSeen?: Date,
+  lastSeen?: string | Date,
 ): string => {
   if (!lastSeen) return "";
 

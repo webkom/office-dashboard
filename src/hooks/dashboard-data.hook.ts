@@ -23,7 +23,7 @@ export type Member = {
 export type OfficeTimes = {
   github_name: string;
   total_time: number;
-  last_seen: Date;
+  last_seen: string | undefined;
   current_session_duration: number;
   is_active: 1 | 0;
 };
@@ -55,7 +55,6 @@ export type DashboardData = {
     webapp: RepositoryStats;
   }>;
   repository_contributors: MaybeEmpty<GithubContributor[]>;
-  office_times: OfficeTimes[];
 };
 
 export type GithubContributor = {
