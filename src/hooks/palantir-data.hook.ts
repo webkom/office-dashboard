@@ -15,18 +15,21 @@ const fetchPalantirOfficeTimes = async (): Promise<OfficeTimes[]> => {
     fetch(`${PALANTIR_API}/stats/leaderboard`),
   ]);
 
-  if (!membersRes.ok || !leaderboardRes.ok) {
-    throw new Error("Fetching Palantir data failed");
+  if (!membersRes.ok) {
+    throw new Error("Fetching Palantir members failed");
   }
 
   const members = (await membersRes.json()) as PalantirMember[];
-  const leaderboard = (await leaderboardRes.json()) as {
-    all_time: { member: string; hours: number }[];
-  };
 
-  const totalHoursByMember = Object.fromEntries(
-    (leaderboard.all_time ?? []).map((e) => [e.member, e.hours]),
-  );
+  let totalHoursByMember: Record<string, number> = {};
+  if (leaderboardRes.ok) {
+    const leaderboard = (await leaderboardRes.json()) as {
+      all_time: { member: string; hours: number }[];
+    };
+    totalHoursByMember = Object.fromEntries(
+      (leaderboard.all_time ?? []).map((e) => [e.member, e.hours]),
+    );
+  }
 
   return members.map(
     (m): OfficeTimes => ({
