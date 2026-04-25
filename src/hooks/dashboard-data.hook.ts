@@ -55,6 +55,7 @@ export type DashboardData = {
     webapp: RepositoryStats;
   }>;
   repository_contributors: MaybeEmpty<GithubContributor[]>;
+  office_times: OfficeTimes[];
 };
 
 export type GithubContributor = {
