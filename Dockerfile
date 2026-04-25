@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN yarn --frozen-lockfile
+RUN yarn --frozen-lockfile --ignore-optional
 
 RUN yarn build
 
