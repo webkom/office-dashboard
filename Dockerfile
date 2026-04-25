@@ -1,10 +1,12 @@
-FROM node:22-alpine as build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-COPY . .
+COPY package.json yarn.lock ./
 
-RUN yarn --frozen-lockfile --ignore-optional
+RUN yarn --frozen-lockfile
+
+COPY . .
 
 RUN yarn build
 
