@@ -7,9 +7,10 @@ export const DASHBOARD_API = import.meta.env.PROD
 export const BRUS_URL =
   import.meta.env.REACT_APP_BRUS_URL || "https://brus.abakus.no/api/liste";
 
-// Presence API  ! Do not work
-export const PRESENCE_URL =
-  import.meta.env.REACT_APP_PRESENCE_URL || "https://presence.webkom.dev";
+// Palantir presence API
+export const PALANTIR_API = import.meta.env.PROD
+  ? "https://palantir.webkom.dev"
+  : import.meta.env.VITE_PALANTIR_API ?? "http://localhost:8080";
 
 // Environment API
 export const ENVIRONMENT_URL =

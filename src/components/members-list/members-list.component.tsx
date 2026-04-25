@@ -24,7 +24,7 @@ export type MemberWithGithubStats = {
     total_time: number;
     is_office_time_leader: boolean;
     current_session_duration: number;
-    last_seen?: Date;
+    last_seen?: string;
     is_active: boolean;
   };
 };
