@@ -5,6 +5,7 @@ import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
+    <link rel="icon" type="image/png" href="/favicon.ico" />
     <App />
   </React.StrictMode>,
 );
