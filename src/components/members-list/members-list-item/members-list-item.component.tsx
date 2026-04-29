@@ -7,7 +7,7 @@ import {
   formatSecondsToHours,
 } from "app/utils/timeutils";
 
-import { faGithub } from "@fortawesome/free-brands-svg-icons";
+// ...existing code...
 import { useEffect, useState } from "react";
 import moment from "moment-timezone";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -30,41 +30,25 @@ const MembersListItem = ({ member }: Props) => {
   }, []);
 
   return (
-    <div
+    <tr
       className={
         member.is_active
-          ? `${styles["members-item"]} ${styles["is-active"]} g-flex-row`
-          : `${styles["members-item"]} g-flex-row`
+          ? `${styles["members-item"]} ${styles["is-active"]}`
+          : `${styles["members-item"]}`
       }
     >
-      <div className={`${styles["entry"]} ${styles["avatar"]}`}>
-        <img src={member.avatar} />
-      </div>
-      <div className={`${styles["entry"]} ${styles["name"]}`}>
+      <td className={`${styles["entry"]} ${styles["avatar"]}`}>
+        <img src={member.avatar} alt={`Avatar of ${member.name}`} />
         {member.name}
-      </div>
-      <div className={`${styles["entry"]} ${styles["github"]}`}>
-        <FontAwesomeIcon
-          className={styles["github-icon"]}
-          icon={faGithub as IconProp}
-        />
-        <a
-          href={`https://github.com/${member.github}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {member.github}
-        </a>
-      </div>
-      <div className={`${styles["entry"]} ${styles["contributions"]}`}>
+      </td>
+      <td className={`${styles["entry"]} ${styles["contributions"]}`}>
         <div>
           <div>lego: {member.github_contributions.lego}</div>
           <div>webapp: {member.github_contributions.webapp}</div>
         </div>
-      </div>
-      <div className={`${styles["entry"]} ${styles["total-time"]}`}>
+      </td>
+      <td className={`${styles["entry"]} ${styles["total-time"]}`}>
         <div>
-          Total Tid: <br />{" "}
           <div className={`${styles["total-time-info"]}`}>
             {member.office_times.is_office_time_leader && (
               <FontAwesomeIcon
@@ -75,12 +59,11 @@ const MembersListItem = ({ member }: Props) => {
             {formatSecondsToHours(member.office_times.total_time)}
           </div>
         </div>
-      </div>
-      <div className={`${styles["entry"]} ${styles["last-seen"]}`}>
+      </td>
+      <td className={`${styles["entry"]} ${styles["last-seen"]}`}>
         {member.office_times.is_active ? (
           // Show if inSession is true
           <div className={styles["in-session"]}>
-            På kontoret <br />
             {calculateSessionTime(
               member.office_times.current_session_duration,
               currentTime,
@@ -91,18 +74,15 @@ const MembersListItem = ({ member }: Props) => {
           <div
             className={`${styles["last-seen-time"]} ${styles["last-seen-offline"]}`}
           >
-            Sist sett: <br />
             {timeAgo(member.office_times.last_seen)}
           </div>
         ) : (
           <div
             className={`${styles["last-seen-never"]} ${styles["last-seen-offline"]}`}
-          >
-            Sist sett: <br /> -
-          </div>
+          ></div>
         )}
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 };
 

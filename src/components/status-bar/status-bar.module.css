@@ -9,8 +9,6 @@
 }
 
 .statuses-background {
-  box-shadow: rgba(16, 23, 27, 0.52) 0px 0px 13px 3px inset;
-  background-color: var(--background-color-light);
   overflow-x: auto;
   width: 100%;
 }
