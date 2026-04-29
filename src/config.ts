@@ -37,12 +37,12 @@ export const OFFICE_CHROMECAST_URL =
 export const UPTIME_ROBOT_URL =
   import.meta.env.REACT_APP_UPTIME_ROBOT_URL ||
   "https://api.uptimerobot.com/v2/getMonitors";
-export const UPTIME_ROBOT_MONITORS = (
+export const UPTIME_ROBOT_MONITORS: [string, string][] = (
   import.meta.env.REACT_APP_UPTIME_ROBOT_MONITORS ||
   "WEBAPP=780718562,LEGO=782661964,WIKI=780718556"
 )
   .split(",")
-  .map((monitor: string) => monitor.split("="));
+  .map((monitor: string) => monitor.split("=") as [string, string]);
 export const UPTIME_ROBOT_API_KEY =
   import.meta.env.REACT_APP_UPTIME_ROBOT_API_KEY ||
   "ur609187-58b7ee7d64ca62809bb5e902";
