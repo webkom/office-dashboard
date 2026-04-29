@@ -1,4 +1,4 @@
-import webkomIcon from "/webkom_kule.png";
+import webkomIcon from "/webkom.png";
 import styles from "./loading-icon.module.css";
 
 const LoadingIcon = () => (
