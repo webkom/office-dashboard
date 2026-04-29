@@ -20,6 +20,11 @@ export type Member = {
   welcome_messages: string[];
 };
 
+export type BrusBalance = {
+  github: string;
+  balance: number;
+}
+
 export type OfficeTimes = {
   github_name: string;
   total_time: number;
@@ -56,6 +61,7 @@ export type DashboardData = {
   }>;
   repository_contributors: MaybeEmpty<GithubContributor[]>;
   office_times: OfficeTimes[];
+  brus: BrusBalance[];
 };
 
 export type GithubContributor = {
@@ -73,18 +79,16 @@ const fetchDashboardData = async () => {
     throw new Error("Fetching of dashboard failed");
   }
 
-  const data = (await res.json()) as DashboardData;
-  return data;
+  return (await res.json()) as DashboardData;
 };
 
 function useDashboardData() {
-  const queryResult = useQuery({
+  return useQuery({
     queryKey: ["dashboard-backend"],
     queryFn: fetchDashboardData,
     retry: 1,
     refetchInterval: 1000 * 60 * 2,
   });
-  return queryResult;
 }
 
 export { useDashboardData };

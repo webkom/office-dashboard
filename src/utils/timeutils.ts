@@ -16,7 +16,6 @@ const timeAgo = (lastSeen: string | Date): string => {
 };
 
 const calculateSessionTime = (
-  sessionDuration: number,
   currentTime: Moment,
   lastSeen?: string | Date,
 ): string => {
@@ -25,11 +24,8 @@ const calculateSessionTime = (
   // Convert lastSeen and currentTime to the same time zone
   const lastSeenDate = moment.utc(lastSeen).tz("Europe/Oslo");
 
-  // Ensure time difference is calculated correctly
-  const timeDiff = currentTime.diff(lastSeenDate.format(), "seconds");
-
   // Calculate the difference in seconds
-  const updatedDuration = sessionDuration + timeDiff;
+  const updatedDuration = currentTime.diff(lastSeenDate.format(), "seconds");
 
   // Convert milliseconds to hours, minutes, and seconds
   const hours = Math.floor(updatedDuration / 3600); // 1 hour = 3600000 ms

@@ -46,7 +46,18 @@ const MembersListItem = ({ member }: Props) => {
           <div>lego: {member.github_contributions.lego}</div>
           <div>webapp: {member.github_contributions.webapp}</div>
         </div>
-      </td>
+      </td>{" "}
+      {member.brus_balance < 0 ? (
+        <td className={`${styles["entry"]} ${styles["last-seen-offline"]}`}>
+          {member.brus_balance}
+          ,-
+        </td>
+      ) : (
+        <td className={`${styles["entry"]} ${styles["in-session"]}`}>
+          {member.brus_balance}
+          ,-
+        </td>
+      )}
       <td className={`${styles["entry"]} ${styles["total-time"]}`}>
         <div>
           <div className={`${styles["total-time-info"]}`}>
@@ -65,7 +76,6 @@ const MembersListItem = ({ member }: Props) => {
           // Show if inSession is true
           <div className={styles["in-session"]}>
             {calculateSessionTime(
-              member.office_times.current_session_duration,
               currentTime,
               member.office_times.last_seen,
             )}

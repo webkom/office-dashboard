@@ -31,6 +31,7 @@ const Content: React.FC = () => {
                 githubContributors={dasboardData.data.repository_contributors!}
                 members={dasboardData.data.members}
                 officeTimes={dasboardData.data.office_times ?? []}
+                brus={dasboardData.data.brus ?? []}
               />
             </>
           )}
