@@ -1,24 +1,13 @@
 import bytes from "bytes";
-// import PropTypes from "prop-types";
-// import withWidth from "@material-ui/core/withWidth";
-// import { withStyles } from "@material-ui/core/styles";
-// import Grid from "@material-ui/core/Grid";
 import {
   HistoryIcon,
   GitPullRequestIcon,
   StarIcon,
-  IssueOpenedIcon,
-  IssueClosedIcon,
   GitMergeIcon,
   DatabaseIcon,
 } from "@primer/octicons-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-// import Table from "app/components/Table";
-// import TableHeader from "app/components/Table/Header";
-// import TableBody from "app/components/Table/Body";
-// import TableColumn from "app/components/Table/Column";
-// import Stats from "app/components/Github/Stats";
 import styles from "./repository.module.css";
 import RepositoryStatistic from "../repository-statistic/repository-statistic.component";
 import React from "react";
@@ -27,15 +16,11 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
   const {
-    // classes,
-    // width,
     repository: {
       name,
       commits,
-      issues_open,
       pull_requests_open,
       stars,
-      issues_closed,
       pull_requests_merged,
       disk_usage,
       updated_at,
@@ -55,14 +40,14 @@ const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
       value: Number(pull_requests_open).toLocaleString("en"),
     },
     {
-      name: "Stars",
+      name: "Stjerner",
       icon: StarIcon,
       value: Number(stars).toLocaleString("en"),
     },
   ];
   const extraStatsItems = [
     {
-      name: "Merged PRs",
+      name: "Flettede PRs",
       icon: GitMergeIcon,
       value: Number(pull_requests_merged).toLocaleString("en"),
     },
@@ -72,25 +57,13 @@ const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
       value: bytes(disk_usage * 1024) || "",
     },
     {
-      name: "Siste Push",
+      name: "Siste Dytt",
       icon: HistoryIcon,
       value: new Date(updated_at).toISOString().split("T")[0],
     },
   ];
-  if (formattedName !== "webapp") {
-    statsItems.push({
-      name: "Issues",
-      icon: IssueOpenedIcon,
-      value: Number(issues_open).toLocaleString("en"),
-    });
-    extraStatsItems.push({
-      name: "Lukkede Issues",
-      icon: IssueClosedIcon,
-      value: Number(issues_closed).toLocaleString("en"),
-    });
-  }
 
-  const maxItems = 4;
+  const maxItems = 3;
   const statsHeight = 100 / maxItems;
   return (
     <>
@@ -142,66 +115,8 @@ const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
           </div>
         </div>
       </div>
-      {/* <Table xs={6}>
-      <TableHeader height={statsHeight}>
-        <FontAwesomeIcon className={classes.githubIcon} icon={faGithub} />
-        <span>{formattedName}</span>
-      </TableHeader>
-      <TableBody> */}
-      {/* {!isLarge ? (
-          <TableColumn>
-          {statsItems.map(({ name, icon, value }) => (
-            <Stats
-            key={`github-stats-${name}`}
-            height={statsHeight}
-            name={name}
-            icon={icon}
-            value={value}
-            />
-            ))}
-            </TableColumn>
-            ) : (
-              <Grid item container>
-              <TableColumn xs={6} leftColumn>
-              {statsItems.map(({ name, icon, value }) => (
-                <Stats
-                key={`github-stats-${name}`}
-                height={statsHeight}
-                name={name}
-                icon={icon}
-                value={value}
-                />
-                ))}
-                </TableColumn>
-                <TableColumn xs={6} rightColumn>
-                {extraStatsItems.map(({ name, icon, value }) => (
-                  <Stats
-                  key={`github-stats-${name}`}
-                  height={statsHeight}
-                  name={name}
-                  icon={icon}
-                  value={value}
-                  />
-                  ))}
-                  </TableColumn>
-                  </Grid>
-                )} */}
-      {/* </TableBody>
-    </Table> */}
     </>
   );
 };
-
-// Repository.propTypes = {
-//   classes: PropTypes.object.isRequired,
-//   width: PropTypes.string.isRequired,
-//   repository: PropTypes.object.isRequired
-// };
-
-// Repository.defaultProps = {
-//   rightAlign: false
-// };
-
-// export default withWidth()(withStyles(styles)(Repository));
 
 export default Repository;

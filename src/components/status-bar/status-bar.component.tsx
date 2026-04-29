@@ -1,4 +1,3 @@
-// import { useState } from "react";
 import { useUptimeStatus } from "app/hooks/uptime-status.hook";
 import styles from "./status-bar.module.css";
 
@@ -28,7 +27,6 @@ const getUptimeRobotColorFromStatus = (status: number) => {
 };
 
 const StatusBar = () => {
-  // const [isLoading, setIsLoading] = useState(false);
 
   const { data, isLoading } = useUptimeStatus();
 

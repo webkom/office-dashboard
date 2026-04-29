@@ -182,6 +182,22 @@ def get_repo_stats(app: Flask):
         "webapp": parse_repo_stats("webapp", repo_stats_json["data"]["webapp"]),
     }
 
+def get_brus_users(app: Flask):
+    """
+    Request data from BRUS API and map it to the legacy members shape
+    the frontend expects.
+    """
+
+    url = f'https://{app.config["BRUS_URI"]}'
+
+    brus_res = requests.get(url=url)
+    brus_json = brus_res.json()
+
+    return  [{
+                                    "github": user["github"],
+                                    "balance": user["saldo"],
+                                }
+                                for user in brus_json["users"]]
 
 def get_office_times(app: Flask):
     """

@@ -7,13 +7,7 @@ import {
   formatSecondsToHours,
 } from "app/utils/timeutils";
 
-// import {
-// faCoffee,
-// faFlask,
-//   type IconDefinition,
-// } from "@fortawesome/free-solid-svg-icons";
-
-import { faGithub } from "@fortawesome/free-brands-svg-icons";
+// ...existing code...
 import { useEffect, useState } from "react";
 import moment from "moment-timezone";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -34,57 +28,38 @@ const MembersListItem = ({ member }: Props) => {
 
     return () => clearInterval(intervalId);
   }, []);
-  // type StatsEntryProps = {
-  //   icon: IconDefinition;
-  //   unit: string;
-  //   value: string | number;
-  // };
-  // const StatEntry = ({ icon, unit, value }: StatsEntryProps) => (
-  //   <div className="stats-entry">
-  //     <div className="icon-wrapper">
-  //       <FontAwesomeIcon className="icon" icon={icon as IconProp} />
-  //     </div>
-  //     <div className="value">{value}</div>
-  //     <div className="unit">{unit}</div>
-  //   </div>
-  // );
 
   return (
-    <div
+    <tr
       className={
         member.is_active
-          ? `${styles["members-item"]} ${styles["is-active"]} g-flex-row`
-          : `${styles["members-item"]} g-flex-row`
+          ? `${styles["members-item"]} ${styles["is-active"]}`
+          : `${styles["members-item"]}`
       }
     >
-      <div className={`${styles["entry"]} ${styles["avatar"]}`}>
-        <img src={member.avatar} />
-      </div>
-      <div className={`${styles["entry"]} ${styles["name"]}`}>
+      <td className={`${styles["entry"]} ${styles["avatar"]}`}>
+        <img src={member.avatar} alt={`Avatar of ${member.name}`} />
         {member.name}
-      </div>
-      <div className={`${styles["entry"]} ${styles["github"]}`}>
-        <FontAwesomeIcon
-          className={styles["github-icon"]}
-          icon={faGithub as IconProp}
-        />
-        <a
-          href={`https://github.com/${member.github}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {member.github}
-        </a>
-      </div>
-      <div className={`${styles["entry"]} ${styles["contributions"]}`}>
+      </td>
+      <td className={`${styles["entry"]} ${styles["contributions"]}`}>
         <div>
           <div>lego: {member.github_contributions.lego}</div>
           <div>webapp: {member.github_contributions.webapp}</div>
         </div>
-      </div>
-      <div className={`${styles["entry"]} ${styles["total-time"]}`}>
+      </td>{" "}
+      {member.brus_balance < 0 ? (
+        <td className={`${styles["entry"]} ${styles["last-seen-offline"]}`}>
+          {member.brus_balance}
+          ,-
+        </td>
+      ) : (
+        <td className={`${styles["entry"]} ${styles["in-session"]}`}>
+          {member.brus_balance}
+          ,-
+        </td>
+      )}
+      <td className={`${styles["entry"]} ${styles["total-time"]}`}>
         <div>
-          Total Tid: <br />{" "}
           <div className={`${styles["total-time-info"]}`}>
             {member.office_times.is_office_time_leader && (
               <FontAwesomeIcon
@@ -95,14 +70,12 @@ const MembersListItem = ({ member }: Props) => {
             {formatSecondsToHours(member.office_times.total_time)}
           </div>
         </div>
-      </div>
-      <div className={`${styles["entry"]} ${styles["last-seen"]}`}>
+      </td>
+      <td className={`${styles["entry"]} ${styles["last-seen"]}`}>
         {member.office_times.is_active ? (
           // Show if inSession is true
           <div className={styles["in-session"]}>
-            På kontoret <br />
             {calculateSessionTime(
-              member.office_times.current_session_duration,
               currentTime,
               member.office_times.last_seen,
             )}
@@ -111,47 +84,15 @@ const MembersListItem = ({ member }: Props) => {
           <div
             className={`${styles["last-seen-time"]} ${styles["last-seen-offline"]}`}
           >
-            Sist sett: <br />
             {timeAgo(member.office_times.last_seen)}
           </div>
         ) : (
           <div
             className={`${styles["last-seen-never"]} ${styles["last-seen-offline"]}`}
-          >
-            Sist sett: <br /> -
-          </div>
+          ></div>
         )}
-      </div>
-      {/* <div className="entry kaffe">
-        <StatEntry
-          icon={faCoffee}
-          unit="kanner"
-          value={member.kaffe_data.jugs_brewed}
-        />
-        <StatEntry
-          icon={faFlask}
-          unit="liter"
-          value={member.kaffe_data.volume_brewed}
-        />
-      </div> */}
-      {/* <div className="entry brus">
-        <StatEntry
-          icon={faCoffee}
-          unit="Brus"
-          value={member.kaffe_data.jugs_brewed}
-        />
-        <StatEntry
-          icon={faFlask}
-          unit="Øl"
-          value={member.kaffe_data.volume_brewed}
-        />
-      </div> */}
-      {/* <div className="entry office-activity">
-        <div className="first-seen">Først sett 88:88:88</div>
-        <div className="">12 timer 34 minutter</div>
-      </div>
-      <div className="entry last-seen">På kontoret!</div> */}
-    </div>
+      </td>
+    </tr>
   );
 };
 

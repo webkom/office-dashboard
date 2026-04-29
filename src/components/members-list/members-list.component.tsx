@@ -1,7 +1,7 @@
-import { IsEmpty } from "app/helpers/is-empty";
+import { IsEmpty } from "app/utils/is-empty.ts";
 import MembersListItem from "./members-list-item/members-list-item.component";
 import styles from "./members-list.module.css";
-import { GithubContributor, MaybeEmpty } from "app/hooks/dashboard-data.hook";
+import { BrusBalance, GithubContributor, MaybeEmpty } from "app/hooks/dashboard-data.hook";
 import { Member } from "app/hooks/dashboard-data.hook";
 import { OfficeTimes } from "app/hooks/dashboard-data.hook";
 
@@ -10,8 +10,7 @@ export type MemberWithGithubStats = {
   avatar: string;
   github: string;
   github_contributions: { lego: number; webapp: number };
-  brus_data: string;
-  kaffe_data: { jugs_brewed: number; volume_brewed: number };
+  brus_balance: number;
   birthday: string;
   joined: "" | string;
   first_lego_commit: string;
@@ -23,7 +22,6 @@ export type MemberWithGithubStats = {
   office_times: {
     total_time: number;
     is_office_time_leader: boolean;
-    current_session_duration: number;
     last_seen?: string;
     is_active: boolean;
   };
@@ -33,10 +31,12 @@ const MembersList = ({
   githubContributors,
   members,
   officeTimes,
+  brus,
 }: {
   githubContributors: MaybeEmpty<GithubContributor[]>;
   members: Member[];
   officeTimes: OfficeTimes[];
+  brus: BrusBalance[];
 }) => {
   const findGithubStatsOrDefault = (member: Member) => {
     if (IsEmpty(githubContributors)) {
@@ -77,11 +77,23 @@ const MembersList = ({
     );
   };
 
+  const findBrusBalanceForMember = (member: Member) => {
+    if (IsEmpty(brus)) {
+      return null;
+    }
+
+    const brusBalance = brus.find(
+      (balance) => balance.github.toLowerCase() === member.github.toLowerCase()
+    );
+
+    return brusBalance ? brusBalance.balance : 0;
+  }
   const membersWithGithubStats = members
     .map<MemberWithGithubStats>((member) => {
       const contributionStats = findGithubStatsOrDefault(member);
       const officeTimes = findOfficeTimesForMember(member);
       const officeTimeLeader = isOfficeTimeLeader(member);
+      const brusBalance = findBrusBalanceForMember(member);
 
       return {
         name: member.name,
@@ -91,8 +103,7 @@ const MembersList = ({
           lego: contributionStats?.lego ?? 0,
           webapp: contributionStats?.webapp ?? 0,
         },
-        brus_data: "",
-        kaffe_data: { jugs_brewed: 0, volume_brewed: 0 },
+        brus_balance: brusBalance ?? 0,
         birthday: "",
         joined: member.joined,
         first_lego_commit: "",
@@ -104,19 +115,23 @@ const MembersList = ({
         office_times: {
           total_time: officeTimes?.total_time ?? 0,
           last_seen: officeTimes?.last_seen,
-          current_session_duration: officeTimes?.current_session_duration ?? 0,
           is_active: officeTimes?.is_active === 1,
           is_office_time_leader: officeTimeLeader,
         },
       };
     })
     .sort((m1, m2) => {
-      // Order online members on longest session duration (longest first)
       if (m1.office_times.is_active && m2.office_times.is_active) {
-        return (
-          m2.office_times.current_session_duration -
-          m1.office_times.current_session_duration
-        );
+        const m1LastSeen = m1.office_times.last_seen
+          ? new Date(m1.office_times.last_seen)
+          : null;
+        const m2LastSeen = m2.office_times.last_seen
+          ? new Date(m2.office_times.last_seen)
+          : null;
+
+        if (m1LastSeen && m2LastSeen) {
+          return m1LastSeen.getTime() - m2LastSeen.getTime();
+        }
       }
       // If only one online show the online member first
       if (m1.office_times.is_active !== m2.office_times.is_active) {
@@ -188,9 +203,22 @@ const MembersList = ({
 
   return (
     <div className={`${styles["members-list"]} g-width-full g-flex-col`}>
-      {membersWithGithubStats.map((member) => (
-        <MembersListItem key={member.github} member={member} />
-      ))}
+      <table className={styles["members-table"]}>
+        <thead>
+          <tr>
+            <th className={styles["name"]}>Navn</th>
+            <th className={styles["contributions"]}>Bidrag</th>
+            <th className={styles["brus-balance"]}>Brus</th>
+            <th className={styles["total-time"]}>Total tid</th>
+            <th className={styles["last-seen"]}>Sist sett</th>
+          </tr>
+        </thead>
+        <tbody>
+          {membersWithGithubStats.map((member) => (
+            <MembersListItem key={member.github} member={member} />
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

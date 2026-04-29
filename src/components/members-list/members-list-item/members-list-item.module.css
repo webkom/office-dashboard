@@ -2,8 +2,6 @@
   flex: 1;
   min-width: 0;
   padding: 1rem 1.5rem;
-  box-sizing: border-box;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 10%);
   gap: 1.5rem;
 }
 
@@ -20,6 +18,7 @@
 .avatar {
   display: flex;
   flex: 0;
+  gap: 1rem;
   min-width: fit-content;
   justify-content: start;
   align-items: center;
@@ -30,19 +29,10 @@
   height: 50px;
   object-fit: contain;
   border-radius: 50%;
-  background-color: red;
   overflow: hidden;
 }
 
-.name {
-  display: flex;
-  justify-content: start;
-  align-items: center;
-  max-width: 170px;
-}
-
 .github {
-  display: flex;
   justify-content: flex-start;
   align-items: center;
   gap: 0.25rem;
@@ -59,16 +49,12 @@
 
   & div {
     width: fit-content;
+    display: flex;
+    gap: 1rem;
   }
 }
 
-.kaffe {
-  display: flex;
-  flex-direction: column;
-}
-
 .office-activity {
-  display: flex;
   flex-direction: column;
 
   & div {
@@ -91,9 +77,6 @@
 }
 
 .stats-entry {
-  display: flex;
-  flex: 0;
-  flex-direction: row;
   align-items: center;
 
   & .icon-wrapper {
@@ -122,14 +105,10 @@
 }
 
 .total-time {
-  display: flex;
-  justify-content: flex-start;
   align-items: center;
 }
 
 .total-time-info {
-  display: flex;
-  align-items: center;
   justify-content: center;
 }
 
@@ -140,8 +119,6 @@
 }
 
 .last-seen {
-  display: flex;
-  justify-content: flex-start;
   align-items: center;
 }
 

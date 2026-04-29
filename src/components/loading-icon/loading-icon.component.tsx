@@ -1,4 +1,4 @@
-import webkomIcon from "/webkom_kule.png";
+import webkomIcon from "/webkom.png";
 import styles from "./loading-icon.module.css";
 
 const LoadingIcon = () => (
@@ -6,7 +6,6 @@ const LoadingIcon = () => (
     alt="Loading"
     className={styles["loading-icon"]}
     src={webkomIcon}
-    //   style={{ height: `${size}vh`, width: `${size}vh` }}
   />
 );
 

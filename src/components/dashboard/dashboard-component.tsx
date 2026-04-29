@@ -9,11 +9,6 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 const Dashboard: React.FC = () => {
   return (
     <div className="dashboard g-width-full">
-      {/* {Array(50)
-        .fill()
-        .map((i) => (
-          <div key={i} className="snowflake" />
-        ))} */}
       <Header />
       <Content />
       <p className="made-by-love g-text-center">

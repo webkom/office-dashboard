@@ -34,6 +34,7 @@ safe_get_public_members = FallbackCall(getters.get_public_members, debug=debug, 
 safe_get_repo_contributors = FallbackCall(getters.get_repo_contributors, debug=debug, default_value=[])
 safe_get_repo_stats = FallbackCall(getters.get_repo_stats, debug=debug, default_value=[])
 safe_get_office_times = FallbackCall(getters.get_office_times, debug=debug, default_value=[])
+safe_get_brus = FallbackCall(getters.get_brus_users, debug=debug, default_value=[])
 
 
 class OfficeDashboard(Resource):
@@ -47,12 +48,14 @@ class OfficeDashboard(Resource):
         repo_contributors, _ = safe_get_repo_contributors(app)
         repo_stats, _ = safe_get_repo_stats(app)
         office_times, _ = safe_get_office_times(app)
+        brus, _ = safe_get_brus(app)
 
         return {
             "members": members,
             "repository_contributors": repo_contributors,
             "repository_stats": repo_stats,
             "office_times": office_times,
+            "brus": brus,
         }
 
 

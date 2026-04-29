@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Member, OfficeTimes } from "app/hooks/dashboard-data.hook.ts";
 
-const usePlayWelcomeMessage = (
+const usePlayWelcomeMessageHook = (
   members: Member[] = [],
   officeTimes: OfficeTimes[] = [],
 ) => {
@@ -43,4 +43,4 @@ const usePlayWelcomeMessage = (
   }, [members, officeTimes, previousOfficeTimes]);
 };
 
-export default usePlayWelcomeMessage;
+export default usePlayWelcomeMessageHook;
