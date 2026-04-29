@@ -44,14 +44,14 @@ const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
       value: Number(pull_requests_open).toLocaleString("en"),
     },
     {
-      name: "Stars",
+      name: "Stjerner",
       icon: StarIcon,
       value: Number(stars).toLocaleString("en"),
     },
   ];
   const extraStatsItems = [
     {
-      name: "Merged PRs",
+      name: "Flettede PRs",
       icon: GitMergeIcon,
       value: Number(pull_requests_merged).toLocaleString("en"),
     },
@@ -61,25 +61,13 @@ const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
       value: bytes(disk_usage * 1024) || "",
     },
     {
-      name: "Siste Push",
+      name: "Siste Dytt",
       icon: HistoryIcon,
       value: new Date(updated_at).toISOString().split("T")[0],
     },
   ];
-  if (formattedName !== "webapp") {
-    statsItems.push({
-      name: "Issues",
-      icon: IssueOpenedIcon,
-      value: Number(issues_open).toLocaleString("en"),
-    });
-    extraStatsItems.push({
-      name: "Lukkede Issues",
-      icon: IssueClosedIcon,
-      value: Number(issues_closed).toLocaleString("en"),
-    });
-  }
 
-  const maxItems = 4;
+  const maxItems = 3;
   const statsHeight = 100 / maxItems;
   return (
     <>
