@@ -3,8 +3,6 @@ import {
   HistoryIcon,
   GitPullRequestIcon,
   StarIcon,
-  IssueOpenedIcon,
-  IssueClosedIcon,
   GitMergeIcon,
   DatabaseIcon,
 } from "@primer/octicons-react";
@@ -21,10 +19,8 @@ const Repository: React.FC<{ repository: RepositoryStats }> = (props) => {
     repository: {
       name,
       commits,
-      issues_open,
       pull_requests_open,
       stars,
-      issues_closed,
       pull_requests_merged,
       disk_usage,
       updated_at,
