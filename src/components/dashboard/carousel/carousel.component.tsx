@@ -18,17 +18,6 @@ const CarouselInfo = ({ members }: CarouselInfoProps) => {
       <h1>🎉</h1>
     </div>
   ));
-
-  // Hardcoded custom message
-  // const customMessageItem = (
-  //   <div className={styles["text-birthday"]}>
-  //     <h1>🎉</h1>
-  //     <div className={styles["main-text-birthday"]}>
-  //       <h1>Velkommen til kontoret! Ha en fin dag 👋</h1>
-  //     </div>
-  //     <h1>✨</h1>
-  //   </div>
-  // );
   const hasBirthday = filteredByBirthday.length > 0;
 
   const content = hasBirthday

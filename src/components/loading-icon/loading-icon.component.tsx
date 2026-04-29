@@ -6,7 +6,6 @@ const LoadingIcon = () => (
     alt="Loading"
     className={styles["loading-icon"]}
     src={webkomIcon}
-    //   style={{ height: `${size}vh`, width: `${size}vh` }}
   />
 );
 

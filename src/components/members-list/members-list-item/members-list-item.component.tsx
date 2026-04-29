@@ -7,12 +7,6 @@ import {
   formatSecondsToHours,
 } from "app/utils/timeutils";
 
-// import {
-// faCoffee,
-// faFlask,
-//   type IconDefinition,
-// } from "@fortawesome/free-solid-svg-icons";
-
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { useEffect, useState } from "react";
 import moment from "moment-timezone";
@@ -34,20 +28,6 @@ const MembersListItem = ({ member }: Props) => {
 
     return () => clearInterval(intervalId);
   }, []);
-  // type StatsEntryProps = {
-  //   icon: IconDefinition;
-  //   unit: string;
-  //   value: string | number;
-  // };
-  // const StatEntry = ({ icon, unit, value }: StatsEntryProps) => (
-  //   <div className="stats-entry">
-  //     <div className="icon-wrapper">
-  //       <FontAwesomeIcon className="icon" icon={icon as IconProp} />
-  //     </div>
-  //     <div className="value">{value}</div>
-  //     <div className="unit">{unit}</div>
-  //   </div>
-  // );
 
   return (
     <div
@@ -122,35 +102,6 @@ const MembersListItem = ({ member }: Props) => {
           </div>
         )}
       </div>
-      {/* <div className="entry kaffe">
-        <StatEntry
-          icon={faCoffee}
-          unit="kanner"
-          value={member.kaffe_data.jugs_brewed}
-        />
-        <StatEntry
-          icon={faFlask}
-          unit="liter"
-          value={member.kaffe_data.volume_brewed}
-        />
-      </div> */}
-      {/* <div className="entry brus">
-        <StatEntry
-          icon={faCoffee}
-          unit="Brus"
-          value={member.kaffe_data.jugs_brewed}
-        />
-        <StatEntry
-          icon={faFlask}
-          unit="Øl"
-          value={member.kaffe_data.volume_brewed}
-        />
-      </div> */}
-      {/* <div className="entry office-activity">
-        <div className="first-seen">Først sett 88:88:88</div>
-        <div className="">12 timer 34 minutter</div>
-      </div>
-      <div className="entry last-seen">På kontoret!</div> */}
     </div>
   );
 };
