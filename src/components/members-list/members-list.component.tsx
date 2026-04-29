@@ -1,4 +1,4 @@
-import { IsEmpty } from "app/helpers/is-empty";
+import { IsEmpty } from "app/utils/is-empty.ts";
 import MembersListItem from "./members-list-item/members-list-item.component";
 import styles from "./members-list.module.css";
 import { GithubContributor, MaybeEmpty } from "app/hooks/dashboard-data.hook";

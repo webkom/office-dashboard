@@ -1,5 +1,5 @@
 import styles from "./carousel.module.css";
-import filterBirthdayMembers from "../../../utils/birtdayutils";
+import filterBirthdayMembers from "../../../utils/birthday-utils.ts";
 import { Member } from "app/hooks/dashboard-data.hook";
 
 type CarouselInfoProps = {

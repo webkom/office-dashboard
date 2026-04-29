@@ -2,7 +2,7 @@ import Repository from "app/components/repository/repository.component";
 import styles from "./github.module.css";
 import { useDashboardData } from "app/hooks/dashboard-data.hook";
 import NoData from "app/components/nodata/nodata.component";
-import { IsEmpty } from "app/helpers/is-empty";
+import { IsEmpty } from "app/utils/is-empty.ts";
 
 const Github = () => {
   const { data, isLoading } = useDashboardData();

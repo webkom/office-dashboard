@@ -10,12 +10,12 @@ import CarouselInfo from "../carousel/carousel.component";
 import MembersList from "app/components/members-list/members-list.component";
 import { useDashboardData } from "app/hooks/dashboard-data.hook";
 import StatusBar from "app/components/status-bar/status-bar.component";
-import usePlayWelcomeMessage from "app/hooks/usePlayWelcomeMessage.ts";
+import playWelcomeMessageHook from "app/hooks/play-welcome-message.hook.ts";
 
 const Content: React.FC = () => {
   const dasboardData = useDashboardData();
 
-  usePlayWelcomeMessage(
+  playWelcomeMessageHook(
     dasboardData.data?.members,
     dasboardData.data?.office_times,
   );
