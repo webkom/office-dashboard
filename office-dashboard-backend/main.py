@@ -39,8 +39,8 @@ safe_get_brus = FallbackCall(getters.get_brus_users, debug=debug, default_value=
 
 class OfficeDashboard(Resource):
 
-    @cache.cached(timeout=50, key_prefix="get_dashboard")
     @cross_origin()
+    @cache.cached(timeout=50, key_prefix="get_dashboard")
     def get(self):
         print("Using non-cached request")
         
