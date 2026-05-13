@@ -3,19 +3,12 @@ def createMember(i):
     return {
           "active": True,
           "avatar": "",
-          "birthday": f"1990-01-{i:02d}",
-          "brus": "",
-          "first_lego_commit": f"2025-02-{i:02d}",
-          "full_name": f"Test User {i}",
           "github": f"gh_user{i}",
-          "joined": f"2025-01-{i:02d}",
           "name": f"User {i}",
-          "new": False,
-          "phone_number": "",
-          "slack": "",
+          "birthday": f"1990-01-{i:02d}",
           "welcome_messages": [
             "Velkommen til kontoret"
-          ]
+          ],
         }
 
 def createRepoContributors(i):

@@ -5,18 +5,10 @@ export type MaybeEmpty<T> = T | Record<string, never>;
 
 export type Member = {
   name: string;
-  full_name: string;
-  birthday: string;
-  joined: "" | string;
-  first_lego_commit: string;
   avatar: string;
-  slack: string;
-  phone_number: string;
   github: string;
-  duolingo: string;
-  brus: string;
   active: boolean;
-  new: string;
+  birthday: string;
   welcome_messages: string[];
 };
 
