@@ -39,7 +39,9 @@ const MembersListItem = ({ member }: Props) => {
     >
       <td className={`${styles["entry"]} ${styles["avatar"]}`}>
         <img src={member.avatar} alt={`Avatar of ${member.name}`} />
-        {member.name}
+        <a href={`https://github.com/${member.github}`} target="_blank">
+          {member.name}
+        </a>
       </td>
       <td className={`${styles["entry"]} ${styles["contributions"]}`}>
         <div>
@@ -75,10 +77,7 @@ const MembersListItem = ({ member }: Props) => {
         {member.office_times.is_active ? (
           // Show if inSession is true
           <div className={styles["in-session"]}>
-            {calculateSessionTime(
-              currentTime,
-              member.office_times.last_seen,
-            )}
+            {calculateSessionTime(currentTime, member.office_times.last_seen)}
           </div>
         ) : member.office_times.last_seen ? (
           <div

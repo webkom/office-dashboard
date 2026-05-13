@@ -44,7 +44,6 @@
 a {
   font-weight: 500;
   color: var(--secondary-light);
-  opacity: 0.7;
   text-decoration: inherit;
 }
 a:hover {
