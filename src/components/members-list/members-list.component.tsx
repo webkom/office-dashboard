@@ -105,7 +105,7 @@ const MembersList = ({
         },
         brus_balance: brusBalance ?? 0,
         birthday: "",
-        joined: member.joined,
+        joined: "",
         first_lego_commit: "",
         activity_today: "",
         first_seen: "",

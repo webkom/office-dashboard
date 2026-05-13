@@ -4,7 +4,9 @@ import requests
 
 def get_public_members(app: Flask):
     """
-    Request data from members, and only include fields which may be public (i.e. NOT MAC/Bluetooth addresses)
+    Request data from members, and only include fields which are actually consumed
+    by the public dashboard. Anything else (phone_number, slack, birthday, full_name,
+    etc.) stays on the server — the response is visible to anyone who opens DevTools.
     """
 
     url = f'https://{app.config["MEMBERS_URI"]}'
@@ -17,17 +19,10 @@ def get_public_members(app: Flask):
     return [
         {
             "name": member["name"],
-            "full_name": member["full_name"],
-            "birthday": member["birthday"],
-            "joined": member["joined"],
-            "first_lego_commit": member["first_lego_commit"],
             "avatar": member["avatar"],
-            "slack": member["slack"],
-            "phone_number": member["phone_number"],
             "github": member["github"],
-            "brus": member["brus"],
             "active": member["active"],
-            "new": member["new"],
+            "birthday": member["birthday"],
             "welcome_messages": member["welcome_messages"],
         }
         for member in members_json
