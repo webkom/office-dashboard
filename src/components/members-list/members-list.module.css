@@ -4,14 +4,6 @@
   background-color: var(--background-color-light);
 }
 
-@media screen and (max-width: 600px) {
-  .members-list {
-    padding: 0;
-    font-size: 1rem;
-  }
-}
-
-/* Basic table styling for the members table */
 .members-table {
   width: 100%;
   border-collapse: collapse;
@@ -30,4 +22,43 @@
   border-bottom: 0.5px solid rgba(255, 255, 255, 0.05);
 }
 
+@media screen and (max-width: 600px) {
+  .members-list {
+    padding: 0;
+    font-size: 1rem;
+  }
 
+  .members-table {
+    table-layout: fixed;
+  }
+
+  .members-table thead th,
+  .members-table tbody tr td {
+    padding: 0.3rem 0.35rem;
+    overflow-wrap: anywhere;
+  }
+
+  .members-table thead th {
+    font-size: 0.8rem;
+  }
+
+  .name {
+    width: 45%;
+  }
+
+  .brus-balance {
+    width: 14%;
+  }
+
+  .total-time {
+    width: 18%;
+  }
+
+  .last-seen {
+    width: 23%;
+  }
+
+  .contributions {
+    display: none;
+  }
+}
