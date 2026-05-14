@@ -12,7 +12,7 @@
 .entry {
   min-width: 0;
   flex: 1;
-  word-break: break-all;
+  overflow-wrap: anywhere;
   a {
     color: var(--font-primary-color);
   }
@@ -107,6 +107,11 @@
   }
 }
 
+.brus {
+  text-align: right;
+  white-space: nowrap;
+}
+
 .total-time {
   align-items: center;
 }
@@ -135,21 +140,35 @@
 }
 
 @media screen and (max-width: 600px) {
-  .members-item {
-    padding: 0.5rem 1rem;
-    gap: 1rem;
+  .avatar {
+    gap: 0.4rem;
+    min-width: 0;
   }
 
   .avatar img {
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
   }
 
-  .github {
-    display: none;
+  .avatar a {
+    overflow-wrap: anywhere;
+    min-width: 0;
   }
 
+  .github,
   .contributions {
     display: none;
+  }
+
+  .brus,
+  .total-time,
+  .last-seen {
+    font-size: 0.8rem;
+  }
+
+  .crown-icon {
+    font-size: 0.7rem;
+    margin-right: 2px;
   }
 }

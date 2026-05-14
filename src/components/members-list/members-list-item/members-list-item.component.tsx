@@ -49,17 +49,16 @@ const MembersListItem = ({ member }: Props) => {
           <div>webapp: {member.github_contributions.webapp}</div>
         </div>
       </td>{" "}
-      {member.brus_balance < 0 ? (
-        <td className={`${styles["entry"]} ${styles["last-seen-offline"]}`}>
-          {member.brus_balance}
-          ,-
-        </td>
-      ) : (
-        <td className={`${styles["entry"]} ${styles["in-session"]}`}>
-          {member.brus_balance}
-          ,-
-        </td>
-      )}
+      <td
+        className={`${styles["entry"]} ${styles["brus"]} ${
+          member.brus_balance < 0
+            ? styles["last-seen-offline"]
+            : styles["in-session"]
+        }`}
+      >
+        {member.brus_balance}
+        ,-
+      </td>
       <td className={`${styles["entry"]} ${styles["total-time"]}`}>
         <div>
           <div className={`${styles["total-time-info"]}`}>
