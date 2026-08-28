@@ -28,7 +28,8 @@ if app.config["MOCK_REQUESTS"] == 'True':
 else:
     import getters
 
-debug = app.config["DEBUG"] == 'True'
+debug = app.config.get("DEBUG", False) == 'True'
+port = app.config.get("PORT", 5000)
 
 safe_get_public_members = FallbackCall(getters.get_public_members, debug=debug, default_value=[])
 safe_get_repo_contributors = FallbackCall(getters.get_repo_contributors, debug=debug, default_value=[])
@@ -62,6 +63,5 @@ class OfficeDashboard(Resource):
 api.add_resource(OfficeDashboard, "/")
 
 if __name__ == "__main__":
-    app.run()
-
+    app.run(port=port)
 
