@@ -69,3 +69,15 @@ def get_repo_stats(_app):
 
 def get_office_times(_app):
     return [createOfficeTimes(i) for i in range(num_users)]
+
+def get_detailed_member_data(_app, member):
+    return {
+        "status": "in",
+        "session_duration": 1,
+        "stats": {
+            "total_hours_this_week": 99,
+            "total_hours_alltime": 1000,
+            "total_session_count": 10,
+            "current_streak": 3
+        }
+    }

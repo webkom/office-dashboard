@@ -64,6 +64,38 @@ export type GithubContributor = {
   webapp?: number;
 };
 
+export type DetailedMemberData = {
+  member: string;
+  status: "in" | "out";
+  arrived_at?: string;
+  session_duration?: string;
+  stats: MemberStats;
+  recent_sessions: RecentSession[];
+};
+
+export type MemberStats = {
+  total_hours_alltime: number;
+  total_hours_this_week: number;
+  total_hours_this_month: number;
+  total_days_alltime: number;
+  total_session_count: number;
+  average_hours_per_day: number;
+  average_arrival_time: string;
+  average_departure_time: string;
+  longest_session_ever: string;
+  longest_day_ever: string;
+  current_streak: number;
+  longest_streak: number;
+};
+
+export type RecentSession = {
+  date: string;
+  arrived_at: string;
+  departed_at: string | null;
+  duration: string;
+};
+
+
 const fetchDashboardData = async () => {
   const res = await fetch(DASHBOARD_API, {});
 
@@ -83,4 +115,22 @@ function useDashboardData() {
   });
 }
 
-export { useDashboardData };
+const fetchDetailedMemberData = async (gh_user: string) => {
+  const res = await fetch(`${DASHBOARD_API}/member/${gh_user}`)
+
+  if (!res.ok) {
+    throw new Error("Fetching of detailed member data failed");
+  }
+
+  return (await res.json()) as DetailedMemberData;
+};
+
+function useDetailedMemberData(gh_user: string, enabled = true) {
+  return useQuery({
+    queryKey: ["detailed-member", gh_user],
+    queryFn: () => fetchDetailedMemberData(gh_user),
+    enabled,
+  });
+}
+
+export { useDashboardData, useDetailedMemberData };

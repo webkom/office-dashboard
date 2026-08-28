@@ -7,17 +7,33 @@ import {
   formatSecondsToHours,
 } from "app/utils/timeutils";
 
-// ...existing code...
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import moment from "moment-timezone";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faCrown } from "@fortawesome/free-solid-svg-icons";
+import { faChevronRight, faCrown } from "@fortawesome/free-solid-svg-icons";
+import { Accordion } from "@webkom/lego-bricks";
+import { useDetailedMemberData } from "app/hooks/dashboard-data.hook";
+import MemberDetailPanel from "./member-detail-panel.component";
 
 type Props = {
   member: MemberWithGithubStats;
 };
 
-const MembersListItem = ({ member }: Props) => {
+type TriggerProps = {
+  onClick: () => void;
+  disabled: boolean;
+  open: boolean;
+  rotateClassName: string;
+};
+
+const MembersListRow = ({
+  member,
+  onClick,
+  open,
+  rotateClassName,
+}: Pick<TriggerProps, "onClick" | "open" | "rotateClassName"> & {
+  member: MemberWithGithubStats;
+}) => {
   const [currentTime, setCurrentTime] = useState(moment());
 
   // Updates the current time every second
@@ -30,26 +46,39 @@ const MembersListItem = ({ member }: Props) => {
   }, []);
 
   return (
-    <tr
-      className={
-        member.is_active
-          ? `${styles["members-item"]} ${styles["is-active"]}`
-          : `${styles["members-item"]}`
-      }
+    <div
+      className={`${styles["members-item"]} ${
+        member.is_active ? styles["is-active"] : ""
+      } ${open ? styles["is-open"] : ""}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-expanded={open}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
-      <td className={`${styles["entry"]} ${styles["avatar"]}`}>
+      <div className={`${styles["entry"]} ${styles["avatar"]}`}>
         <img src={member.avatar} alt={`Avatar of ${member.name}`} />
-        <a href={`https://github.com/${member.github}`} target="_blank">
+        <a
+          href={`https://github.com/${member.github}`}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
           {member.name}
         </a>
-      </td>
-      <td className={`${styles["entry"]} ${styles["contributions"]}`}>
+      </div>
+      <div className={`${styles["entry"]} ${styles["contributions"]}`}>
         <div>
           <div>lego: {member.github_contributions.lego}</div>
           <div>webapp: {member.github_contributions.webapp}</div>
         </div>
-      </td>{" "}
-      <td
+      </div>
+      <div
         className={`${styles["entry"]} ${styles["brus"]} ${
           member.brus_balance < 0
             ? styles["last-seen-offline"]
@@ -58,8 +87,8 @@ const MembersListItem = ({ member }: Props) => {
       >
         {member.brus_balance}
         ,-
-      </td>
-      <td className={`${styles["entry"]} ${styles["total-time"]}`}>
+      </div>
+      <div className={`${styles["entry"]} ${styles["total-time"]}`}>
         <div>
           <div className={`${styles["total-time-info"]}`}>
             {member.office_times.is_office_time_leader && (
@@ -71,8 +100,8 @@ const MembersListItem = ({ member }: Props) => {
             {formatSecondsToHours(member.office_times.total_time)}
           </div>
         </div>
-      </td>
-      <td className={`${styles["entry"]} ${styles["last-seen"]}`}>
+      </div>
+      <div className={`${styles["entry"]} ${styles["last-seen"]}`}>
         {member.office_times.is_active ? (
           // Show if inSession is true
           <div className={styles["in-session"]}>
@@ -89,8 +118,51 @@ const MembersListItem = ({ member }: Props) => {
             className={`${styles["last-seen-never"]} ${styles["last-seen-offline"]}`}
           ></div>
         )}
-      </td>
-    </tr>
+      </div>
+      <div className={`${styles["entry"]} ${styles["chevron"]}`}>
+        <FontAwesomeIcon
+          className={rotateClassName}
+          icon={faChevronRight as IconProp}
+        />
+      </div>
+    </div>
+  );
+};
+
+const MembersListItem = ({ member }: Props) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const Trigger = useCallback(
+    ({ onClick, open, rotateClassName }: TriggerProps) => (
+      <MembersListRow
+        member={member}
+        open={open}
+        rotateClassName={rotateClassName}
+        onClick={() => {
+          setIsOpen(!open);
+          onClick();
+        }}
+      />
+    ),
+    [member],
+  );
+
+  const { data, isLoading, isError } = useDetailedMemberData(
+    member.github,
+    isOpen,
+  );
+
+  return (
+    <Accordion
+      triggerComponent={Trigger}
+      wrapperClassName={styles["detail-wrapper"]}
+    >
+      <MemberDetailPanel
+        detail={data}
+        isLoading={isLoading}
+        isError={isError}
+      />
+    </Accordion>
   );
 };
 

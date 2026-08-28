@@ -35,6 +35,7 @@ safe_get_repo_contributors = FallbackCall(getters.get_repo_contributors, debug=d
 safe_get_repo_stats = FallbackCall(getters.get_repo_stats, debug=debug, default_value=[])
 safe_get_office_times = FallbackCall(getters.get_office_times, debug=debug, default_value=[])
 safe_get_brus = FallbackCall(getters.get_brus_users, debug=debug, default_value=[])
+safe_get_detailed_member_data = FallbackCall(getters.get_detailed_member_data, debug=debug, default_value=[])
 
 
 class OfficeDashboard(Resource):
@@ -58,8 +59,15 @@ class OfficeDashboard(Resource):
             "brus": brus,
         }
 
+class DetailedMemberData(Resource):
+    @cross_origin()
+    def get(self, gh_name):
+        member, _ = safe_get_detailed_member_data(app, gh_name)
+        return member
 
 api.add_resource(OfficeDashboard, "/")
+api.add_resource(DetailedMemberData, "/member/<string:gh_name>")
+
 
 if __name__ == "__main__":
     app.run()

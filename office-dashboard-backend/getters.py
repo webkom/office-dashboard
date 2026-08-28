@@ -235,6 +235,17 @@ def get_office_times(app: Flask):
     return office_times
 
 
+def get_detailed_member_data(app: Flask, member: str):
+    """
+    Request palantir for detailed office times for a given member
+    """
+    base_url = f'https://{app.config["PALANTIR_URI"]}'
+
+    member_res = requests.get(url=f"{base_url}/member/{member}")
+    member_res.raise_for_status()
+    member_data = member_res.json()
+    
+    return member_data
 
 """
 HELPERS
