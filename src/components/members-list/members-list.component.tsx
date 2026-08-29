@@ -203,22 +203,19 @@ const MembersList = ({
 
   return (
     <div className={`${styles["members-list"]} g-width-full g-flex-col`}>
-      <table className={styles["members-table"]}>
-        <thead>
-          <tr>
-            <th className={styles["name"]}>Navn</th>
-            <th className={styles["contributions"]}>Bidrag</th>
-            <th className={styles["brus-balance"]}>Brus</th>
-            <th className={styles["total-time"]}>Total tid</th>
-            <th className={styles["last-seen"]}>Sist sett</th>
-          </tr>
-        </thead>
-        <tbody>
-          {membersWithGithubStats.map((member) => (
-            <MembersListItem key={member.github} member={member} />
-          ))}
-        </tbody>
-      </table>
+      <div className={styles["members-header"]}>
+        <span className={styles["name"]}>Navn</span>
+        <span className={styles["contributions"]}>Bidrag</span>
+        <span className={styles["brus-balance"]}>Brus</span>
+        <span className={styles["total-time"]}>Total tid</span>
+        <span className={styles["last-seen"]}>Sist sett</span>
+        <span />
+      </div>
+      <div className={styles["members-body"]}>
+        {membersWithGithubStats.map((member) => (
+          <MembersListItem key={member.github} member={member} />
+        ))}
+      </div>
     </div>
   );
 };

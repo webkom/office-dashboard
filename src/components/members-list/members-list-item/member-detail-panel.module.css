@@ -1,0 +1,118 @@
+.detail-panel {
+  padding: 0.9rem 1.5rem 1.1rem;
+  background-color: rgba(0, 0, 0, 0.22);
+  border-left: 3px solid color-mix(in srgb, var(--secondary) 30%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--secondary) 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--secondary) 30%, transparent);
+}
+
+.detail-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.75rem 1.25rem;
+  animation: stat-in 0.2s ease both;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+@keyframes stat-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  white-space: nowrap;
+}
+
+.tone-live {
+  opacity: 0.9;
+  color: rgb(120, 230, 140);
+}
+
+.tone-muted {
+  opacity: 0.45;
+}
+
+.stat-icon {
+  min-width: 0.7rem;
+  max-width: 0.7rem;
+  color: var(--secondary-light);
+}
+
+.tone-live .stat-icon,
+.tone-muted .stat-icon {
+  color: currentColor;
+  font-size: 0.45rem;
+}
+
+.pulse-dot {
+  animation: pulse-fade 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse-fade {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+}
+
+.stat-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media screen and (max-width: 600px) {
+  .detail-panel {
+    padding: 0.65rem 0.75rem 0.85rem;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    gap: 0.5rem 0.85rem;
+  }
+
+  .stat-label {
+    font-size: 0.6rem;
+  }
+
+  .stat-value {
+    font-size: 0.82rem;
+  }
+}
