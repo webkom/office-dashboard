@@ -1,3 +1,23 @@
+"""
+Mock getters for the office dashboard backend.
+
+Create a function with the same signature as the real getter in this file
+and this will be used instead of the real getter if MOCK_GETTERS is set to True.
+
+If MOCK_GETTERS is set to True, any undefined mock function will default to returning an empty list.
+"""
+
+def __getattr__(name):
+    def mock_function_not_found(*args, **kwargs):
+        """
+        Instead of python raising an AttributeError for undefined mock functions,
+        default to returning an empty list.
+        """
+        print(f"No mock function found for {name}, returning empty list")
+        return []
+        
+    return mock_function_not_found
+
 
 def createMember(i):
     return {
