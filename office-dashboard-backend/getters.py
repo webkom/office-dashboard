@@ -43,31 +43,23 @@ def get_repo_contributors(app: Flask):
 
     contributors = {}
 
-    contribution_lego_res = requests.get(url=url_lego, headers=headers)
-    contribution_lego_json = contribution_lego_res.json()
+    for repo_key, url in (("lego", url_lego), ("webapp", url_webapp)):
+        for contributor in fetch_contributor_stats(url, headers):
+            author = contributor["author"]
 
-    for contributor in contribution_lego_json:
-        contributors[contributor["author"]["login"]] = {
-            "login": contributor["author"]["login"],
-            "avatar_url": contributor["author"]["avatar_url"],
-            "html_url": contributor["author"]["html_url"],
-            "lego": contributor["total"],
-        }
+            # Commits by deleted GitHub accounts have no author
+            if author is None:
+                continue
 
-    contribution_webapp_res = requests.get(url=url_webapp, headers=headers)
-    contribution_webapp_json = contribution_webapp_res.json()
+            login = author["login"]
+            if login not in contributors:
+                contributors[login] = {
+                    "login": login,
+                    "avatar_url": author["avatar_url"],
+                    "html_url": author["html_url"],
+                }
 
-    for contributor in contribution_webapp_json:
-        if contributor["author"]["login"] not in contributors:
-            contributors[contributor["author"]["login"]] = {
-                "login": contributor["author"]["login"],
-                "avatar_url": contributor["author"]["avatar_url"],
-                "html_url": contributor["author"]["html_url"],
-            }
-
-        contributors[contributor["author"]["login"]]["webapp"] = contributor[
-            "total"
-        ]
+            contributors[login][repo_key] = contributor["total"]
 
     return [contributor for contributor in contributors.values()]
 
@@ -239,6 +231,17 @@ def get_office_times(app: Flask):
 """
 HELPERS
 """
+
+
+def fetch_contributor_stats(url, headers):
+    res = requests.get(url=url, headers=headers)
+    res.raise_for_status()
+
+    # GitHub answers 202 with an empty body while it computes the stats in the background
+    if res.status_code == 202:
+        raise Exception(f"GitHub is still computing contributor stats for {url}")
+
+    return res.json()
 
 
 def parse_repo_stats(name, repository):
