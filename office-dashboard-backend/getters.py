@@ -1,6 +1,5 @@
 from flask import Flask
 import requests
-from strawberry.flask.views import GraphQLView
 
 
 def get_public_members(app: Flask):
