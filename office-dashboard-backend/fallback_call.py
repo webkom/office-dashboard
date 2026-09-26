@@ -57,7 +57,7 @@ class FallbackCall:
                 traceback.print_exc()
             else:
                 print(
-                    Exception("Exception thrown while fetching github contributors"),
+                    Exception(f"Exception thrown while calling {self.func.__name__}"),
                     file=sys.stderr,
                 )
             
