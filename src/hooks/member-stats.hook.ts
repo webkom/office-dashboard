@@ -1,73 +1,18 @@
 import { MemberWithGithubStats } from "app/components/members-list/members-list.component";
 import {
+  findBrusBalanceForMember,
+  findGithubStatsOrDefault,
+  findOfficeTimesForMember,
+  isOfficeTimeLeader,
+} from "app/utils/member-utils";
+import { useMemo } from "react";
+import {
   BrusBalance,
   GithubContributor,
   MaybeEmpty,
   Member,
   OfficeTimes,
 } from "./dashboard-data.hook";
-import { useMemo } from "react";
-import { IsEmpty } from "app/utils/is-empty";
-
-const matchesGithub = (officeTimeHandle: string, memberHandle: string) =>
-  officeTimeHandle.toLowerCase() === memberHandle.toLowerCase();
-
-const findGithubStatsOrDefault = (
-  member: Member,
-  contributors: MaybeEmpty<GithubContributor[]>,
-) => {
-  if (IsEmpty(contributors)) {
-    return null;
-  }
-
-  return contributors.find(
-    (contributor) => contributor.login === member.github,
-  );
-};
-
-const findOfficeTimesForMember = (
-  member: Member,
-  officeTimes: OfficeTimes[],
-) => {
-  return officeTimes.find((officeTime) =>
-    matchesGithub(officeTime.github_name, member.github),
-  );
-};
-
-const isOfficeTimeLeader = (
-  member: Member,
-  officeTimes: OfficeTimes[],
-): boolean => {
-  const officeTimeForActiveMember = officeTimes.find(
-    (officeTime) =>
-      matchesGithub(officeTime.github_name, member.github) && member.active,
-  );
-
-  if (!officeTimeForActiveMember) {
-    return false;
-  }
-
-  const leaderOfficeTime = officeTimes.reduce((leader, current) =>
-    current.total_time > leader.total_time ? current : leader,
-  );
-
-  return matchesGithub(
-    officeTimeForActiveMember.github_name,
-    leaderOfficeTime.github_name,
-  );
-};
-
-const findBrusBalanceForMember = (member: Member, brus: BrusBalance[]) => {
-  if (IsEmpty(brus)) {
-    return null;
-  }
-
-  const brusBalance = brus.find(
-    (balance) => balance.github.toLowerCase() === member.github.toLowerCase(),
-  );
-
-  return brusBalance ? brusBalance.balance : 0;
-};
 
 export const useMemberStats = ({
   members,
@@ -197,7 +142,7 @@ export const useMemberStats = ({
         // Alphabetic fallback
         return m1.name.localeCompare(m2.name);
       });
-  }, [members, officeTimes]);
+  }, [members, officeTimes, brus, contributors]);
 
   return membersWithGithubStats;
 };
