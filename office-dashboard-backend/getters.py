@@ -101,9 +101,7 @@ def get_repo_stats(app: Flask):
         forkCount
         diskUsage
         hasIssuesEnabled
-        stars: stargazers {
-        totalCount
-        }
+        stargazerCount
         # collaborators {
         #   totalCount
         # }
@@ -167,7 +165,10 @@ def get_repo_stats(app: Flask):
     repo_stats_res = requests.post(
         url=url, json={"query": query_string}, headers=headers
     )
+    repo_stats_res.raise_for_status()
     repo_stats_json = repo_stats_res.json()
+    if "errors" in repo_stats_json:
+        raise Exception(f"GitHub GraphQL error: {repo_stats_json['errors']}")
 
     return {
         "lego": parse_repo_stats("lego", repo_stats_json["data"]["lego"]),
@@ -257,7 +258,7 @@ def parse_repo_stats(name, repository):
         "updated_at": repository["updatedAt"],
         "pushed_at": repository["pushedAt"],
         "forks": repository["forkCount"],
-        "stars": repository["stars"]["totalCount"],
+        "stars": repository["stargazerCount"],
         "disk_usage": repository["diskUsage"],
         "watchers": repository["watchers"]["totalCount"],
         "commits": repository["commits"]["target"]["history"]["totalCount"],
