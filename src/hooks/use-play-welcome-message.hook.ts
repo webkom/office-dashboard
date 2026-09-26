@@ -9,7 +9,7 @@ const usePlayWelcomeMessageHook = (
     useState<OfficeTimes[]>(officeTimes);
   useEffect(() => {
     setPreviousOfficetimes(officeTimes);
-  }, [officeTimes]);
+  }, []);
 
   useEffect(() => {
     for (const member of members) {

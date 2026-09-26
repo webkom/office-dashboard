@@ -1,15 +1,20 @@
 import { IsEmpty } from "app/utils/is-empty.ts";
 import MembersListItem from "./members-list-item/members-list-item.component";
 import styles from "./members-list.module.css";
-import { BrusBalance, GithubContributor, MaybeEmpty } from "app/hooks/dashboard-data.hook";
+import {
+  BrusBalance,
+  GithubContributor,
+  MaybeEmpty,
+} from "app/hooks/dashboard-data.hook";
 import { Member } from "app/hooks/dashboard-data.hook";
 import { OfficeTimes } from "app/hooks/dashboard-data.hook";
+import { useEffect } from "react";
 
 export type MemberWithGithubStats = {
   name: string;
   avatar: string;
   github: string;
-  github_contributions: { lego: number; webapp: number };
+  github_contributions: { lego: number; webapp: number; abakus_app: number };
   brus_balance: number;
   birthday: string;
   joined: "" | string;
@@ -38,6 +43,9 @@ const MembersList = ({
   officeTimes: OfficeTimes[];
   brus: BrusBalance[];
 }) => {
+  useEffect(() => {
+    console.log(githubContributors);
+  }, [githubContributors]);
   const findGithubStatsOrDefault = (member: Member) => {
     if (IsEmpty(githubContributors)) {
       return null;
@@ -83,11 +91,11 @@ const MembersList = ({
     }
 
     const brusBalance = brus.find(
-      (balance) => balance.github.toLowerCase() === member.github.toLowerCase()
+      (balance) => balance.github.toLowerCase() === member.github.toLowerCase(),
     );
 
     return brusBalance ? brusBalance.balance : 0;
-  }
+  };
   const membersWithGithubStats = members
     .map<MemberWithGithubStats>((member) => {
       const contributionStats = findGithubStatsOrDefault(member);
@@ -102,6 +110,7 @@ const MembersList = ({
         github_contributions: {
           lego: contributionStats?.lego ?? 0,
           webapp: contributionStats?.webapp ?? 0,
+          abakus_app: contributionStats?.abakus_app ?? 0,
         },
         brus_balance: brusBalance ?? 0,
         birthday: "",

@@ -47,6 +47,7 @@ const MembersListItem = ({ member }: Props) => {
         <div>
           <div>lego: {member.github_contributions.lego}</div>
           <div>webapp: {member.github_contributions.webapp}</div>
+          <div>app: {member.github_contributions.abakus_app}</div>
         </div>
       </td>{" "}
       <td
