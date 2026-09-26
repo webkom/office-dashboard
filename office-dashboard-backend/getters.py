@@ -1,5 +1,6 @@
 from flask import Flask
 import requests
+from strawberry.flask.views import GraphQLView
 
 
 def get_public_members(app: Flask):
@@ -89,12 +90,16 @@ def get_repo_stats(app: Flask):
         webapp: repository(owner: "webkom", name: "lego-webapp") {
         ...RepoFragment
         }
+        abakus-app: repository(owner: "webkom", name: "abakus-app) {
+        ...RepoFragment
+        }
         rateLimit {
         limit
         cost
         remaining
         resetAt
         }
+        
     }
     fragment RepoFragment on Repository {
         nameWithOwner

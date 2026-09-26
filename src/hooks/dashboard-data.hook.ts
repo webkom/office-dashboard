@@ -15,7 +15,7 @@ export type Member = {
 export type BrusBalance = {
   github: string;
   balance: number;
-}
+};
 
 export type OfficeTimes = {
   github_name: string;
@@ -62,6 +62,7 @@ export type GithubContributor = {
   html_url: string;
   lego?: number;
   webapp?: number;
+  abakus_app?: number;
 };
 
 const fetchDashboardData = async () => {

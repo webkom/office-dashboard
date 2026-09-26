@@ -9,7 +9,8 @@ const usePlayWelcomeMessageHook = (
     useState<OfficeTimes[]>(officeTimes);
   useEffect(() => {
     setPreviousOfficetimes(officeTimes);
-  }, [officeTimes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     for (const member of members) {
