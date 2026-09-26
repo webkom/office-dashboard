@@ -39,11 +39,12 @@ def get_repo_contributors(app: Flask):
         "https://api.github.com/repos/webkom/lego/stats/contributors?per_page=100"
     )
     url_webapp = "https://api.github.com/repos/webkom/lego-webapp/stats/contributors?per_page=100"
+    url_abakus_app = "https://api.github.com/repos/webkom/abakus-app/stats/contributors?per_page=100"
     headers = {"Authorization": f'token {app.config["GITHUB_API_TOKEN"]}'}
 
     contributors = {}
 
-    for repo_key, url in (("lego", url_lego), ("webapp", url_webapp)):
+    for repo_key, url in (("lego", url_lego), ("webapp", url_webapp), ("abakus_app", url_abakus_app)):
         for contributor in fetch_contributor_stats(url, headers):
             author = contributor["author"]
 
@@ -81,7 +82,7 @@ def get_repo_stats(app: Flask):
         webapp: repository(owner: "webkom", name: "lego-webapp") {
         ...RepoFragment
         }
-        abakus-app: repository(owner: "webkom", name: "abakus-app) {
+        abakusapp: repository(owner: "webkom", name: "abakus-app") {
         ...RepoFragment
         }
         rateLimit {
@@ -100,9 +101,7 @@ def get_repo_stats(app: Flask):
         forkCount
         diskUsage
         hasIssuesEnabled
-        stars: stargazers {
-        totalCount
-        }
+        stargazerCount
         # collaborators {
         #   totalCount
         # }
@@ -166,11 +165,15 @@ def get_repo_stats(app: Flask):
     repo_stats_res = requests.post(
         url=url, json={"query": query_string}, headers=headers
     )
+    repo_stats_res.raise_for_status()
     repo_stats_json = repo_stats_res.json()
+    if "errors" in repo_stats_json:
+        raise Exception(f"GitHub GraphQL error: {repo_stats_json['errors']}")
 
     return {
         "lego": parse_repo_stats("lego", repo_stats_json["data"]["lego"]),
         "webapp": parse_repo_stats("webapp", repo_stats_json["data"]["webapp"]),
+        "abakus_app": parse_repo_stats("abakus_app", repo_stats_json["data"]["abakusapp"]),
     }
 
 def get_brus_users(app: Flask):
@@ -255,7 +258,7 @@ def parse_repo_stats(name, repository):
         "updated_at": repository["updatedAt"],
         "pushed_at": repository["pushedAt"],
         "forks": repository["forkCount"],
-        "stars": repository["stars"]["totalCount"],
+        "stars": repository["stargazerCount"],
         "disk_usage": repository["diskUsage"],
         "watchers": repository["watchers"]["totalCount"],
         "commits": repository["commits"]["target"]["history"]["totalCount"],
