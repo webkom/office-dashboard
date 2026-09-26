@@ -8,8 +8,8 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="dashboard g-width-full">
-      <Header />
+    <div className="bg-background g-width-full">
+      {/* <Header /> */}
       <Content />
       <p className="made-by-love g-text-center">
         laget med{" "}

@@ -50,17 +50,15 @@ const MembersList = ({
   });
 
   return (
-    <div
-      className={`${styles["members-list"]} g-width-full g-flex-col bg-red-500`}
-    >
-      <table className={styles["members-table"]}>
-        <thead>
-          <tr>
-            <th className={styles["name"]}>Navn</th>
-            <th className={styles["contributions"]}>Bidrag</th>
-            <th className={styles["brus-balance"]}>Brus</th>
-            <th className={styles["total-time"]}>Total tid</th>
-            <th className={styles["last-seen"]}>Sist sett</th>
+    <div className="g-width-full g-flex-col p-5 bg-background">
+      <table className={"w-full border-collapse"}>
+        <thead className="text-left py-3 px-4 items-center border-b border-gray-700">
+          <tr className="px-4 py-3 h-fit w-full">
+            <th>Navn</th>
+            <th>Bidrag</th>
+            <th>Brus</th>
+            <th>Total tid</th>
+            <th>Sist sett</th>
           </tr>
         </thead>
         <tbody>

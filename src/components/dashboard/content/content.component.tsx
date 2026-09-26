@@ -15,12 +15,13 @@ const Content: React.FC = () => {
     dasboardData.data?.office_times,
   );
 
-  const dataExists = dasboardData.isSuccess || !!dasboardData?.data
+  const dataExists = dasboardData.isSuccess || !!dasboardData?.data;
 
   return (
-    <div className="g-width-full g-flex-col g-flex-align-center">
-      <StatusBar />
-      {dasboardData.isLoading ? (
+    <div className="">
+      {/* <StatusBar /> */}
+      <LoadingIcon />
+      {/* {dasboardData.isLoading ? (
         <LoadingIcon />
       ) : (
         <>
@@ -36,7 +37,7 @@ const Content: React.FC = () => {
             </>
           )}
         </>
-      )}
+      )} */}
     </div>
   );
 };
