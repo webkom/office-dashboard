@@ -1,11 +1,22 @@
 @import url(./globals.css);
+@import "tailwindcss";
+
+/*A beautiful color palette */
+@theme {
+  --color-bg: #11171a;
+  --color-bg-light: #474d51;
+  --color-primary: #192126;
+  --color-secondary: #fb0506;
+  --color-secondary-dark: #af0304;
+  --color-secondary-light: #fb3737;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-font-primary: #fff;
+}
 
 :root {
-
   width: 100%;
   height: 100%;
   background-color: var(--background-color);
-
 
   --background-color: #11171a;
   --background-color-light: #474d51;

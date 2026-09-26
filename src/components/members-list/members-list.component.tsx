@@ -50,7 +50,9 @@ const MembersList = ({
   });
 
   return (
-    <div className={`${styles["members-list"]} g-width-full g-flex-col`}>
+    <div
+      className={`${styles["members-list"]} g-width-full g-flex-col bg-red-500`}
+    >
       <table className={styles["members-table"]}>
         <thead>
           <tr>
