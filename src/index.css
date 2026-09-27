@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./win95.css";
 
 @custom-variant dark (&:is(.dark *));
 

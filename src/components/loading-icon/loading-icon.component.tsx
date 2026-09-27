@@ -1,110 +1,81 @@
-import webkomIcon from "/webkom.png";
-import { motion } from "motion/react";
+import React, { useEffect, useState } from "react";
+import { HourglassIcon } from "../win95-icons";
 
-const NumberOfOs = 30;
+const logMessages = [
+  "Initialiserer TCP/IP over Winsock 2.0...",
+  "Kobler til dashboard-backend.webkom.dev...",
+  "Laster medlemskartotek fra Abakus...",
+  "Henter transaksjoner fra brusautomaten...",
+  "Laster inn commits fra GitHub GraphQL...",
+  "Klargjør kontorvisning...",
+];
 
-// Precompute delays using an ease-out curve so the flow starts briskly
-// and gently decelerates towards the end rather than abruptly stopping
-const BASE_DELAY = 1;
-const delays = (() => {
-  const result: number[] = [BASE_DELAY];
-  for (let i = 1; i < NumberOfOs; i++) {
-    const progress = i / (NumberOfOs - 1);
-    // Interval starts at ~25ms and gracefully stretches to ~135ms
-    const interval = 0.025 + 0.11 * Math.pow(progress, 2.2);
-    result.push(result[result.length - 1] + interval);
-  }
-  return result;
-})();
+const LoadingIcon: React.FC = () => {
+  const [currentStep, setCurrentStep] = useState(0);
 
-const finalDelay = delays[delays.length - 1];
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentStep((prev) =>
+        prev < logMessages.length - 1 ? prev + 1 : prev,
+      );
+    }, 400);
+    return () => clearInterval(timer);
+  }, []);
 
-const LoadingIcon = () => (
-  <motion.div
-    key="loader"
-    className="w-full justify-center items-center flex overflow-x-hidden overflow-y-hidden h-screen perspective-near"
-    initial={{
-      opacity: 0,
-      x: 100,
-    }}
-    animate={{
-      opacity: 1,
-      x: 0,
-      transition: { delay: 1, duration: 0.8, ease: [0.16, 1, 0.3, 1] },
-    }}
-    exit={{
-      opacity: 0,
-      y: 100,
-    }}
-  >
-    <motion.div
-      initial={{ opacity: 0, scale: 0, rotateX: 130 }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        rotateX: 0,
-        transition: {
-          delay: finalDelay + 0.4,
-          type: "spring",
-          stiffness: 120,
-          damping: 14,
-        },
-      }}
-      className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-8.5"
-    >
-      <img src={webkomIcon} className="w-14" />
-    </motion.div>
-    <h1 className="text-8xl font-extralight flex flex-row flex-nowrap">
-      webk
-      <motion.span
-        animate={{
-          scaleX: 2,
-          width: "auto",
-          paddingInline: 12,
-        }}
-        style={{
-          fontVariationSettings: `'slnt' -10`,
-        }}
-        className="inline-block"
-      >
-        o
-      </motion.span>
-      <div className="px-2 whitespace-nowrap">
-        {Array.from({ length: NumberOfOs }).map((_, i) => (
-          <motion.span
-            initial={{
-              opacity: 0,
-              y: 50,
-              scaleX: 0,
-              width: 0,
-              overflow: "hidden",
-              paddingInline: 0,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              paddingInline: 12,
-              scaleX: 2,
-              width: "auto",
-              transition: {
-                delay: delays[i],
-                duration: 0.45,
-                ease: [0.16, 1, 0.3, 1], // ease-out expo for buttery smooth deceleration
-              },
-            }}
-            key={i}
-            style={{
-              fontVariationSettings: `'slnt' -10`,
-            }}
-            className="inline-block"
-          >
-            o
-          </motion.span>
-        ))}
+  return (
+    <div className="flex items-center justify-center min-h-[50vh] p-4 win95-font select-none">
+      <div className="win95-outset w-full max-w-md p-[3px] border border-black shadow-2xl">
+        {/* Titlebar */}
+        <div className="win95-titlebar">
+          <div className="win95-titlebar-title">
+            <span>⏳</span>
+            <span>Starter Webkom Dashboard 95</span>
+          </div>
+          <div className="win95-titlebar-controls">
+            <button className="win95-control-btn">✕</button>
+          </div>
+        </div>
+
+        {/* Dialog Body */}
+        <div className="p-4 flex flex-col gap-4 bg-[#c0c0c0]">
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 animate-bounce">
+              <HourglassIcon size={40} />
+            </div>
+            <div>
+              <h3 className="font-bold text-[13px] text-black">
+                Webkom Kontor Dashboard
+              </h3>
+              <p className="text-[12px] text-gray-700">
+                Vennligst vent mens programmet henter data...
+              </p>
+            </div>
+          </div>
+
+          {/* Segmented Progress Bar */}
+          <div className="win95-progress">
+            <div className="win95-progress-bar" />
+          </div>
+
+          {/* Status Box */}
+          <div className="win95-inset p-2 h-20 overflow-y-auto font-mono text-[11px] text-black bg-white flex flex-col gap-0.5 win95-scroll">
+            {logMessages.slice(0, currentStep + 1).map((msg, i) => (
+              <div key={i} className="leading-tight">
+                <span className="text-gray-500 font-bold">&gt; </span>
+                {msg}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end">
+            <button className="win95-btn text-[12px] min-w-[75px]" disabled>
+              Avbryt
+            </button>
+          </div>
+        </div>
       </div>
-      <motion.span className="inline-block">m</motion.span>
-    </h1>
-  </motion.div>
-);
+    </div>
+  );
+};
 
 export default LoadingIcon;

@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import {
   BrusBalance,
   GithubContributor,
@@ -7,8 +8,6 @@ import {
 } from "app/hooks/dashboard-data.hook";
 import { useMemberStats } from "app/hooks/member-stats.hook";
 import MembersListItem from "./members-list-item/members-list-item.component";
-import { ComponentProps } from "react";
-import { cn } from "app/utils/cn";
 
 export type MemberWithGithubStats = {
   name: string;
@@ -32,63 +31,8 @@ export type MemberWithGithubStats = {
   };
 };
 
-const MembersTable = ({
-  membersWithGithubStats,
-  className,
-  showHeader = true,
-  ...props
-}: {
-  membersWithGithubStats: MemberWithGithubStats[];
-  showHeader?: boolean;
-} & ComponentProps<"table">) => {
-  return (
-    <table
-      className={cn("w-full text-left border-collapse", className)}
-      {...props}
-    >
-      {showHeader && (
-        <thead className="bg-muted/40 text-muted-foreground uppercase text-xs font-semibold tracking-wider border-b border-border/40">
-          <tr>
-            <th scope="col" className="py-3.5 px-4 sm:px-6">
-              Navn
-            </th>
-            <th scope="col" className="py-3.5 px-4 hidden md:table-cell">
-              Bidrag
-            </th>
-            <th scope="col" className="py-3.5 px-4 text-right">
-              Brus
-            </th>
-            <th scope="col" className="py-3.5 px-4">
-              Total tid
-            </th>
-            <th
-              scope="col"
-              className="py-3.5 px-4 sm:px-6 text-right sm:text-left"
-            >
-              Sist sett
-            </th>
-          </tr>
-        </thead>
-      )}
-      <tbody>
-        {membersWithGithubStats.length === 0 ? (
-          <tr>
-            <td
-              colSpan={5}
-              className="py-12 text-center text-muted-foreground text-sm"
-            >
-              Ingen medlemmer funnet
-            </td>
-          </tr>
-        ) : (
-          membersWithGithubStats.map((member) => (
-            <MembersListItem key={member.github} member={member} />
-          ))
-        )}
-      </tbody>
-    </table>
-  );
-};
+type SortField = "name" | "contributions" | "brus" | "time" | "last_seen";
+type SortDirection = "asc" | "desc";
 
 const MembersList = ({
   githubContributors,
@@ -108,52 +52,255 @@ const MembersList = ({
     officeTimes,
   });
 
+  const [selectedGithub, setSelectedGithub] = useState<string | null>(null);
+  const [filterMode, setFilterMode] = useState<"all" | "active" | "pang">(
+    "all",
+  );
+  const [sortField, setSortField] = useState<SortField>("last_seen");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
   const activeAtOfficeCount = membersWithGithubStats.filter(
     (m) => m.office_times.is_active,
   ).length;
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  const getSortIndicator = (field: SortField) => {
+    if (sortField !== field) return null;
+    return sortDirection === "asc" ? " ▲" : " ▼";
+  };
+
+  // Filter and sort members
+  const processedMembers = useMemo(() => {
+    let list = membersWithGithubStats;
+
+    if (filterMode === "active") {
+      list = list.filter((m) => m.office_times.is_active);
+    } else if (filterMode === "pang") {
+      list = list.filter((m) => m.is_pang);
+    }
+
+    return [...list].sort((a, b) => {
+      const aActive = a.office_times.is_active ? 1 : 0;
+      const bActive = b.office_times.is_active ? 1 : 0;
+
+      // The people currently at the office must always be shown at the very top
+      if (aActive !== bActive) {
+        return bActive - aActive; // 1 (at office) comes before 0 (not at office)
+      }
+
+      let comparison = 0;
+      if (sortField === "last_seen") {
+        const aTime = a.office_times.last_seen
+          ? new Date(a.office_times.last_seen).getTime()
+          : 0;
+        const bTime = b.office_times.last_seen
+          ? new Date(b.office_times.last_seen).getTime()
+          : 0;
+        const validATime = isNaN(aTime) ? 0 : aTime;
+        const validBTime = isNaN(bTime) ? 0 : bTime;
+
+        comparison = validATime - validBTime;
+      } else if (sortField === "name") {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortField === "contributions") {
+        const totalA =
+          a.github_contributions.lego +
+          a.github_contributions.webapp +
+          a.github_contributions.abakus_app;
+        const totalB =
+          b.github_contributions.lego +
+          b.github_contributions.webapp +
+          b.github_contributions.abakus_app;
+        comparison = totalA - totalB;
+      } else if (sortField === "brus") {
+        comparison = a.brus_balance - b.brus_balance;
+      } else if (sortField === "time") {
+        comparison = a.office_times.total_time - b.office_times.total_time;
+      }
+
+      if (comparison !== 0) {
+        return sortDirection === "asc" ? comparison : -comparison;
+      }
+
+      // Tie-breaker: sort by last seen (descending)
+      const fallbackATime = a.office_times.last_seen
+        ? new Date(a.office_times.last_seen).getTime()
+        : 0;
+      const fallbackBTime = b.office_times.last_seen
+        ? new Date(b.office_times.last_seen).getTime()
+        : 0;
+      const validFallbackA = isNaN(fallbackATime) ? 0 : fallbackATime;
+      const validFallbackB = isNaN(fallbackBTime) ? 0 : fallbackBTime;
+
+      if (validFallbackA !== validFallbackB) {
+        return validFallbackB - validFallbackA;
+      }
+
+      return a.name.localeCompare(b.name);
+    });
+  }, [membersWithGithubStats, filterMode, sortField, sortDirection]);
+
+  const activeMembers = processedMembers.filter(
+    (m) => !m.is_pang || m.office_times.is_active,
+  );
+  const pangMembers = processedMembers.filter(
+    (m) => m.is_pang && !m.office_times.is_active,
+  );
+
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-      {/* Header with Title and Status Badges */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 px-1">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Medlemmer
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Oversikt over aktivitet, bidrag og tid på kontoret
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-secondary/15 text-secondary border border-secondary/30">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary" />
-            </span>
-            {activeAtOfficeCount} på kontoret
-          </span>
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-muted/60 text-muted-foreground border border-border/30">
-            {membersWithGithubStats.length} medlemmer
-          </span>
+    <div className="p-2 win95-font flex flex-col gap-2">
+      {/* Search and Filter Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-[#c0c0c0] p-1.5 win95-status-inset">
+        {/* Filter Buttons */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setFilterMode("all")}
+            className={`win95-btn text-[11px] ${
+              filterMode === "all" ? "win95-btn-active font-bold active" : ""
+            }`}
+          >
+            Alle ({membersWithGithubStats.length})
+          </button>
+          <button
+            onClick={() => setFilterMode("active")}
+            className={`win95-btn text-[11px] ${
+              filterMode === "active" ? "win95-btn-active font-bold active" : ""
+            }`}
+          >
+            🟢 På kontoret ({activeAtOfficeCount})
+          </button>
+          <button
+            onClick={() => setFilterMode("pang")}
+            className={`win95-btn text-[11px] ${
+              filterMode === "pang" ? "win95-btn-active font-bold active" : ""
+            }`}
+          >
+            Pang ({membersWithGithubStats.filter((m) => m.is_pang).length})
+          </button>
         </div>
       </div>
 
-      {/* Table Card */}
-      <div className="overflow-hidden rounded-2xl border border-border/40 bg-card shadow-lg">
-        <div className="overflow-x-auto">
-          <MembersTable
-            membersWithGithubStats={membersWithGithubStats.filter(
-              (m) => !m.is_pang,
+      {/* Main Table Viewport (SysListView32 Style) */}
+      <div className="win95-inset bg-white overflow-x-auto max-h-[65vh] win95-scroll">
+        <table className="win95-table w-full">
+          <thead>
+            <tr>
+              <th
+                onClick={() => handleSort("name")}
+                className="w-1/3 cursor-pointer"
+                title="Sorter etter navn"
+              >
+                Navn {getSortIndicator("name")}
+              </th>
+              <th
+                onClick={() => handleSort("contributions")}
+                className="hidden md:table-cell cursor-pointer"
+                title="Sorter etter bidrag"
+              >
+                Bidrag (Lego / Webapp / App) {getSortIndicator("contributions")}
+              </th>
+              <th
+                onClick={() => handleSort("brus")}
+                className="text-right cursor-pointer"
+                title="Sorter etter saldo i brusautomaten"
+              >
+                Brus {getSortIndicator("brus")}
+              </th>
+              <th
+                onClick={() => handleSort("time")}
+                className="cursor-pointer"
+                title="Sorter etter total tid på kontoret"
+              >
+                Total tid {getSortIndicator("time")}
+              </th>
+              <th
+                onClick={() => handleSort("last_seen")}
+                className="text-left cursor-pointer"
+                title="Sorter etter sist sett / aktiv status"
+              >
+                Sist sett {getSortIndicator("last_seen")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {processedMembers.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="py-8 text-center text-gray-500 italic"
+                >
+                  Ingen medlemmer matcher kriteriene.
+                </td>
+              </tr>
+            ) : filterMode === "all" ? (
+              <>
+                {/* Active members */}
+                {activeMembers.map((member) => (
+                  <MembersListItem
+                    key={member.github}
+                    member={member}
+                    isSelected={selectedGithub === member.github}
+                    onSelect={() =>
+                      setSelectedGithub((prev) =>
+                        prev === member.github ? null : member.github,
+                      )
+                    }
+                  />
+                ))}
+
+                {/* Pang group divider if present */}
+                {pangMembers.length > 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="bg-[#c0c0c0] font-bold text-[11px] py-1 px-3 border-y border-[#808080]"
+                      style={{
+                        boxShadow: "inset 0 1px 0 #fff",
+                        color: "#333",
+                      }}
+                    >
+                      ── Tidligere medlemmer (Pang) ──
+                    </td>
+                  </tr>
+                )}
+
+                {pangMembers.map((member) => (
+                  <MembersListItem
+                    key={member.github}
+                    member={member}
+                    isSelected={selectedGithub === member.github}
+                    onSelect={() =>
+                      setSelectedGithub((prev) =>
+                        prev === member.github ? null : member.github,
+                      )
+                    }
+                  />
+                ))}
+              </>
+            ) : (
+              processedMembers.map((member) => (
+                <MembersListItem
+                  key={member.github}
+                  member={member}
+                  isSelected={selectedGithub === member.github}
+                  onSelect={() =>
+                    setSelectedGithub((prev) =>
+                      prev === member.github ? null : member.github,
+                    )
+                  }
+                />
+              ))
             )}
-          />
-          <div className="w-full h-5 bg-muted my-2 text-center" />
-          <MembersTable
-            showHeader={false}
-            membersWithGithubStats={membersWithGithubStats.filter(
-              (m) => m.is_pang,
-            )}
-          />
-        </div>
+          </tbody>
+        </table>
       </div>
     </div>
   );
