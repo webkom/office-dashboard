@@ -1,6 +1,5 @@
 import React from "react";
 import LoadingIcon from "app/components/loading-icon/loading-icon.component";
-import CarouselInfo from "../carousel/carousel.component";
 
 import MembersList from "app/components/members-list/members-list.component";
 import { useDashboardData } from "app/hooks/dashboard-data.hook";

@@ -27,15 +27,14 @@ const getUptimeRobotColorFromStatus = (status: number) => {
 };
 
 const StatusBar = () => {
-
   const { data, isLoading } = useUptimeStatus();
 
   const statuses = isLoading
     ? []
-    : data?.monitors.map((monitor) => ({
+    : (data?.monitors.map((monitor) => ({
         name: monitor.friendly_name,
         color: getUptimeRobotColorFromStatus(monitor.status),
-      })) ?? [];
+      })) ?? []);
 
   type StatusItemProps = {
     name: string;
@@ -43,11 +42,13 @@ const StatusBar = () => {
   };
 
   const StatusItem = ({ name, color }: StatusItemProps) => (
-    <div className={`${styles["status-item"]} g-flex-row g-flex-align-center`}>
+    <div
+      className={`flex flex-row text-foreground justify-center items-center gap-2.5`}
+    >
       <div
         className={`${styles["status-item-icon"]}`}
         style={{ backgroundColor: color }}
-      ></div>
+      />
       <div className={`${styles["status-item-name"]}`}>{name}</div>
     </div>
   );
@@ -56,7 +57,9 @@ const StatusBar = () => {
     <div
       className={`${styles["statuses-background"]} g-flex-row g-flex-align-center`}
     >
-      <div className={`${styles["statuses"]} g-flex-row g-flex-align-center`}>
+      <div
+        className={`flex flex-row gap-5 bg-card border-border border w-fit py-2.5 px-5 rounded-full mx-auto`}
+      >
         {statuses.map(({ name, color }) => (
           <StatusItem key={name} name={name} color={color} />
         ))}
