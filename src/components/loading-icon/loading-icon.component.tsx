@@ -1,20 +1,40 @@
 import webkomIcon from "/webkom.png";
 import { motion } from "motion/react";
-import styles from "./loading-icon.module.css";
 
-const NumberOfOs = 50;
+const NumberOfOs = 30;
+
+// Precompute delays using an ease-out curve so the flow starts briskly
+// and gently decelerates towards the end rather than abruptly stopping
+const BASE_DELAY = 1;
+const delays = (() => {
+  const result: number[] = [BASE_DELAY];
+  for (let i = 1; i < NumberOfOs; i++) {
+    const progress = i / (NumberOfOs - 1);
+    // Interval starts at ~25ms and gracefully stretches to ~135ms
+    const interval = 0.025 + 0.11 * Math.pow(progress, 2.2);
+    result.push(result[result.length - 1] + interval);
+  }
+  return result;
+})();
+
+const finalDelay = delays[delays.length - 1];
 
 const LoadingIcon = () => (
   <motion.div
+    key="loader"
     className="w-full justify-center items-center flex overflow-x-hidden overflow-y-hidden h-screen perspective-near"
     initial={{
       opacity: 0,
-      left: 100,
+      x: 100,
     }}
     animate={{
       opacity: 1,
-      left: 0,
-      transition: { delay: 1 },
+      x: 0,
+      transition: { delay: 1, duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+    }}
+    exit={{
+      opacity: 0,
+      y: 100,
     }}
   >
     <motion.div
@@ -24,14 +44,15 @@ const LoadingIcon = () => (
         scale: 1,
         rotateX: 0,
         transition: {
-          delay: 1 + NumberOfOs * 0.05,
-          // delay: 2,
+          delay: finalDelay + 0.4,
           type: "spring",
+          stiffness: 120,
+          damping: 14,
         },
       }}
-      className="absolute top-1/2 left-1/2 -translate-1/2 z-10"
+      className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-8.5"
     >
-      <img src="webkom.png" className="w-50" />
+      <img src={webkomIcon} className="w-14" />
     </motion.div>
     <h1 className="text-8xl font-extralight flex flex-row flex-nowrap">
       webk
@@ -53,7 +74,7 @@ const LoadingIcon = () => (
           <motion.span
             initial={{
               opacity: 0,
-              translateY: 50,
+              y: 50,
               scaleX: 0,
               width: 0,
               overflow: "hidden",
@@ -61,13 +82,15 @@ const LoadingIcon = () => (
             }}
             animate={{
               opacity: 1,
-              translateY: 0,
-              transition: {
-                delay: 1 + i * 0.05,
-              },
+              y: 0,
               paddingInline: 12,
               scaleX: 2,
               width: "auto",
+              transition: {
+                delay: delays[i],
+                duration: 0.45,
+                ease: [0.16, 1, 0.3, 1], // ease-out expo for buttery smooth deceleration
+              },
             }}
             key={i}
             style={{
@@ -79,7 +102,7 @@ const LoadingIcon = () => (
           </motion.span>
         ))}
       </div>
-      m
+      <motion.span className="inline-block">m</motion.span>
     </h1>
   </motion.div>
 );

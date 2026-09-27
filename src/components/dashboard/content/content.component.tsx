@@ -6,21 +6,38 @@ import MembersList from "app/components/members-list/members-list.component";
 import { useDashboardData } from "app/hooks/dashboard-data.hook";
 import StatusBar from "app/components/status-bar/status-bar.component";
 import usePlayWelcomeMessageHook from "app/hooks/use-play-welcome-message.hook.ts";
+import { AnimatePresence } from "motion/react";
 
 const Content: React.FC = () => {
-  const dasboardData = useDashboardData();
+  const dashboardData = useDashboardData();
 
   usePlayWelcomeMessageHook(
-    dasboardData.data?.members,
-    dasboardData.data?.office_times,
+    dashboardData.data?.members,
+    dashboardData.data?.office_times,
   );
 
-  const dataExists = dasboardData.isSuccess || !!dasboardData?.data;
+  const dataExists = dashboardData.isSuccess || !!dashboardData?.data;
 
   return (
     <div className="">
       {/* <StatusBar /> */}
-      <LoadingIcon />
+      <AnimatePresence mode="wait">
+        {dashboardData.isLoading ? (
+          <LoadingIcon />
+        ) : (
+          dataExists && (
+            <>
+              <StatusBar />
+              <MembersList
+                githubContributors={dashboardData.data.repository_contributors!}
+                members={dashboardData.data.members}
+                officeTimes={dashboardData.data.office_times ?? []}
+                brus={dashboardData.data.brus ?? []}
+              />
+            </>
+          )
+        )}
+      </AnimatePresence>
       {/* {dasboardData.isLoading ? (
         <LoadingIcon />
       ) : (
@@ -28,12 +45,7 @@ const Content: React.FC = () => {
           {dataExists && (
             <>
               <CarouselInfo members={dasboardData.data.members} />
-              <MembersList
-                githubContributors={dasboardData.data.repository_contributors!}
-                members={dasboardData.data.members}
-                officeTimes={dasboardData.data.office_times ?? []}
-                brus={dasboardData.data.brus ?? []}
-              />
+              
             </>
           )}
         </>

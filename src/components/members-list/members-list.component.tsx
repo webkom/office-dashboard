@@ -50,8 +50,8 @@ const MembersList = ({
   });
 
   return (
-    <div className="g-width-full g-flex-col p-5 bg-background">
-      <table className={"w-full border-collapse"}>
+    <div className="w-full p-5">
+      <table className={"w-full border-collapse bg-card rounded-lg"}>
         <thead className="text-left py-3 px-4 items-center border-b border-gray-700">
           <tr className="px-4 py-3 h-fit w-full">
             <th>Navn</th>
