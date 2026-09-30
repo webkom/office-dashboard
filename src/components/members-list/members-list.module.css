@@ -2,60 +2,32 @@
   font-size: 1.5rem;
   box-sizing: border-box;
   background-color: var(--background-color-light);
+  --member-columns: 2fr 1fr 0.7fr 0.9fr 0.9fr 2.5rem;
 }
 
-.members-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.members-table thead th {
-  text-align: left;
+.members-header {
+  display: grid;
+  grid-template-columns: var(--member-columns);
   padding: 0.75rem 1rem;
   font-weight: 600;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.members-table tbody tr td {
-  padding: 0.75rem 1rem;
-  vertical-align: middle;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.05);
+.members-body {
+  display: flex;
+  flex-direction: column;
 }
 
 @media screen and (max-width: 600px) {
   .members-list {
     padding: 0;
     font-size: 1rem;
+    --member-columns: 43% 13% 18% 22% 1.5rem;
   }
 
-  .members-table {
-    table-layout: fixed;
-  }
-
-  .members-table thead th,
-  .members-table tbody tr td {
+  .members-header {
     padding: 0.3rem 0.35rem;
-    overflow-wrap: anywhere;
-  }
-
-  .members-table thead th {
     font-size: 0.8rem;
-  }
-
-  .name {
-    width: 45%;
-  }
-
-  .brus-balance {
-    width: 14%;
-  }
-
-  .total-time {
-    width: 18%;
-  }
-
-  .last-seen {
-    width: 23%;
   }
 
   .contributions {
