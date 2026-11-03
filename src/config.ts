@@ -1,12 +1,11 @@
 // Dashboard API (defined in main.py)
 export const DASHBOARD_API = import.meta.env.PROD
   ? "https://dashboard-backend.webkom.dev"
-  : import.meta.env.VITE_DASHBOARD_API ?? "http://127.0.0.1:5000";
+  : (import.meta.env.VITE_DASHBOARD_API ?? "http://127.0.0.1:5000");
 
 // Brus API
 export const BRUS_URL =
   import.meta.env.REACT_APP_BRUS_URL || "https://brus.abakus.no/api/liste";
-
 
 // Environment API
 export const ENVIRONMENT_URL =
@@ -59,3 +58,10 @@ export const UPTIME_ROBOT_POST_DATA = {
 
 // Office Environment Sensors
 export const OFFICE_SENSORS = ["sensors/B05DAFC40A24"];
+
+// Office WLED Strip (local network). Comma-separate to list fallbacks,
+// e.g. "http://disco.local,http://192.168.1.67"
+export const WLED_URLS = (import.meta.env.VITE_WLED_URL || "http://disco.local")
+  .split(",")
+  .map((url: string) => url.trim().replace(/\/$/, ""))
+  .filter(Boolean);

@@ -1,11 +1,10 @@
-import Clock from "./clock/clock.component";
 import webkomLogo from "/webkom.png";
 import styles from "./header.module.css";
 import { PropsWithChildren } from "react";
 import Github from "./github/github.component";
+import WledPomo from "./wled-pomo/wled-pomo.component";
 
 const Header = () => {
-
   const HeaderCell: React.FC<PropsWithChildren<{ className?: string }>> = ({
     children,
     className,
@@ -30,11 +29,9 @@ const Header = () => {
                 className={styles["logo"]}
                 src={webkomLogo}
               />
-              <h1 className={styles["title"]}>
-                Webkom
-              </h1>
+              <h1 className={styles["title"]}>Webkom</h1>
             </div>
-            <Clock />
+            <WledPomo />
           </HeaderCell>
         </div>
         <HeaderCell>

@@ -8,10 +8,28 @@ const getTimeString = () =>
     minute: "2-digit",
     hour12: false,
   });
-const getDayString = () =>
-  new Date().toLocaleDateString("nb-NO", { weekday: "long" });
+// Not CSS capitalize: that would uppercase every per-letter span
+const getDayString = () => {
+  const day = new Date().toLocaleDateString("nb-NO", { weekday: "long" });
+  return day.charAt(0).toUpperCase() + day.slice(1);
+};
 
-const Clock = () => {
+// Keyed by value, so a changed digit remounts and rolls in
+const Rolling = ({ text }: { text: string }) => (
+  <span className={styles.rolling} aria-label={text}>
+    {text.split("").map((char, i) => (
+      <span key={`${i}-${char}`} className={styles.char} aria-hidden>
+        {char}
+      </span>
+    ))}
+  </span>
+);
+
+type Props = {
+  override?: { label: string; time: string };
+};
+
+const Clock = ({ override }: Props) => {
   const [timeString, setTimeString] = useState(getTimeString());
   const [dayString, setDayString] = useState(getDayString());
 
@@ -23,13 +41,23 @@ const Clock = () => {
     return () => {
       clearInterval(interval);
     };
-  });
+  }, []);
+
+  const isOverridden = Boolean(override);
+  useEffect(() => {
+    if (!isOverridden) {
+      setTimeString(getTimeString());
+      setDayString(getDayString());
+    }
+  }, [isOverridden]);
 
   return (
     <div className="g-flex-col g-flex-align-center g-text-center">
-      <div className={`${styles.date} g-flex g-capitalize`}>{dayString}</div>
-      <div className={`${styles.time} g-flex g-capitalize g-font-size-3`}>
-        {timeString}
+      <div className={`${styles.date} g-flex`}>
+        <Rolling text={override?.label ?? dayString} />
+      </div>
+      <div className={`${styles.time} g-flex g-font-size-3`}>
+        <Rolling text={override?.time ?? timeString} />
       </div>
     </div>
   );
