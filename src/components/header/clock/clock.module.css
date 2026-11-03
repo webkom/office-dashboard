@@ -2,3 +2,27 @@
 .date {
   font-family: monospace;
 }
+
+.rolling {
+  display: inline-flex;
+  overflow: hidden;
+}
+
+.char {
+  display: inline-block;
+  white-space: pre;
+  animation: roll-in 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes roll-in {
+  from {
+    transform: translateY(70%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .char {
+    animation: none;
+  }
+}

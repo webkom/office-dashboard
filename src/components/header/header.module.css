@@ -6,7 +6,7 @@
   background-color: var(--header-color);
 }
 
-.logo-and-clock span {
+.logo-and-clock > span {
   gap: 1rem;
   padding: 0.5rem 1rem;
 }

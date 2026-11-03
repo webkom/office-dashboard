@@ -1,0 +1,508 @@
+.wrapper {
+  --pomo-blue: #4f7fe0;
+  --pomo-red-dim: color-mix(in srgb, var(--secondary-dark) 70%, transparent);
+  --pomo-amber: #e2a63b;
+  --pomo-muted: rgba(255, 255, 255, 0.55);
+  --pomo-faint: rgba(255, 255, 255, 0.32);
+  --pomo-hover: rgba(255, 255, 255, 0.04);
+  --pomo-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --tone: var(--pomo-faint);
+
+  position: relative;
+}
+
+.wrapper[data-tone="work"] {
+  --tone: var(--secondary);
+}
+.wrapper[data-tone="break"] {
+  --tone: var(--pomo-blue);
+}
+.wrapper[data-tone="paused"] {
+  --tone: var(--pomo-amber);
+}
+
+:where(.wrapper) button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+:where(.wrapper) button:focus-visible {
+  outline: 1px solid var(--secondary-light);
+  outline-offset: 2px;
+}
+
+.clock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: inherit;
+}
+
+.clock-strip {
+  display: block;
+  opacity: 0;
+  transform: scaleX(0.6);
+  transition:
+    opacity 0.4s var(--pomo-ease),
+    transform 0.6s var(--pomo-ease);
+}
+
+.clock:disabled {
+  cursor: default;
+}
+
+/* A faint hint on hover is the only clue the clock does something */
+.clock:not(:disabled):hover .clock-strip {
+  opacity: 0.45;
+  transform: scaleX(1);
+}
+
+.clock-strip-live,
+.clock:not(:disabled):hover .clock-strip-live {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.wrapper:not([data-tone="idle"]) .clock > div > :first-child {
+  color: var(--tone);
+}
+
+.strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  height: 3px;
+}
+
+.cell {
+  border-radius: 1px;
+  background: var(--pomo-red-dim);
+  transition: background-color 0.5s var(--pomo-ease);
+}
+
+.cell-on {
+  background: var(--pomo-blue);
+}
+
+.wrapper[data-tone="idle"] .cell {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.cell-tip {
+  background: var(--pomo-amber);
+  animation: blink 1s steps(2, jump-none) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.sheet {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  z-index: 100;
+  width: 288px;
+  margin-left: -144px;
+  background: var(--header-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 30px 60px -20px rgba(5, 9, 11, 0.8);
+  text-align: left;
+  animation: unfold 0.45s var(--pomo-ease);
+}
+
+@keyframes unfold {
+  from {
+    clip-path: inset(0 0 100% 0 round 4px);
+    transform: translateY(-6px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 4px);
+  }
+}
+
+.options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.options > li {
+  border-bottom: 1px solid var(--border-color);
+  animation: rise 0.5s var(--pomo-ease) both;
+  animation-delay: calc(var(--i) * 45ms + 80ms);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.option,
+.custom {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 18px;
+}
+
+.option::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: var(--secondary);
+  transform: scaleY(0);
+  transition: transform 0.35s var(--pomo-ease);
+}
+
+.option {
+  text-align: left;
+  transition: background-color 0.25s var(--pomo-ease);
+}
+
+.option:hover {
+  background: var(--pomo-hover);
+}
+
+.option:hover::before {
+  transform: scaleY(1);
+}
+
+.work {
+  min-width: 64px;
+  font-family: monospace;
+  font-size: 1.7rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.work small,
+.custom small {
+  margin-left: 4px;
+  font-size: 0.7rem;
+  color: var(--pomo-faint);
+}
+
+.rest {
+  flex: 1;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--pomo-muted);
+}
+
+.go {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  margin-top: -0.4rem;
+  color: var(--secondary-light);
+  font-size: 0.8rem;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition:
+    opacity 0.25s var(--pomo-ease),
+    transform 0.35s var(--pomo-ease);
+}
+
+.option:hover .go {
+  opacity: 1;
+  transform: none;
+}
+
+.sub {
+  display: block;
+  white-space: nowrap;
+  margin-top: 3px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--pomo-faint);
+}
+
+.custom {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.custom-line {
+  display: flex;
+  align-items: baseline;
+}
+
+.custom .sub {
+  margin-top: 6px;
+  padding-left: 78px;
+}
+
+.custom .sub input {
+  width: 2ch;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--pomo-muted);
+  text-align: center;
+}
+
+.custom input {
+  box-sizing: border-box;
+  padding: 0;
+  border: none;
+  border-bottom: 1px dashed var(--pomo-faint);
+  background: transparent;
+  color: var(--font-primary-color);
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.custom input.work {
+  min-width: 0;
+  width: 2.2ch;
+}
+
+.custom input.rest {
+  flex: none;
+  width: 2.5ch;
+  margin-left: 22px;
+  color: var(--pomo-muted);
+}
+
+.custom span.rest {
+  margin-left: 6px;
+}
+
+.custom input::-webkit-outer-spin-button,
+.custom input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.custom input:focus {
+  outline: none;
+  border-bottom-color: var(--secondary-light);
+}
+
+.go-btn {
+  color: var(--pomo-faint);
+  font-size: 0.8rem;
+  transition: color 0.2s var(--pomo-ease);
+}
+
+.go-btn:hover {
+  color: var(--secondary-light);
+}
+
+.now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  color: var(--pomo-muted);
+}
+
+.leds {
+  margin-left: auto;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--pomo-faint);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tone);
+  flex-shrink: 0;
+}
+
+.wrapper[data-tone="work"] .dot,
+.wrapper[data-tone="break"] .dot {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.action {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.7rem;
+}
+
+.kbd {
+  min-width: 18px;
+  padding: 2px 6px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--pomo-faint);
+  transition:
+    color 0.2s var(--pomo-ease),
+    border-color 0.2s var(--pomo-ease);
+}
+
+.option:hover .kbd {
+  color: var(--font-primary-color);
+  border-color: var(--pomo-faint);
+}
+
+/* The scrub row is not a button itself; its two keys are */
+.static {
+  align-items: center;
+  gap: 6px;
+}
+
+.static::before {
+  display: none;
+}
+
+.static .kbd:hover {
+  border-color: var(--secondary-light);
+  color: var(--secondary-light);
+}
+
+.danger::before {
+  background: var(--secondary-light);
+}
+
+.danger .action {
+  color: var(--pomo-muted);
+  transition: color 0.2s var(--pomo-ease);
+}
+
+.danger:hover .action {
+  color: var(--secondary-light);
+}
+
+.icon {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  color: var(--pomo-muted);
+  transition:
+    background-color 0.2s var(--pomo-ease),
+    color 0.2s var(--pomo-ease);
+}
+
+.icon:hover {
+  background: var(--pomo-hover);
+  color: var(--font-primary-color);
+}
+
+.icon:active,
+button.option:active,
+.kbd:active {
+  transform: scale(0.97);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px 4px 18px;
+}
+
+.modes {
+  display: flex;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.modes button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--pomo-faint);
+  transition: color 0.2s var(--pomo-ease);
+}
+
+.modes button:hover {
+  color: var(--pomo-muted);
+}
+
+.modes .mode-active {
+  color: var(--font-primary-color);
+}
+
+.mini {
+  display: block;
+  overflow: visible;
+  opacity: 0.55;
+  transition: opacity 0.25s var(--pomo-ease);
+}
+
+.mini-base {
+  fill: var(--pomo-red-dim);
+}
+
+.mini-fill {
+  fill: var(--pomo-blue);
+  clip-path: inset(0 100% 0 0);
+}
+
+.modes button:hover .mini,
+.modes .mode-active .mini {
+  opacity: 1;
+}
+
+/* Only the hovered mode animates, stepped to match what it does */
+.modes button:hover .mini-fill {
+  animation: mini-fill 4s infinite;
+}
+.modes button:hover [data-mode="bar"] .mini-fill {
+  animation-timing-function: linear;
+}
+.modes button:hover [data-mode="quarters"] .mini-fill {
+  animation-timing-function: steps(4, jump-end);
+}
+.modes button:hover [data-mode="solid"] .mini-fill {
+  animation-timing-function: steps(1, jump-end);
+}
+
+@keyframes mini-fill {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  80%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .options > li,
+  .dot,
+  .cell-tip,
+  .mini-fill {
+    animation: none !important;
+  }
+}
