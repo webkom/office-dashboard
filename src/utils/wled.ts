@@ -1,6 +1,11 @@
 // Minimal client for the office WLED strip (JSON API over HTTP)
 
-import { POMO_PREFIX, Session, decodeSession } from "app/utils/pomo-session";
+import {
+  POMO_PREFIX,
+  Session,
+  decodeSession,
+  encodeSession,
+} from "app/utils/pomo-session";
 
 export type Rgb = [number, number, number];
 
@@ -13,6 +18,8 @@ type WledSegment = {
   id: number;
   n?: string;
   frz?: boolean;
+  fx?: number;
+  col?: number[][];
   [k: string]: unknown;
 };
 
@@ -34,40 +41,89 @@ const firstSegment = (state?: WledState | null) =>
 export const isPomoState = (state?: WledState | null) =>
   Boolean(state?.seg?.some((s) => s.n?.startsWith(POMO_PREFIX)));
 
+/**
+ * While a pomodoro runs, the name is "<session>|<painter>.<until>": the one
+ * browser that paints the strip, and until when (seconds, base 36). Every
+ * other browser only reads, so they can't paint over each other.
+ */
+export type Painter = { id: string; until: number };
+
 export const sessionOnStrip = (state?: WledState | null): Session | null =>
-  decodeSession(firstSegment(state)?.n);
+  decodeSession(firstSegment(state)?.n?.split("|")[0]);
+
+export function painterOf(state?: WledState | null): Painter | null {
+  const m = /\|([a-z0-9]+)\.([a-z0-9]+)$/.exec(firstSegment(state)?.n ?? "");
+  return m ? { id: m[1], until: parseInt(m[2], 36) * 1000 } : null;
+}
+
+export const encodeTag = (s: Session, painter: Painter) =>
+  `${encodeSession(s)}|${painter.id}.${Math.floor(painter.until / 1000).toString(36)}`;
 
 // Our frames freeze segment 0. Frozen but untagged means a frame landed after
 // someone else gave the lights back.
 export const isLeftoverFrame = (state?: WledState | null) =>
   !isPomoState(state) && Boolean(firstSegment(state)?.frz);
 
-// The strip only has room for the session, so each browser remembers the
-// office look it last saw, to put back when a session ends
-const OFFICE_STATE_KEY = "wled-pomo-office-state";
-const FALLBACK_OFFICE_STATE: WledState = {
-  on: true,
-  bri: 128,
-  seg: [{ id: 0, on: true, fx: 0, col: [[255, 170, 90]] }],
+// The office look is kept on the strip during a pomodoro, as a preset, so
+// whoever ends the session puts back the same look
+const OFFICE_PRESET = 250;
+export const saveOfficeLookPayload = {
+  psave: OFFICE_PRESET,
+  n: "Kontorlys (pomodoro)",
+  ib: true,
+  sb: true,
+};
+export const loadOfficeLookPayload = { ps: OFFICE_PRESET };
+
+/**
+ * When no pomodoro runs, segment 0's name is a note every browser reads: the
+ * office's effect settings and the last event shown, e.g. "Lys:bpk:p:lego#12".
+ * While an event plays it starts "Lys!" instead, so that look isn't saved as
+ * the office look.
+ */
+export type LightSettings = {
+  /** Fireworks when someone with a birthday arrives */
+  birthday: boolean;
+  /** A green wave when a pull request is merged */
+  merges: boolean;
+  /** Kveld in the evening, the day look back in the morning */
+  evening: boolean;
+};
+export type Note = {
+  settings: LightSettings;
+  event: string | null;
+  playing: boolean;
 };
 
-export function rememberOfficeState(state?: WledState) {
-  if (!state || isPomoState(state) || isLeftoverFrame(state)) return;
-  try {
-    localStorage.setItem(OFFICE_STATE_KEY, JSON.stringify(state));
-  } catch {
-    // Best effort
-  }
+const SETTING_CODE: Record<keyof LightSettings, string> = {
+  birthday: "b",
+  merges: "p",
+  evening: "k",
+};
+const DEFAULT_NOTE: Note = {
+  settings: { birthday: true, merges: true, evening: true },
+  event: null,
+  playing: false,
+};
+
+export function noteOf(state?: WledState | null): Note {
+  const n = firstSegment(state)?.n ?? "";
+  const m = /^Lys([:!])([a-z]*)(?::(.+))?$/.exec(n);
+  if (!m) return DEFAULT_NOTE;
+  const [, mark, flags, event] = m;
+  const settings = Object.fromEntries(
+    Object.entries(SETTING_CODE).map(([k, c]) => [k, flags.includes(c)]),
+  ) as LightSettings;
+  return { settings, event: event ?? null, playing: mark === "!" };
 }
 
-function recalledOfficeState(): WledState {
-  try {
-    const raw = localStorage.getItem(OFFICE_STATE_KEY);
-    if (raw) return JSON.parse(raw) as WledState;
-  } catch {
-    // Fall through
-  }
-  return FALLBACK_OFFICE_STATE;
+export function encodeNote(note: Note): string {
+  const flags = Object.entries(SETTING_CODE)
+    .filter(([k]) => note.settings[k as keyof LightSettings])
+    .map(([, c]) => c)
+    .join("");
+  const event = note.event ? `:${note.event}` : "";
+  return `Lys${note.playing ? "!" : ":"}${flags}${event}`.slice(0, 64);
 }
 
 /** One segment over the whole strip, extra segments off, session in the name */
@@ -106,11 +162,58 @@ export const tagPayload = (tag: string) => ({ seg: [{ id: 0, n: tag }] });
 
 export const unfreezePayload = { seg: [{ id: 0, frz: false }] };
 
-export function restorePayload(): WledState {
-  const restored = structuredClone(recalledOfficeState());
-  // n: "" clears our tag when the segment had no name
-  restored.seg = restored.seg?.map((s) => ({ ...s, frz: false, n: s.n ?? "" }));
-  return restored;
+/** Warm white, for when the saved office look is missing */
+export const fallbackLookPayload: WledState = {
+  on: true,
+  bri: 128,
+  seg: [{ id: 0, on: true, frz: false, fx: 0, col: [[255, 170, 90]], n: "" }],
+};
+
+export const lookOf = (state?: WledState | null) => {
+  const seg = firstSegment(state);
+  return seg ? { fx: seg.fx, col: seg.col?.[0] } : null;
+};
+
+/** Fireworks Starburst on the Party palette */
+export const fireworksPayload = {
+  on: true,
+  bri: 200,
+  transition: 5,
+  seg: [{ id: 0, frz: false, fx: 89, pal: 6, sx: 150, ix: 150 }],
+};
+
+/** Puts back the look the strip had in `before`, turned on, with `note` in
+ * the name */
+export function restoreFrom(before: WledState | undefined, note: string) {
+  const seg: Record<string, unknown> = {
+    ...firstSegment(before),
+    id: 0,
+    frz: false,
+    n: note,
+  };
+  delete seg.len; // read-only; WLED would take it as a new length
+  return { on: true, bri: before?.bri, seg: [seg] };
+}
+
+/** The strip in `base`, with a band of `col` centred on LED `at` */
+export function bandPayload(
+  ledCount: number,
+  base: Rgb,
+  col: Rgb,
+  at: number,
+  width: number,
+) {
+  const a = Math.max(0, Math.min(ledCount, Math.round(at - width / 2)));
+  const b = Math.max(0, Math.min(ledCount, Math.round(at + width / 2)));
+  const i: (number | Rgb)[] = [];
+  for (const [from, to, c] of [
+    [0, a, base],
+    [a, b, col],
+    [b, ledCount, base],
+  ] as [number, number, Rgb][]) {
+    if (to > from) i.push(from, to, c);
+  }
+  return { on: true, transition: 0, seg: [{ id: 0, i }] };
 }
 
 /** Blue up to `blue`, red after, and an optional yellow pause marker around
@@ -145,6 +248,21 @@ export function progressPayload(
     }
   }
   if (tip !== null) push(tip, tip + width, YELLOW);
+  return { on: true, transition: 0, seg: [{ id: 0, i }] };
+}
+
+/** `lit` LEDs in the middle of the strip, the rest dark */
+export function growPayload(ledCount: number, lit: number, col: Rgb) {
+  const a = Math.floor((ledCount - lit) / 2);
+  const b = a + lit;
+  const i: (number | Rgb)[] = [];
+  for (const [from, to, c] of [
+    [0, a, [0, 0, 0]],
+    [a, b, col],
+    [b, ledCount, [0, 0, 0]],
+  ] as [number, number, Rgb][]) {
+    if (to > from) i.push(from, to, c);
+  }
   return { on: true, transition: 0, seg: [{ id: 0, i }] };
 }
 
@@ -190,6 +308,11 @@ class LatestOnly {
     this.running ??= this.drain().finally(() => {
       this.running = null;
     });
+  }
+
+  /** Waits until everything queued has been sent */
+  async idle() {
+    await this.running;
   }
 
   /** Drops what is queued and waits for the request in flight */
@@ -248,6 +371,15 @@ export class WledClient {
 export class MockWledClient extends WledClient {
   static readonly KEY = "wled-pomo-mock-strip";
   private static readonly FROZEN_KEY = `${MockWledClient.KEY}:frz`;
+  private static readonly ON_KEY = `${MockWledClient.KEY}:on`;
+  private static readonly LOOK_KEY = `${MockWledClient.KEY}:look`;
+  private static readonly PRESET_KEY = `${MockWledClient.KEY}:preset`;
+  private static readonly ALL_KEYS = [
+    MockWledClient.KEY,
+    MockWledClient.FROZEN_KEY,
+    MockWledClient.ON_KEY,
+    MockWledClient.LOOK_KEY,
+  ];
 
   constructor() {
     super("mock");
@@ -263,15 +395,72 @@ export class MockWledClient extends WledClient {
     };
     const n = get(MockWledClient.KEY) ?? "";
     const frz = get(MockWledClient.FROZEN_KEY) === "1";
+    const on = get(MockWledClient.ON_KEY) !== "0";
+    const look = JSON.parse(get(MockWledClient.LOOK_KEY) ?? "{}") as {
+      bri?: number;
+      fx?: number;
+      col?: number[];
+    };
     return Promise.resolve({
-      state: { on: true, bri: 128, seg: [{ id: 0, n, frz }] },
+      state: {
+        on,
+        bri: look.bri ?? 128,
+        seg: [
+          {
+            id: 0,
+            n,
+            frz,
+            fx: look.fx ?? 0,
+            col: [look.col ?? [255, 170, 90]],
+          },
+        ],
+      },
       info: { leds: { count: 900 } },
     });
   }
 
-  protected override write(payload: { seg?: Partial<WledSegment>[] }) {
+  protected override write(payload: {
+    on?: boolean;
+    bri?: number;
+    psave?: number;
+    ps?: number;
+    seg?: Partial<WledSegment>[];
+  }) {
     const seg = payload.seg?.find((s) => s.id === 0);
     try {
+      const keys = MockWledClient.ALL_KEYS;
+      if (payload.psave) {
+        const saved = keys.map((k) => localStorage.getItem(k));
+        localStorage.setItem(MockWledClient.PRESET_KEY, JSON.stringify(saved));
+        return Promise.resolve();
+      }
+      if (payload.ps) {
+        const saved = JSON.parse(
+          localStorage.getItem(MockWledClient.PRESET_KEY) ?? "null",
+        ) as (string | null)[] | null;
+        saved?.forEach((v, i) =>
+          v === null
+            ? localStorage.removeItem(keys[i])
+            : localStorage.setItem(keys[i], v),
+        );
+        return Promise.resolve();
+      }
+      // Only touched when the write changes the look, like on a real strip
+      if (
+        typeof payload.bri === "number" ||
+        seg?.fx !== undefined ||
+        seg?.col
+      ) {
+        const look = JSON.parse(
+          localStorage.getItem(MockWledClient.LOOK_KEY) ?? "{}",
+        ) as Record<string, unknown>;
+        if (typeof payload.bri === "number") look.bri = payload.bri;
+        if (typeof seg?.fx === "number") look.fx = seg.fx;
+        if (seg?.col) look.col = seg.col[0];
+        localStorage.setItem(MockWledClient.LOOK_KEY, JSON.stringify(look));
+      }
+      if (typeof payload.on === "boolean")
+        localStorage.setItem(MockWledClient.ON_KEY, payload.on ? "1" : "0");
       if (typeof seg?.n === "string")
         localStorage.setItem(MockWledClient.KEY, seg.n);
       if (seg?.i) localStorage.setItem(MockWledClient.FROZEN_KEY, "1");

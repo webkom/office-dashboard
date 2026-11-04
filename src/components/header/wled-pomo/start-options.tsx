@@ -4,6 +4,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { PomoConfig, useWledPomo } from "app/hooks/use-wled-pomo.hook";
 import NumberField from "./number-field";
+import LightControls from "./light-controls";
 import Row from "./row";
 import styles from "./wled-pomo.module.css";
 
@@ -121,9 +122,11 @@ const StartOptions: React.FC<{ pomo: Pomo; onStarted: () => void }> = ({
         </div>
       </li>
 
+      <LightControls pomo={pomo} index={presets.length + 1} />
+
       {status.orphaned && (
         <Row
-          index={presets.length + 1}
+          index={presets.length + 2}
           danger
           onClick={() => void pomo.restoreLights()}
         >

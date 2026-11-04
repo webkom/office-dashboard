@@ -11,6 +11,7 @@ import {
   useWledPomo,
 } from "app/hooks/use-wled-pomo.hook";
 import { ModeIcon, StripPreview } from "./led-strips";
+import Rounds from "./rounds";
 import RunningActions from "./running-actions";
 import StartOptions from "./start-options";
 import styles from "./wled-pomo.module.css";
@@ -83,7 +84,9 @@ const WledPomo: React.FC = () => {
           ? p.cycleMode
           : p.status.isRunning
             ? whileRunning[key]
-            : undefined;
+            : key === "l"
+              ? p.toggleLights
+              : undefined;
       if (action) {
         e.preventDefault();
         action();
@@ -133,6 +136,7 @@ const WledPomo: React.FC = () => {
             cells={16}
           />
         </span>
+        <Rounds status={status} config={pomo.config} />
       </button>
 
       {isOpen && status.isReachable && (

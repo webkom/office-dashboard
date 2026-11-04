@@ -1,6 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WLED_URLS } from "app/config";
+import { useBirthdayArrivals } from "app/hooks/use-birthday-arrivals.hook";
+import { useEvening } from "app/hooks/use-evening.hook";
+import { useMergedPrs } from "app/hooks/use-merged-prs.hook";
+import { usePresenceLights } from "app/hooks/use-presence-lights.hook";
+import {
+  LightPreset,
+  presetOf,
+  presetOfId,
+  presetPayload,
+} from "app/utils/light-presets";
 import { announce, playCue } from "app/utils/pomo-sounds";
+import {
+  clearSteadyTimeout,
+  steadySleep,
+  steadyTimeout,
+} from "app/utils/steady-timer";
 import {
   DISPLAY_MODES,
   DisplayMode,
@@ -26,13 +41,27 @@ import {
   RED,
   WHITE,
   WledClient,
+  LightSettings,
+  Note,
+  Rgb,
   WledJson,
+  WledState,
+  bandPayload,
   claimPayload,
+  encodeNote,
+  encodeTag,
+  fallbackLookPayload,
+  fireworksPayload,
+  growPayload,
   isLeftoverFrame,
   isPomoState,
+  loadOfficeLookPayload,
+  lookOf,
+  noteOf,
+  painterOf,
   progressPayload,
-  rememberOfficeState,
-  restorePayload,
+  restoreFrom,
+  saveOfficeLookPayload,
   sessionOnStrip,
   solidPayload,
   tagPayload,
@@ -44,6 +73,12 @@ export type { DisplayMode };
 export type PomoPhase = "idle" | Phase;
 export type PomoConfig = SessionConfig;
 
+export const PHASE_NAME: Record<Phase, string> = {
+  work: "jobb",
+  break: "pause",
+  "long-break": "lang pause",
+};
+
 const MIN = 60 * 1000;
 const DEFAULT_CONFIG: PomoConfig = {
   workMs: 50 * MIN,
@@ -53,11 +88,28 @@ const DEFAULT_CONFIG: PomoConfig = {
   displayMode: "bar",
 };
 
-const POLL_RUNNING_MS = 3000;
+const POLL_RUNNING_MS = 2000;
 const POLL_IDLE_MS = 10_000;
+// The painter reads the strip before each frame, once a second
+const POLL_PAINTER_MS = 1000;
+// How long the painter's turn lasts, and when it renews it
+const LEASE_MS = 12_000;
+const RENEW_MS = 6_000;
 const FLASH_STEP_MS = 160;
-// Browsers that don't flash wait this long into a new phase before painting
-const QUIET_MS = 1000;
+const CELEBRATION_MS = 3000;
+const GROW_MS = 700;
+const GROW_STEPS = 14;
+const WARM: Rgb = [255, 170, 90];
+const SWEEP_MS = 1400;
+const SWEEP_STEPS = 24;
+const GREEN: Rgb = [30, 230, 90];
+// One-minute fades for the evening and the morning
+const DAY_FADE = 600;
+const DAY_LOOK_KEY = "wled-pomo-day-look";
+// How soon after a phase starts the painter still flashes / others still play
+// the sound
+const FLASH_WINDOW_MS = 1500;
+const ANNOUNCE_WINDOW_MS = 5000;
 
 export function formatPomoTime(ms: number): string {
   const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
@@ -73,7 +125,22 @@ function shownProgress(progress: number, mode: DisplayMode): number {
   return progress;
 }
 
-const sleep = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
+/** The strip's picture of a session at `now` */
+function frameFor(stored: Session, now: number, ledCount: number) {
+  const { session } = sessionAt(stored, now);
+  const duration = durationOf(session.config, session.phase);
+  const left = remainingOf(session, now);
+  const progress = Math.min(1, Math.max(0, (duration - left) / duration));
+  const isWork = session.phase === "work";
+  const shown = shownProgress(progress, session.config.displayMode);
+  const blue = Math.round((isWork ? shown : 1 - shown) * ledCount);
+  const raw = Math.round((isWork ? progress : 1 - progress) * ledCount);
+  return progressPayload(ledCount, blue, session.endsAt === null ? raw : null);
+}
+
+const sleep = steadySleep;
+
+const isVisible = () => document.visibilityState === "visible";
 
 // Rounded to whole seconds like on the strip, so our copy matches what
 // other browsers read back
@@ -129,8 +196,10 @@ async function findStrip() {
 }
 
 /**
- * One pomodoro for the whole office. The session is stored on the strip;
- * every browser reads it, paints the same frames from it, and can change it.
+ * One pomodoro for the whole office. The strip is the only source of truth:
+ * it holds the session, which browser paints it, and the office look to put
+ * back. Every browser reads it and can change the session; only the painter
+ * draws frames, from a fresh read, so browsers never paint over each other.
  */
 export function useWledPomo() {
   const isMock =
@@ -143,6 +212,18 @@ export function useWledPomo() {
   // Tagged by an older version, or holding a session we can't read
   const [orphaned, setOrphaned] = useState(false);
   const [ledCount, setLedCount] = useState(900);
+  const [isOn, setIsOn] = useState(true);
+  const [bri, setBri] = useState(128);
+  const [look, setLook] = useState<ReturnType<typeof lookOf>>(null);
+  const [note, setNote] = useState<Note>(() => noteOf(null));
+  const lightColor = (presetOf(look)?.shown ??
+    look?.col?.slice(0, 3) ??
+    WARM) as Rgb;
+  // Read by the turn-on animation, which outlives a render
+  const isOnRef = useRef(isOn);
+  isOnRef.current = isOn;
+  const lightColorRef = useRef(lightColor);
+  lightColorRef.current = lightColor;
   const [config, setConfig] = useState(DEFAULT_CONFIG);
   const [mute, setMute] = useState(loadMute);
   const [anchor, setAnchorState] = useState<Session | null>(null);
@@ -150,6 +231,10 @@ export function useWledPomo() {
 
   const anchorRef = useRef<Session | null>(null);
   const flashingRef = useRef(false);
+  const meRef = useRef(Math.random().toString(36).slice(2, 6));
+  const paintingRef = useRef(false);
+  const ledCountRef = useRef(ledCount);
+  ledCountRef.current = ledCount;
   const lastWriteRef = useRef(0);
   const lastReadRef = useRef(0);
   const missedReadsRef = useRef(0);
@@ -178,21 +263,38 @@ export function useWledPomo() {
     lastWriteRef.current = Date.now();
   }, []);
 
-  const remember = useCallback(
-    (data: WledJson | null) => {
-      if (!isMock) rememberOfficeState(data?.state);
+  /** Makes this browser the painter, writing `s` with its name on it */
+  const writeTag = useCallback(
+    (s: Session) => {
+      paintingRef.current = true;
+      const painter = { id: meRef.current, until: Date.now() + LEASE_MS };
+      return writeState(tagPayload(encodeTag(s, painter)));
     },
-    [isMock],
+    [writeState],
   );
+
+  /** Draws the current session, if this browser is the painter */
+  const paint = useCallback(() => {
+    const a = anchorRef.current;
+    if (!a || !paintingRef.current || flashingRef.current) return;
+    if (isExpired(a, Date.now())) return;
+    clientRef.current.frames.push(frameFor(a, Date.now(), ledCountRef.current));
+  }, []);
 
   /** Stops the session for everyone and gives the lights back */
   const endSession = useCallback(async () => {
     flashingRef.current = false;
+    paintingRef.current = false;
     setAnchor(null);
     setOrphaned(false);
     await clientRef.current.frames.settle();
-    await writeState(restorePayload());
-  }, [setAnchor, writeState]);
+    await writeState(loadOfficeLookPayload);
+    // WLED applies a preset a moment later. Without one saved, warm white.
+    await sleep(400);
+    const after = await readStrip();
+    if (after && isPomoState(after.state))
+      await writeState(fallbackLookPayload);
+  }, [readStrip, setAnchor, writeState]);
 
   const sync = useCallback(async () => {
     const askedAt = Date.now();
@@ -215,16 +317,33 @@ export function useWledPomo() {
     lastReadRef.current = askedAt;
 
     const state = data.state;
+    setIsOn(state?.on !== false);
+    if (typeof state?.bri === "number") setBri(state.bri);
+    setLook(lookOf(state));
     const onStrip = sessionOnStrip(state);
-    remember(data);
+    if (!onStrip) setNote(noteOf(state));
     setOrphaned(isPomoState(state) && !onStrip);
 
     if (onStrip && isExpired(onStrip, Date.now())) return endSession();
 
+    // Whose turn it is to paint. The painter renews its turn while it is
+    // open; a free turn goes to a visible browser at once, and to a background
+    // tab only when nobody else has taken it for a while.
+    const painter = painterOf(state);
+    const t = Date.now();
+    const mine = painter?.id === meRef.current && painter.until > t;
+    const free = !painter || painter.until <= t - (isVisible() ? 0 : LEASE_MS);
+    paintingRef.current = Boolean(onStrip) && mine;
+    if (onStrip && (free || (mine && painter!.until - t < RENEW_MS)))
+      await writeTag(onStrip);
+
     const had = anchorRef.current;
+    if (!sameSession(had, onStrip)) {
+      if (!onStrip) flashingRef.current = false;
+      setAnchor(onStrip);
+    }
+    paint();
     if (sameSession(had, onStrip)) return;
-    if (!onStrip) flashingRef.current = false;
-    setAnchor(onStrip);
 
     // Stopped elsewhere, but a frame of ours may have landed after their
     // restore and frozen the strip. Unfreezing brings the office look back.
@@ -233,15 +352,23 @@ export function useWledPomo() {
       const after = await readStrip();
       if (isLeftoverFrame(after?.state)) await writeState(unfreezePayload);
     }
-  }, [readStrip, remember, endSession, setAnchor, writeState]);
+  }, [readStrip, endSession, setAnchor, writeState, writeTag, paint]);
 
   const isRunning = anchor !== null;
   useEffect(() => {
-    void sync();
-    const interval = window.setInterval(
-      () => void sync(),
-      isRunning ? POLL_RUNNING_MS : POLL_IDLE_MS,
-    );
+    let timer = 0;
+    let stopped = false;
+    const loop = async () => {
+      await sync();
+      if (stopped) return;
+      const delay = !anchorRef.current
+        ? POLL_IDLE_MS
+        : paintingRef.current
+          ? POLL_PAINTER_MS
+          : POLL_RUNNING_MS;
+      timer = steadyTimeout(() => void loop(), delay);
+    };
+    void loop();
     const onWake = () => void sync();
     const onStorage = (e: StorageEvent) => {
       if (e.key === MockWledClient.KEY) void sync();
@@ -250,30 +377,43 @@ export function useWledPomo() {
     window.addEventListener("online", onWake);
     window.addEventListener("storage", onStorage);
     return () => {
-      window.clearInterval(interval);
+      stopped = true;
+      clearSteadyTimeout(timer);
       window.removeEventListener("focus", onWake);
       window.removeEventListener("online", onWake);
       window.removeEventListener("storage", onStorage);
     };
-  }, [sync, isRunning]);
+  }, [sync]);
 
   useEffect(() => {
     const client = clientRef.current;
     return () => void client.frames.settle();
   }, []);
 
-  /** Applies a change here and on the strip. Ignored during the flash. */
+  /**
+   * Applies a change for everyone. It is built on the session as the strip
+   * has it right now, so it never undoes someone else's change from a moment
+   * ago, and changes from this browser are applied one after another.
+   * Ignored during the flash.
+   */
+  const changesRef = useRef<Promise<void>>(Promise.resolve());
   const change = useCallback(
     (fn: (s: Session, now: number) => Session) => {
-      const a = anchorRef.current;
-      if (!a || flashingRef.current) return null;
-      const t = Date.now();
-      const next = asStored(fn(sessionAt(a, t).session, t));
-      setAnchor(next);
-      void writeState(tagPayload(encodeSession(next)));
-      return next;
+      if (!anchorRef.current || flashingRef.current) return;
+      changesRef.current = changesRef.current.then(async () => {
+        const data = await readStrip();
+        if (data && !sessionOnStrip(data.state)) return; // stopped meanwhile
+        const base = sessionOnStrip(data?.state) ?? anchorRef.current;
+        if (!base) return;
+        const t = Date.now();
+        const next = asStored(fn(sessionAt(base, t).session, t));
+        setAnchor(next);
+        // Whoever changes it paints it, so the strip follows at once
+        await writeTag(next);
+        paint();
+      });
     },
-    [setAnchor, writeState],
+    [readStrip, setAnchor, writeTag, paint],
   );
 
   const startSession = useCallback(
@@ -296,41 +436,40 @@ export function useWledPomo() {
         if (askedAt >= lastWriteRef.current) setAnchor(existing);
         return;
       }
-      remember(data);
       const count = data?.info?.leds?.count ?? ledCount;
       setLedCount(count);
 
       const next = asStored(startAt(cfg, Date.now()));
-      await writeState(claimPayload(data?.state, count, encodeSession(next)));
+      if (!isPomoState(data?.state)) await writeState(saveOfficeLookPayload);
+      paintingRef.current = true;
+      const painter = { id: meRef.current, until: Date.now() + LEASE_MS };
+      await writeState(
+        claimPayload(data?.state, count, encodeTag(next, painter)),
+      );
       setAnchor(next);
       setOrphaned(false);
+      paint();
       if (!mute) playCue("start");
     },
-    [config, ledCount, mute, readStrip, remember, setAnchor, writeState],
+    [config, ledCount, mute, readStrip, setAnchor, writeState, paint],
   );
 
-  const { session, rolled } = anchor
-    ? sessionAt(anchor, now)
-    : { session: null, rolled: false };
+  const session = anchor ? sessionAt(anchor, now).session : null;
   const paused = session?.endsAt === null;
   const durationMs = session ? durationOf(session.config, session.phase) : 0;
   const remainingMs = session ? remainingOf(session, now) : config.workMs;
   const phaseStartedAt =
     session?.endsAt != null ? session.endsAt - durationMs : null;
-  const phaseKey = session
-    ? `${session.cycle}:${session.phase}:${phaseStartedAt ?? "paused"}`
-    : null;
-  const quiet =
-    rolled && phaseStartedAt !== null && now - phaseStartedAt < QUIET_MS;
+  const phaseId = session ? `${session.cycle}:${session.phase}` : null;
 
   // Tick when the shown second changes
   useEffect(() => {
     if (!isRunning || paused) return;
-    const t = window.setTimeout(
+    const t = steadyTimeout(
       () => setNow(Date.now()),
       remainingMs % 1000 || 1000,
     );
-    return () => window.clearTimeout(t);
+    return () => clearSteadyTimeout(t);
   }, [isRunning, paused, remainingMs]);
 
   const expired = session ? isExpired(session, now) : false;
@@ -359,18 +498,19 @@ export function useWledPomo() {
     [mute],
   );
 
-  // When a phase runs out, every open browser plays the sound and visible
-  // ones flash the strip (background tabs are slowed down too much to flash)
-  const lastPhaseRef = useRef<{ key: string; cycle: number } | null>(null);
+  // When the phase changes, by running out or by a skip, every open browser
+  // plays the sound and the painter flashes the strip
+  const lastPhaseRef = useRef<{ id: string; cycle: number } | null>(null);
   useEffect(() => {
     const last = lastPhaseRef.current;
     lastPhaseRef.current =
-      session && phaseKey ? { key: phaseKey, cycle: session.cycle } : null;
-    if (!session || !last || !phaseKey || last.key === phaseKey) return;
-    if (!rolled || phaseStartedAt === null) return;
-    if (Date.now() - phaseStartedAt > 3000) return; // joined late
+      session && phaseId ? { id: phaseId, cycle: session.cycle } : null;
+    if (!session || !last || !phaseId || last.id === phaseId) return;
+    if (phaseStartedAt === null) return;
+    const age = Date.now() - phaseStartedAt;
+    if (age > ANNOUNCE_WINDOW_MS) return; // joined late
     announcePhase(session, last.cycle);
-    if (document.visibilityState !== "visible") return;
+    if (age > FLASH_WINDOW_MS || !paintingRef.current) return;
 
     const frames = clientRef.current.frames;
     const colour = session.phase === "work" ? RED : BLUE;
@@ -382,10 +522,10 @@ export function useWledPomo() {
         await sleep(FLASH_STEP_MS);
       }
       flashingRef.current = false;
-      setNow(Date.now());
+      paint();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phaseKey]);
+  }, [phaseId]);
 
   const displayMode = session?.config.displayMode ?? config.displayMode;
   const elapsed = Math.min(durationMs, Math.max(0, durationMs - remainingMs));
@@ -395,14 +535,7 @@ export function useWledPomo() {
   const blueRatio = session ? (isWork ? shown : 1 - shown) : 0;
   const rawBlueRatio = session ? (isWork ? progress : 1 - progress) : 0;
   const blueLeds = Math.round(blueRatio * ledCount);
-  const markerAt = paused ? Math.round(rawBlueRatio * ledCount) : null;
-
-  useEffect(() => {
-    if (!isRunning || expired || quiet || flashingRef.current) return;
-    clientRef.current.frames.push(
-      progressPayload(ledCount, blueLeds, markerAt),
-    );
-  }, [isRunning, expired, quiet, phaseKey, ledCount, blueLeds, markerAt]);
+  const upcoming = session ? nextPhase(session, 0) : null;
 
   const togglePause = useCallback(() => void change(togglePauseAt), [change]);
   const restartPhase = useCallback(() => void change(restartAt), [change]);
@@ -410,12 +543,7 @@ export function useWledPomo() {
     (dir: 1 | -1) => void change((s, t) => scrubAt(s, t, dir)),
     [change],
   );
-  const skipPhase = useCallback(() => {
-    const a = anchorRef.current;
-    const finishedCycle = a ? sessionAt(a, Date.now()).session.cycle : 1;
-    const next = change(nextPhase);
-    if (next) announcePhase(next, finishedCycle);
-  }, [change, announcePhase]);
+  const skipPhase = useCallback(() => void change(nextPhase), [change]);
 
   const updateConfig = useCallback(
     (partial: Partial<PomoConfig>) => {
@@ -437,6 +565,225 @@ export function useWledPomo() {
     setDisplayMode(DISPLAY_MODES[(idx + 1) % DISPLAY_MODES.length]);
   }, [activeConfig.displayMode, setDisplayMode]);
 
+  // When the office empties the strip turns off, and on again when someone
+  // arrives. A session nobody is there for ends first, or its frames would
+  // turn the strip back on.
+  const growRef = useRef(0);
+  const setLights = useCallback(
+    async (on: boolean) => {
+      setIsOn(on);
+      if (on) return writeState({ on });
+      // Stop a turn-on animation, so none of its frames turns the strip back on
+      growRef.current += 1;
+      await clientRef.current.frames.settle();
+      await writeState({ on: false, seg: [{ id: 0, frz: false }] });
+    },
+    [writeState],
+  );
+  const switchOff = useCallback(async () => {
+    if (anchorRef.current) await endSession();
+    await setLights(false);
+  }, [endSession, setLights]);
+  /** From off, the strip lights up from its centre outwards before showing
+   * its usual look */
+  const turnOn = useCallback(async () => {
+    const wasOn = isOnRef.current;
+    setIsOn(true);
+    if (wasOn || anchorRef.current) return writeState({ on: true });
+    const frames = clientRef.current.frames;
+    const id = ++growRef.current;
+    const stopped = () => growRef.current !== id || anchorRef.current !== null;
+    for (let k = 1; k <= GROW_STEPS; k++) {
+      if (stopped()) return;
+      lastWriteRef.current = Date.now();
+      const eased = 1 - (1 - k / GROW_STEPS) ** 3;
+      const lit = Math.round(eased * ledCount);
+      frames.push(growPayload(ledCount, lit, lightColorRef.current));
+      await sleep(GROW_MS / GROW_STEPS);
+    }
+    await frames.idle();
+    if (!stopped()) await writeState(unfreezePayload);
+  }, [ledCount, writeState]);
+  // Every browser notices an arrival; the first one turns the lights on
+  const switchOn = useCallback(async () => {
+    const data = await readStrip();
+    if (data?.state?.on !== false) return setIsOn(true);
+    isOnRef.current = false;
+    await turnOn();
+  }, [readStrip, turnOn]);
+  const present = usePresenceLights(switchOff, switchOn);
+
+  // By hand, for anyone the office tracking doesn't see. Since only changes
+  // in who is there switch the strip, it stays the way it is set here.
+  const toggleLights = useCallback(
+    () => void (isOn ? setLights(false) : turnOn()),
+    [isOn, setLights, turnOn],
+  );
+
+  // Dragging sends a lot of values; only the newest one waiting is sent
+  const setBrightness = useCallback((value: number) => {
+    setBri(value);
+    setIsOn(true);
+    lastWriteRef.current = Date.now();
+    clientRef.current.frames.push({ on: true, bri: value, transition: 0 });
+  }, []);
+
+  const applyPreset = useCallback(
+    (p: LightPreset) => {
+      setIsOn(true);
+      setBri(p.bri);
+      setLook({ fx: p.fx, col: p.col });
+      void writeState(presetPayload(p));
+    },
+    [writeState],
+  );
+
+  /**
+   * Shows a one-off event, such as a birthday, once however many browsers
+   * notice it: the note on the strip says it has been shown. Never during a
+   * pomodoro, and not if the office has turned that kind of event off.
+   */
+  const playEvent = useCallback(
+    async (
+      event: string,
+      setting: keyof LightSettings,
+      show: () => Promise<void>,
+      finish: (note: string, before: WledState | undefined) => object,
+      intoDark = false,
+    ) => {
+      if (anchorRef.current) return;
+      const data = await readStrip();
+      if (!data || sessionOnStrip(data.state)) return;
+      const current = noteOf(data.state);
+      if (!current.settings[setting] || current.event === event) return;
+      if (!intoDark && data.state?.on === false) return;
+      await writeState(
+        tagPayload(encodeNote({ ...current, event, playing: true })),
+      );
+      await show();
+      await clientRef.current.frames.idle();
+      // Left alone if someone has started a pomodoro meanwhile
+      const after = noteOf((await readStrip())?.state);
+      if (after.playing && after.event === event)
+        await writeState(
+          finish(encodeNote({ ...current, event, playing: false }), data.state),
+        );
+    },
+    [readStrip, writeState],
+  );
+
+  // A member with a birthday arrives: a few seconds of fireworks
+  useBirthdayArrivals(
+    (key) =>
+      void playEvent(
+        `b:${key}`,
+        "birthday",
+        async () => {
+          await writeState(fireworksPayload);
+          await sleep(CELEBRATION_MS);
+        },
+        (note, before) => restoreFrom(before, note),
+        true,
+      ),
+  );
+
+  // A pull request is merged: a green wave runs once along the strip
+  const sweep = useCallback(async () => {
+    const frames = clientRef.current.frames;
+    const width = Math.round(ledCount * 0.12);
+    for (let k = 0; k <= SWEEP_STEPS; k++) {
+      lastWriteRef.current = Date.now();
+      const eased = (1 - Math.cos((Math.PI * k) / SWEEP_STEPS)) / 2;
+      const at = -width / 2 + (ledCount + width) * eased;
+      frames.push(
+        bandPayload(ledCount, lightColorRef.current, GREEN, at, width),
+      );
+      await sleep(SWEEP_MS / SWEEP_STEPS);
+    }
+  }, [ledCount]);
+  useMergedPrs(
+    isReachable && note.settings.merges,
+    (key) =>
+      void playEvent(`p:${key}`, "merges", sweep, (n) => ({
+        seg: [{ id: 0, frz: false, n }],
+      })),
+  );
+
+  // Kveld at 20:00 and the day look back at 06:00, as one-minute fades. An
+  // office with its lights off only gets the look, for when they come on.
+  useEvening(async (part) => {
+    if (anchorRef.current) return false;
+    const data = await readStrip();
+    if (!data || sessionOnStrip(data.state)) return false;
+    if (!noteOf(data.state).settings.evening) return true;
+    const kveld = presetOfId("evening");
+    const seg = data.state?.seg?.find((x) => x.id === 0);
+    const isKveld = seg?.fx === kveld.fx;
+    const keepOff = (payload: { on?: boolean; bri?: number }) =>
+      data.state?.on === false
+        ? { ...payload, on: undefined, bri: undefined } // bri would turn it on
+        : payload;
+
+    if (part === "evening") {
+      if (isKveld) return true;
+      try {
+        localStorage.setItem(
+          DAY_LOOK_KEY,
+          JSON.stringify({
+            bri: data.state?.bri,
+            seg: {
+              fx: seg?.fx,
+              col: seg?.col,
+              pal: seg?.pal,
+              sx: seg?.sx,
+              ix: seg?.ix,
+            },
+          }),
+        );
+      } catch {
+        // The morning falls back to Varm
+      }
+      await writeState(keepOff(presetPayload(kveld, DAY_FADE)));
+      return true;
+    }
+
+    if (!isKveld) return true; // someone has picked another look
+    let day: { on?: boolean; bri?: number } = presetPayload(
+      presetOfId("warm"),
+      DAY_FADE,
+    );
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(DAY_LOOK_KEY) ?? "null",
+      ) as { bri?: number; seg: object } | null;
+      if (saved)
+        day = {
+          on: true,
+          bri: saved.bri,
+          transition: DAY_FADE,
+          seg: [{ id: 0, frz: false, ...saved.seg }],
+        } as typeof day;
+    } catch {
+      // Varm it is
+    }
+    await writeState(keepOff(day));
+    return true;
+  });
+
+  /** Turns an effect on or off for the whole office */
+  const setEffect = useCallback(
+    (key: keyof LightSettings, on: boolean) => {
+      const next = {
+        ...note,
+        settings: { ...note.settings, [key]: on },
+        playing: false,
+      };
+      setNote(next);
+      void writeState(tagPayload(encodeNote(next)));
+    },
+    [note, writeState],
+  );
+
   // Sound is per browser, not part of the shared session
   const toggleMute = useCallback(() => {
     const next = !mute;
@@ -457,6 +804,16 @@ export function useWledPomo() {
       isPaused: paused,
       phase: (session?.phase ?? "idle") as PomoPhase,
       cycle: session?.cycle ?? 1,
+      /** Work phases finished this session */
+      roundsDone: session
+        ? session.cycle - (session.phase === "work" ? 1 : 0)
+        : 0,
+      next: upcoming
+        ? {
+            phase: upcoming.phase,
+            ms: durationOf(upcoming.config, upcoming.phase),
+          }
+        : null,
       remainingMs,
       /** null when idle or paused */
       phaseEndsAt: session?.endsAt ?? null,
@@ -466,6 +823,14 @@ export function useWledPomo() {
       rawBlueRatio,
       displayMode,
       mute,
+      isOn,
+      bri,
+      preset: presetOf(look),
+      /** Roughly what the room looks like, for the brightness bar */
+      lightColor,
+      effects: note.settings,
+      /** Nobody is checked in at the office */
+      officeEmpty: present === false,
     },
     config: activeConfig,
     updateConfig,
@@ -480,6 +845,10 @@ export function useWledPomo() {
     setDisplayMode,
     cycleMode,
     toggleMute,
+    toggleLights,
+    setBrightness,
+    applyPreset,
+    setEffect,
   };
 }
 

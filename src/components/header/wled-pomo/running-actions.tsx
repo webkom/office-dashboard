@@ -1,5 +1,5 @@
 import React from "react";
-import { useWledPomo } from "app/hooks/use-wled-pomo.hook";
+import { PHASE_NAME, useWledPomo } from "app/hooks/use-wled-pomo.hook";
 import Row from "./row";
 import styles from "./wled-pomo.module.css";
 
@@ -13,13 +13,9 @@ const timeOfDay = (ms: number) =>
   });
 
 const RunningActions: React.FC<{ pomo: Pomo }> = ({ pomo }) => {
-  const { status, config } = pomo;
+  const { status } = pomo;
 
-  const nextIsLong = Boolean(
-    config.longBreakMs && status.cycle % config.longBreakEvery === 0,
-  );
-  const next =
-    status.phase === "work" ? (nextIsLong ? "lang pause" : "pause") : "jobb";
+  const next = status.next ? PHASE_NAME[status.next.phase] : "jobb";
   const statusText =
     status.phaseEndsAt === null
       ? "Space for å fortsette"
@@ -74,7 +70,7 @@ const RunningActions: React.FC<{ pomo: Pomo }> = ({ pomo }) => {
           danger
           onClick={() => void pomo.stopSession()}
         >
-          <span className={styles["action"]}>Stopp for alle</span>
+          <span className={styles["action"]}>Avslutt pomodoro-økt</span>
         </Row>
       </ul>
     </>
