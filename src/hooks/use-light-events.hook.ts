@@ -30,6 +30,8 @@ import {
 } from "app/utils/wled-payloads";
 
 const CELEBRATION_MS = 3000;
+// How long to wait before checking that our claim on an event stuck
+const CLAIM_MS = 300;
 const SWEEP_MS = 1400;
 const SWEEP_STEPS = 25;
 const GREEN: Rgb = [30, 230, 90];
@@ -47,7 +49,7 @@ export function useLightEvents(
   const { lightColorNow } = lights;
 
   // Plays once however many browsers notice it: the note on the strip says
-  // it has been shown
+  // it has been shown, or is being shown
   const playEvent = useCallback(
     async (
       event: string,
@@ -60,14 +62,24 @@ export function useLightEvents(
       const data = await read();
       if (!data || sessionOnStrip(data.state)) return;
       const current = noteOf(data.state);
-      if (!current.settings[setting] || current.event === event) return;
+      const shown = current.event?.split("~")[0];
+      if (!current.settings[setting] || shown === event) return;
       if (!intoDark && data.state?.on === false) return;
-      await write(tagPayload(encodeNote({ ...current, event, playing: true })));
+
+      // Every dashboard may hear of it at once: each claims it with its own
+      // mark, and only the last one to claim it plays it
+      const claim = `${event}~${Math.random().toString(36).slice(2, 4)}`;
+      await write(
+        tagPayload(encodeNote({ ...current, event: claim, playing: true })),
+      );
+      await steadySleep(CLAIM_MS);
+      if (noteOf((await read())?.state).event !== claim) return;
+
       await show();
       await frames.idle();
       // Unless a pomodoro has started meanwhile
       const after = noteOf((await read())?.state);
-      if (after.playing && after.event === event)
+      if (after.playing && after.event === claim)
         await write(
           finish(encodeNote({ ...current, event, playing: false }), data.state),
         );

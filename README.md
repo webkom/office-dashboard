@@ -36,6 +36,7 @@ The frontend only talks to the backend, apart from the office LED strip, which i
 | `GET /member/<github>` | One member's office statistics | – |
 | `GET /merges` | Recently merged pull requests | – |
 | `POST /github-webhook` | Called by GitHub | – |
+| `/ws` | Websocket that pushes each merged pull request | – |
 
 ### Merged pull requests
 
@@ -46,7 +47,7 @@ The office LED strip shows a green wave when a pull request is merged in lego or
 3. Under "Let me select individual events", pick only "Pull requests".
 4. Give the backend the same secret as `APP_GITHUB_WEBHOOK_SECRET`.
 
-The dashboard asks the backend for new merges at `/merges` every 15 seconds.
+The backend pushes each merge to every open dashboard over the websocket at `/ws`. Whatever sits in front of the backend must let websockets through.
 
 <details>
 <summary>Archived docs</summary>

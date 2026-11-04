@@ -5,7 +5,7 @@ from flask_restful import Resource, Api
 import importlib
 from dotenv import load_dotenv
 from fallback_call import FallbackCall
-from merges import make_resources as make_merge_resources
+import merges
 
 app = Flask(__name__)
 
@@ -93,9 +93,7 @@ api.add_resource(DetailedMemberData, "/member/<string:gh_name>")
 api.add_resource(Presence, "/presence")
 api.add_resource(Uptime, "/uptime")
 
-GithubWebhook, Merges = make_merge_resources(app)
-api.add_resource(GithubWebhook, "/github-webhook")
-api.add_resource(Merges, "/merges")
+merges.register(app, api)
 
 
 if __name__ == "__main__":

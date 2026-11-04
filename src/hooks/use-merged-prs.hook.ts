@@ -1,15 +1,15 @@
 import { useEffect, useRef } from "react";
-import { getJson } from "app/utils/api";
+import { socketUrl } from "app/utils/api";
 
 const REPOS = ["lego", "lego-webapp"];
-// GitHub tells the backend about merges through a webhook; asking it is cheap
-const POLL_MS = 15_000;
-// Only fresh merges: not the ones from before the page was opened
-const FRESH_MS = 15 * 60_000;
+const RECONNECT_MS = [1000, 5000, 15_000, 60_000];
 
-type Merge = { repo: string; number: number; merged_at: string };
+type Message = { type: string; repo: string; number: number };
 
-/** Calls `onMerged` with "<repo>#<number>" for each newly merged pull request */
+/**
+ * Calls `onMerged` with "<repo>#<number>" when a pull request is merged.
+ * GitHub tells the backend through a webhook, and the backend pushes it here.
+ */
 export function useMergedPrs(
   enabled: boolean,
   onMerged: (key: string) => void,
@@ -19,35 +19,38 @@ export function useMergedPrs(
 
   useEffect(() => {
     if (!enabled) return;
-    let seen: Set<string> | null = null;
+    let ws: WebSocket | null = null;
     let timer = 0;
+    let attempts = 0;
     let stopped = false;
 
-    const check = async () => {
-      try {
-        const merges = (await getJson<Merge[]>("/merges")).filter((m) =>
-          REPOS.includes(m.repo),
-        );
-        const keys = merges.map((m) => `${m.repo}#${m.number}`);
-        const fresh = seen
-          ? merges.find(
-              (m, i) =>
-                !seen!.has(keys[i]) &&
-                Date.now() - Date.parse(m.merged_at) < FRESH_MS,
-            )
-          : undefined; // first look: just learn what is there
-        seen = new Set(keys);
-        if (fresh) onMergedRef.current(`${fresh.repo}#${fresh.number}`);
-      } catch {
-        // Offline; try again next time
-      }
-      if (!stopped) timer = window.setTimeout(check, POLL_MS);
+    const connect = () => {
+      ws = new WebSocket(socketUrl("/ws"));
+      ws.onopen = () => {
+        attempts = 0;
+      };
+      ws.onmessage = (e: MessageEvent<string>) => {
+        try {
+          const m = JSON.parse(e.data) as Message;
+          if (m.type === "merge" && REPOS.includes(m.repo))
+            onMergedRef.current(`${m.repo}#${m.number}`);
+        } catch {
+          // Not for us
+        }
+      };
+      ws.onclose = () => {
+        if (stopped) return;
+        const delay =
+          RECONNECT_MS[Math.min(attempts++, RECONNECT_MS.length - 1)];
+        timer = window.setTimeout(connect, delay);
+      };
     };
 
-    void check();
+    connect();
     return () => {
       stopped = true;
       window.clearTimeout(timer);
+      ws?.close();
     };
   }, [enabled]);
 }

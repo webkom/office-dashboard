@@ -7,3 +7,7 @@ export async function getJson<T>(path: string): Promise<T> {
   if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
   return (await res.json()) as T;
 }
+
+/** The backend's websocket, for things it pushes */
+export const socketUrl = (path: string) =>
+  `${DASHBOARD_API.replace(/^http/, "ws")}${path}`;

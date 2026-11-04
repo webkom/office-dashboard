@@ -9,6 +9,6 @@ COPY . /app
 
 
 ENTRYPOINT ["python3"]
-CMD ["-m", "gunicorn", "main:app", "--bind=0.0.0.0:5000"]
+CMD ["-m", "gunicorn", "main:app", "--bind=0.0.0.0:5000", "--threads=50"]
 
 EXPOSE 5000
