@@ -28,7 +28,6 @@ export function playCue(cue: Cue) {
       const start = ctx.currentTime + idx * step;
       const length =
         idx === notes.length - 1 ? decay : Math.min(decay, step * 2.5);
-      // A quiet octave on top makes it bell-like
       for (const [f, level] of [
         [freq, 0.14],
         [freq * 2, 0.03],

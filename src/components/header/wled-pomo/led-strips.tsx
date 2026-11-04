@@ -1,19 +1,20 @@
 import React from "react";
-import { DisplayMode } from "app/hooks/use-wled-pomo.hook";
+import { DisplayMode } from "app/hooks/use-pomodoro.hook";
 import styles from "./wled-pomo.module.css";
 
 export const StripPreview: React.FC<{
   ratio: number;
   markerRatio: number | null;
   cells: number;
-}> = ({ ratio, markerRatio, cells }) => {
+  className?: string;
+}> = ({ ratio, markerRatio, cells, className }) => {
   const filled = Math.round(ratio * cells);
   const marker =
     markerRatio === null
       ? -1
       : Math.min(cells - 1, Math.floor(markerRatio * cells));
   return (
-    <span className={styles["strip"]} aria-hidden>
+    <span className={`${styles["strip"]} ${className ?? ""}`} aria-hidden>
       {Array.from({ length: cells }, (_, i) => (
         <span
           key={i}

@@ -90,6 +90,11 @@ def get_repo_stats(_app):
 def get_office_times(_app):
     return [createOfficeTimes(i) for i in range(num_users)]
 
+def get_uptime(_app):
+    return [
+        {"name": name, "status": "up"} for name in ["abakus.no", "lego.abakus.no", "wiki.abakus.no"]
+    ]
+
 def get_detailed_member_data(_app, member):
     return {
         "status": "in",

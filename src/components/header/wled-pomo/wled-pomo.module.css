@@ -71,26 +71,28 @@
   color: var(--tone);
 }
 
+/* Colours and height come from variables, so a strip can be restyled where
+   it is used */
 .strip {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
   gap: 2px;
-  height: 3px;
+  height: var(--strip-height, 3px);
 }
 
 .cell {
   border-radius: 1px;
-  background: var(--pomo-red-dim);
-  transition: background-color 0.5s var(--pomo-ease);
+  background: var(--cell-off, var(--pomo-red-dim));
+  transition: background-color var(--cell-fade, 0.5s) var(--pomo-ease);
 }
 
 .cell-on {
-  background: var(--pomo-blue);
+  background: var(--cell-on, var(--pomo-blue));
 }
 
-.wrapper[data-tone="idle"] .cell {
-  background: rgba(255, 255, 255, 0.25);
+.wrapper[data-tone="idle"] {
+  --cell-off: rgba(255, 255, 255, 0.25);
 }
 
 .cell-tip {
@@ -102,6 +104,49 @@
   50% {
     opacity: 0.2;
   }
+}
+
+.rounds {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 0.9rem;
+  font-family: monospace;
+  font-size: 0.68rem;
+  white-space: nowrap;
+  color: var(--pomo-muted);
+  opacity: 0;
+  transition: opacity 0.4s var(--pomo-ease);
+}
+
+.rounds-live {
+  opacity: 1;
+}
+
+.rounds-next {
+  color: var(--pomo-faint);
+}
+
+.dots {
+  display: flex;
+  gap: 3px;
+}
+
+.round-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.dot-done {
+  background: var(--pomo-muted);
+}
+
+.dot-now {
+  background: var(--tone);
+  animation: breathe 2.4s ease-in-out infinite;
 }
 
 .sheet {
@@ -502,6 +547,7 @@ button.option:active,
   .options > li,
   .dot,
   .cell-tip,
+  .dot-now,
   .mini-fill {
     animation: none !important;
   }

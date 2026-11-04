@@ -284,3 +284,30 @@ def parse_repo_stats(name, repository):
     }
 
 
+
+
+# UptimeRobot's status codes, as words for the frontend
+UPTIME_STATUS = {0: "paused", 1: "not_checked", 2: "up", 8: "seems_down", 9: "down"}
+
+DEFAULT_UPTIME_ROBOT_MONITORS = "780718562-782661964-780718556"  # webapp, lego, wiki
+
+
+def get_uptime(app: Flask):
+    """Status of Abakus' services from UptimeRobot"""
+
+    res = requests.post(
+        "https://api.uptimerobot.com/v2/getMonitors",
+        json={
+            "api_key": app.config["UPTIME_ROBOT_API_KEY"],
+            "monitors": app.config.get("UPTIME_ROBOT_MONITORS") or DEFAULT_UPTIME_ROBOT_MONITORS,
+        },
+        timeout=10,
+    )
+    res.raise_for_status()
+    return [
+        {
+            "name": monitor["friendly_name"],
+            "status": UPTIME_STATUS.get(monitor["status"], "paused"),
+        }
+        for monitor in res.json()["monitors"]
+    ]

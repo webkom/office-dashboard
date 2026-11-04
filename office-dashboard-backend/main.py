@@ -5,6 +5,7 @@ from flask_restful import Resource, Api
 import importlib
 from dotenv import load_dotenv
 from fallback_call import FallbackCall
+import merges
 
 app = Flask(__name__)
 
@@ -37,6 +38,7 @@ safe_get_repo_stats = FallbackCall(getters.get_repo_stats, debug=debug, default_
 safe_get_office_times = FallbackCall(getters.get_office_times, debug=debug, default_value=[])
 safe_get_brus = FallbackCall(getters.get_brus_users, debug=debug, default_value=[])
 safe_get_detailed_member_data = FallbackCall(getters.get_detailed_member_data, debug=debug, default_value=[])
+safe_get_uptime = FallbackCall(getters.get_uptime, debug=debug, default_value=[])
 
 
 class OfficeDashboard(Resource):
@@ -60,6 +62,26 @@ class OfficeDashboard(Resource):
             "brus": brus,
         }
 
+class Presence(Resource):
+    """Who is at the office. Small, so the dashboard can ask often."""
+
+    @cross_origin()
+    @cache.cached(timeout=15, key_prefix="get_presence")
+    def get(self):
+        office_times, _ = safe_get_office_times(app)
+        return office_times
+
+
+class Uptime(Resource):
+    """One call to UptimeRobot a minute, however many screens ask"""
+
+    @cross_origin()
+    @cache.cached(timeout=60, key_prefix="get_uptime")
+    def get(self):
+        uptime, _ = safe_get_uptime(app)
+        return uptime
+
+
 class DetailedMemberData(Resource):
     @cross_origin()
     def get(self, gh_name):
@@ -68,6 +90,10 @@ class DetailedMemberData(Resource):
 
 api.add_resource(OfficeDashboard, "/")
 api.add_resource(DetailedMemberData, "/member/<string:gh_name>")
+api.add_resource(Presence, "/presence")
+api.add_resource(Uptime, "/uptime")
+
+merges.register(app, api)
 
 
 if __name__ == "__main__":

@@ -2,12 +2,13 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { PomoConfig, useWledPomo } from "app/hooks/use-wled-pomo.hook";
+import { PomoConfig, Pomodoro } from "app/hooks/use-pomodoro.hook";
+import { RoomLights } from "app/hooks/use-room-lights.hook";
 import NumberField from "./number-field";
+import LightControls from "./light-controls";
 import Row from "./row";
 import styles from "./wled-pomo.module.css";
 
-type Pomo = ReturnType<typeof useWledPomo>;
 type Preset = Pick<PomoConfig, "workMs" | "breakMs" | "longBreakMs">;
 
 const MIN = 60 * 1000;
@@ -29,10 +30,11 @@ const amount = (ms: number) =>
   ms < MIN ? `${Math.round(ms / 1000)}` : `${minutes(ms)}`;
 const unit = (ms: number) => (ms < MIN ? "sek" : "min");
 
-const StartOptions: React.FC<{ pomo: Pomo; onStarted: () => void }> = ({
-  pomo,
-  onStarted,
-}) => {
+const StartOptions: React.FC<{
+  pomo: Pomodoro;
+  lights: RoomLights;
+  onStarted: () => void;
+}> = ({ pomo, lights, onStarted }) => {
   const { status, config, updateConfig } = pomo;
 
   const start = (preset: Preset) => {
@@ -121,9 +123,11 @@ const StartOptions: React.FC<{ pomo: Pomo; onStarted: () => void }> = ({
         </div>
       </li>
 
+      <LightControls lights={lights} index={presets.length + 1} />
+
       {status.orphaned && (
         <Row
-          index={presets.length + 1}
+          index={presets.length + 2}
           danger
           onClick={() => void pomo.restoreLights()}
         >

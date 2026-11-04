@@ -24,6 +24,31 @@ pip install -r requirements.txt # install dependencies (do this once)
 python main.py # run backend
 ```
 
+### Backend
+
+The frontend only talks to the backend, apart from the office LED strip, which is on the office network:
+
+| Endpoint | What | Cached |
+| --- | --- | --- |
+| `GET /` | Members, GitHub stats, office times and brus | 50 s |
+| `GET /presence` | Who is at the office | 15 s |
+| `GET /uptime` | Status of Abakus' services, from UptimeRobot | 60 s |
+| `GET /member/<github>` | One member's office statistics | – |
+| `GET /merges` | Recently merged pull requests | – |
+| `POST /github-webhook` | Called by GitHub | – |
+| `/ws` | Websocket that pushes each merged pull request | – |
+
+### Merged pull requests
+
+The office LED strip shows a green wave when a pull request is merged in lego or lego-webapp. GitHub tells the backend through a webhook:
+
+1. In the webkom organisation on GitHub, go to Settings → Webhooks → Add webhook.
+2. Payload URL: `https://dashboard-backend.webkom.dev/github-webhook`, content type `application/json`, and a random secret.
+3. Under "Let me select individual events", pick only "Pull requests".
+4. Give the backend the same secret as `APP_GITHUB_WEBHOOK_SECRET`.
+
+The backend pushes each merge to every open dashboard over the websocket at `/ws`. Whatever sits in front of the backend must let websockets through.
+
 <details>
 <summary>Archived docs</summary>
 

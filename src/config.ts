@@ -1,67 +1,13 @@
-// Dashboard API (defined in main.py)
+// The dashboard backend (office-dashboard-backend), which talks to every other
+// service for us
 export const DASHBOARD_API = import.meta.env.PROD
   ? "https://dashboard-backend.webkom.dev"
   : (import.meta.env.VITE_DASHBOARD_API ?? "http://127.0.0.1:5000");
 
-// Brus API
-export const BRUS_URL =
-  import.meta.env.REACT_APP_BRUS_URL || "https://brus.abakus.no/api/liste";
-
-// Environment API
-export const ENVIRONMENT_URL =
-  import.meta.env.REACT_APP_ENVIRONMENT_URL ||
-  "https://environment-api.webkom.dev";
-
-// Kaffe API
-export const KAFFE_URL =
-  import.meta.env.REACT_APP_KAFFE_URL || "https://kaffe-api.webkom.dev";
-
-// Github stats api
-export const GITHUB_STATS_API = "https://api.github.com/graphql";
-
-// Github access token
-export const GITHUB_ACCESS_TOKEN = process.env.GITHUB_ACCESS_TOKEN;
-
-// Office Door
-export const OFFICE_DOOR_URL =
-  import.meta.env.REACT_APP_OFFICE_DOOR_URL ||
-  "https://office-door-api.webkom.dev";
-
-// Office Chromecast
-export const OFFICE_CHROMECAST_URL =
-  import.meta.env.REACT_APP_OFFICE_CHROMECAST_URL ||
-  "https://office-chromecast-api.webkom.dev";
-
-// Uptime Robot
-export const UPTIME_ROBOT_URL =
-  import.meta.env.REACT_APP_UPTIME_ROBOT_URL ||
-  "https://api.uptimerobot.com/v2/getMonitors";
-export const UPTIME_ROBOT_MONITORS: [string, string][] = (
-  import.meta.env.REACT_APP_UPTIME_ROBOT_MONITORS ||
-  "WEBAPP=780718562,LEGO=782661964,WIKI=780718556"
+// The office LED strip, on the local network. Comma-separate to list fallbacks.
+export const WLED_URLS = (
+  import.meta.env.VITE_WLED_URL || "http://disco.local,http://192.168.1.67"
 )
-  .split(",")
-  .map((monitor: string) => monitor.split("=") as [string, string]);
-export const UPTIME_ROBOT_API_KEY =
-  import.meta.env.REACT_APP_UPTIME_ROBOT_API_KEY ||
-  "ur609187-58b7ee7d64ca62809bb5e902";
-export const UPTIME_ROBOT_POST_DATA = {
-  api_key: UPTIME_ROBOT_API_KEY,
-  monitors: UPTIME_ROBOT_MONITORS.map(
-    (monitor: [string, string]) => monitor[1],
-  ).join("-"),
-  custom_uptime_rations: 30,
-};
-
-//https://api.uptimerobot.com/v2/getMonitors"
-//-d "api_key=ur609187-58b7ee7d64ca62809bb5e902&monitors=780718562-782661964-780718556&custom_uptime_ratios=30
-
-// Office Environment Sensors
-export const OFFICE_SENSORS = ["sensors/B05DAFC40A24"];
-
-// Office WLED Strip (local network). Comma-separate to list fallbacks,
-// e.g. "http://disco.local,http://192.168.1.67"
-export const WLED_URLS = (import.meta.env.VITE_WLED_URL || "http://disco.local")
   .split(",")
   .map((url: string) => url.trim().replace(/\/$/, ""))
   .filter(Boolean);
