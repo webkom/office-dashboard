@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { OfficeTimes, useDashboardData } from "app/hooks/dashboard-data.hook";
+import { OfficeTimes, usePresence } from "app/hooks/dashboard-data.hook";
 
 const LEAVE_GRACE_MS = 5 * 60 * 1000;
 
@@ -10,8 +10,8 @@ export function usePresenceLights(
   onEmpty: () => Promise<void>,
   onArrive: () => Promise<void>,
 ) {
-  const { data } = useDashboardData();
-  const present = anyonePresent(data?.office_times);
+  const { data } = usePresence();
+  const present = anyonePresent(data);
 
   const handlers = useRef({ onEmpty, onArrive });
   handlers.current = { onEmpty, onArrive };

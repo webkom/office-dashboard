@@ -24,6 +24,19 @@ pip install -r requirements.txt # install dependencies (do this once)
 python main.py # run backend
 ```
 
+### Backend
+
+The frontend only talks to the backend, apart from the office LED strip, which is on the office network:
+
+| Endpoint | What | Cached |
+| --- | --- | --- |
+| `GET /` | Members, GitHub stats, office times and brus | 50 s |
+| `GET /presence` | Who is at the office | 15 s |
+| `GET /uptime` | Status of Abakus' services, from UptimeRobot | 60 s |
+| `GET /member/<github>` | One member's office statistics | – |
+| `GET /merges` | Recently merged pull requests | – |
+| `POST /github-webhook` | Called by GitHub | – |
+
 ### Merged pull requests
 
 The office LED strip shows a green wave when a pull request is merged in lego or lego-webapp. GitHub tells the backend through a webhook:

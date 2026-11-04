@@ -3,17 +3,15 @@ import LoadingIcon from "app/components/loading-icon/loading-icon.component";
 import CarouselInfo from "../carousel/carousel.component";
 
 import MembersList from "app/components/members-list/members-list.component";
-import { useDashboardData } from "app/hooks/dashboard-data.hook";
+import { useDashboardData, usePresence } from "app/hooks/dashboard-data.hook";
 import StatusBar from "app/components/status-bar/status-bar.component";
 import usePlayWelcomeMessageHook from "app/hooks/use-play-welcome-message.hook.ts";
 
 const Content: React.FC = () => {
   const dasboardData = useDashboardData();
+  const presence = usePresence();
 
-  usePlayWelcomeMessageHook(
-    dasboardData.data?.members,
-    dasboardData.data?.office_times,
-  );
+  usePlayWelcomeMessageHook(dasboardData.data?.members, presence.data);
 
   const dataExists = dasboardData.isSuccess || !!dasboardData?.data
 

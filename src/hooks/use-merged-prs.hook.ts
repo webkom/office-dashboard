@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { DASHBOARD_API } from "app/config";
+import { getJson } from "app/utils/api";
 
 const REPOS = ["lego", "lego-webapp"];
 // GitHub tells the backend about merges through a webhook; asking it is cheap
@@ -25,22 +25,19 @@ export function useMergedPrs(
 
     const check = async () => {
       try {
-        const res = await fetch(`${DASHBOARD_API}/merges`);
-        if (res.ok) {
-          const merges = ((await res.json()) as Merge[]).filter((m) =>
-            REPOS.includes(m.repo),
-          );
-          const keys = merges.map((m) => `${m.repo}#${m.number}`);
-          const fresh = seen
-            ? merges.find(
-                (m, i) =>
-                  !seen!.has(keys[i]) &&
-                  Date.now() - Date.parse(m.merged_at) < FRESH_MS,
-              )
-            : undefined; // first look: just learn what is there
-          seen = new Set(keys);
-          if (fresh) onMergedRef.current(`${fresh.repo}#${fresh.number}`);
-        }
+        const merges = (await getJson<Merge[]>("/merges")).filter((m) =>
+          REPOS.includes(m.repo),
+        );
+        const keys = merges.map((m) => `${m.repo}#${m.number}`);
+        const fresh = seen
+          ? merges.find(
+              (m, i) =>
+                !seen!.has(keys[i]) &&
+                Date.now() - Date.parse(m.merged_at) < FRESH_MS,
+            )
+          : undefined; // first look: just learn what is there
+        seen = new Set(keys);
+        if (fresh) onMergedRef.current(`${fresh.repo}#${fresh.number}`);
       } catch {
         // Offline; try again next time
       }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { DASHBOARD_API } from "app/config";
+import { getJson } from "app/utils/api";
 
 export type MaybeEmpty<T> = T | Record<string, never>;
 
@@ -97,41 +97,32 @@ export type RecentSession = {
 };
 
 
-const fetchDashboardData = async () => {
-  const res = await fetch(DASHBOARD_API, {});
-
-  if (!res.ok) {
-    throw new Error("Fetching of dashboard failed");
-  }
-
-  return (await res.json()) as DashboardData;
-};
-
 function useDashboardData() {
   return useQuery({
     queryKey: ["dashboard-backend"],
-    queryFn: fetchDashboardData,
+    queryFn: () => getJson<DashboardData>("/"),
     retry: 1,
     refetchInterval: 1000 * 60 * 2,
   });
 }
 
-const fetchDetailedMemberData = async (gh_user: string) => {
-  const res = await fetch(`${DASHBOARD_API}/member/${gh_user}`)
-
-  if (!res.ok) {
-    throw new Error("Fetching of detailed member data failed");
-  }
-
-  return (await res.json()) as DetailedMemberData;
-};
+/** Who is at the office, checked often so the lights and welcome messages
+ * react within half a minute */
+function usePresence() {
+  return useQuery({
+    queryKey: ["presence"],
+    queryFn: () => getJson<OfficeTimes[]>("/presence"),
+    retry: 1,
+    refetchInterval: 1000 * 20,
+  });
+}
 
 function useDetailedMemberData(gh_user: string, enabled = true) {
   return useQuery({
     queryKey: ["detailed-member", gh_user],
-    queryFn: () => fetchDetailedMemberData(gh_user),
+    queryFn: () => getJson<DetailedMemberData>(`/member/${gh_user}`),
     enabled,
   });
 }
 
-export { useDashboardData, useDetailedMemberData };
+export { useDashboardData, useDetailedMemberData, usePresence };

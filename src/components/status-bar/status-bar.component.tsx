@@ -1,7 +1,7 @@
-import { useUptimeStatus } from "app/hooks/uptime-status.hook";
+import { UptimeStatus, useUptimeStatus } from "app/hooks/uptime-status.hook";
 import styles from "./status-bar.module.css";
 
-const statusColors = {
+const statusColors: Record<UptimeStatus, string> = {
   paused: "#ff0000", // TODO
   not_checked: "#ff0000", // TODO
   up: "#80BA27",
@@ -9,33 +9,15 @@ const statusColors = {
   down: "#ff0000",
 };
 
-const getUptimeRobotColorFromStatus = (status: number) => {
-  switch (status) {
-    case 0:
-      return statusColors.paused;
-    case 1:
-      return statusColors.not_checked;
-    case 2:
-      return statusColors.up;
-    case 8:
-      return statusColors.seems_down;
-    case 9:
-      return statusColors.down;
-    default:
-      return statusColors.paused;
-  }
-};
-
 const StatusBar = () => {
-
   const { data, isLoading } = useUptimeStatus();
 
   const statuses = isLoading
     ? []
-    : data?.monitors.map((monitor) => ({
-        name: monitor.friendly_name,
-        color: getUptimeRobotColorFromStatus(monitor.status),
-      })) ?? [];
+    : (data?.map((service) => ({
+        name: service.name,
+        color: statusColors[service.status] ?? statusColors.paused,
+      })) ?? []);
 
   type StatusItemProps = {
     name: string;
