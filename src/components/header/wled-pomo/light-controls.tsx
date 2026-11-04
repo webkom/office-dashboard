@@ -2,13 +2,12 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faPowerOff } from "@fortawesome/free-solid-svg-icons";
-import { useWledPomo } from "app/hooks/use-wled-pomo.hook";
+import { RoomLights } from "app/hooks/use-room-lights.hook";
 import { LIGHT_PRESETS } from "app/utils/light-presets";
-import { LightSettings } from "app/utils/wled";
+import { LightSettings } from "app/utils/wled-names";
 import { StripPreview } from "./led-strips";
-import styles from "./wled-pomo.module.css";
-
-type Pomo = ReturnType<typeof useWledPomo>;
+import styles from "./light-controls.module.css";
+import menu from "./wled-pomo.module.css";
 
 const EFFECTS: { key: keyof LightSettings; label: string; hint: string }[] = [
   {
@@ -20,12 +19,11 @@ const EFFECTS: { key: keyof LightSettings; label: string; hint: string }[] = [
   { key: "evening", label: "kveld", hint: "Kveldslys fra 20 til 06" },
 ];
 
-/** The room's light switch: power, brightness and a few looks */
-const LightControls: React.FC<{ pomo: Pomo; index: number }> = ({
-  pomo,
+const LightControls: React.FC<{ lights: RoomLights; index: number }> = ({
+  lights,
   index,
 }) => {
-  const { status } = pomo;
+  const { status } = lights;
   const level = status.isOn ? status.bri / 255 : 0;
 
   return (
@@ -43,7 +41,7 @@ const LightControls: React.FC<{ pomo: Pomo; index: number }> = ({
         <button
           type="button"
           className={styles["power"]}
-          onClick={pomo.toggleLights}
+          onClick={lights.toggle}
           aria-pressed={status.isOn}
           aria-label="Lys av og på"
           title="Lys av og på (L)"
@@ -51,13 +49,18 @@ const LightControls: React.FC<{ pomo: Pomo; index: number }> = ({
           <FontAwesomeIcon icon={faPowerOff as IconProp} />
         </button>
         <label className={styles["dimmer"]}>
-          <StripPreview ratio={level} markerRatio={null} cells={16} />
+          <StripPreview
+            className={styles["bar"]}
+            ratio={level}
+            markerRatio={null}
+            cells={16}
+          />
           <input
             type="range"
             min={1}
             max={255}
             value={status.bri}
-            onChange={(e) => pomo.setBrightness(Number(e.target.value))}
+            onChange={(e) => lights.setBrightness(Number(e.target.value))}
             aria-label="Lysstyrke"
           />
         </label>
@@ -76,7 +79,7 @@ const LightControls: React.FC<{ pomo: Pomo; index: number }> = ({
                 ? styles["preset-active"]
                 : ""
             }
-            onClick={() => pomo.applyPreset(p)}
+            onClick={() => lights.applyPreset(p)}
           >
             <span className={styles["swatch"]} data-preset={p.id} />
             {p.name}
@@ -91,7 +94,7 @@ const LightControls: React.FC<{ pomo: Pomo; index: number }> = ({
             type="button"
             aria-pressed={status.effects[key]}
             title={`${hint}, for hele kontoret`}
-            onClick={() => pomo.setEffect(key, !status.effects[key])}
+            onClick={() => lights.setEffect(key, !status.effects[key])}
           >
             <span className={styles["effect-dot"]} />
             {label}
@@ -100,7 +103,7 @@ const LightControls: React.FC<{ pomo: Pomo; index: number }> = ({
       </div>
 
       {status.officeEmpty && (
-        <span className={styles["sub"]}>Ingen sjekket inn på kontoret</span>
+        <span className={menu["sub"]}>Ingen sjekket inn på kontoret</span>
       )}
     </li>
   );

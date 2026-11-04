@@ -39,7 +39,6 @@ function getWorker() {
   return worker;
 }
 
-/** Like setTimeout, but on time in a hidden page too */
 export function steadyTimeout(callback: () => void, ms: number): number {
   const w = getWorker();
   if (!w) return -window.setTimeout(callback, ms);

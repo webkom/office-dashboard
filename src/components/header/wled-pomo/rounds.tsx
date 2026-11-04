@@ -3,7 +3,7 @@ import {
   PHASE_NAME,
   PomoConfig,
   PomoStatus,
-} from "app/hooks/use-wled-pomo.hook";
+} from "app/hooks/use-pomodoro.hook";
 import styles from "./wled-pomo.module.css";
 
 const lengthText = (ms: number) =>
@@ -11,7 +11,6 @@ const lengthText = (ms: number) =>
     ? `${Math.round(ms / 1000)} sek`
     : `${Math.round(ms / 60_000)} min`;
 
-/** Rounds done, how far it is to the long break, and what comes next */
 const Rounds: React.FC<{ status: PomoStatus; config: PomoConfig }> = ({
   status,
   config,

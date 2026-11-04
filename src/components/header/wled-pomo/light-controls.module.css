@@ -1,0 +1,261 @@
+/* The room's light switch in the pomodoro menu. Colours such as
+   --pomo-faint come from the menu's wrapper. */
+
+.lights {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 18px 12px;
+}
+
+.light-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.power {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.75rem;
+  color: var(--pomo-faint);
+  transition:
+    color 0.3s var(--pomo-ease),
+    transform 0.2s var(--pomo-ease);
+}
+
+.power:hover {
+  color: var(--font-primary-color);
+}
+
+.lights[data-on] .power {
+  color: var(--light);
+}
+
+.power:active {
+  transform: scale(0.88);
+}
+
+.dimmer {
+  position: relative;
+  flex: 1;
+  padding: 6px 0;
+  cursor: pointer;
+  --strip-height: 6px;
+  --cell-off: rgba(255, 255, 255, 0.08);
+  --cell-on: var(--light);
+  --cell-fade: 0.35s;
+}
+
+.bar {
+  transition: transform 0.25s var(--pomo-ease);
+}
+
+.dimmer:hover .bar,
+.dimmer:focus-within .bar {
+  transform: scaleY(1.35);
+}
+
+.dimmer input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dimmer:has(input:focus-visible) .bar {
+  outline: 1px solid var(--secondary-light);
+  outline-offset: 3px;
+}
+
+.pct {
+  min-width: 4ch;
+  font-family: monospace;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--pomo-faint);
+}
+
+.presets {
+  display: flex;
+  justify-content: space-between;
+}
+
+.presets button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--pomo-faint);
+  transition: color 0.2s var(--pomo-ease);
+}
+
+.presets button:hover {
+  color: var(--pomo-muted);
+}
+
+.presets .preset-active {
+  color: var(--font-primary-color);
+}
+
+.swatch {
+  display: block;
+  width: 28px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--swatch);
+  background-size: 200% 100%;
+  opacity: 0.5;
+  transition: opacity 0.25s var(--pomo-ease);
+}
+
+.presets button:hover .swatch,
+.presets .preset-active .swatch {
+  opacity: 1;
+}
+
+.swatch[data-preset="white"] {
+  --swatch: rgb(255, 244, 230);
+}
+.swatch[data-preset="focus"] {
+  --swatch: linear-gradient(
+    90deg,
+    #0f5c4a,
+    #2fd6a0,
+    #4aa8d8,
+    #8a6be0,
+    #2fd6a0,
+    #0f5c4a
+  );
+}
+.swatch[data-preset="evening"] {
+  --swatch: linear-gradient(90deg, #ff6a1e, #ffa040, #ff6a1e);
+}
+.swatch[data-preset="party"] {
+  --swatch: linear-gradient(
+    90deg,
+    #ff3b3b,
+    #ffb03b,
+    #f6ff3b,
+    #3bff8a,
+    #3bb8ff,
+    #b03bff,
+    #ff3b3b
+  );
+}
+
+.swatch[data-preset="music"] {
+  --swatch: linear-gradient(
+    90deg,
+    transparent,
+    #ff3bd0 30%,
+    #3bb8ff 50%,
+    #ff3bd0 70%,
+    transparent
+  );
+  background-size: 100% 100%;
+}
+
+/* Each look moves the way it does on the strip, while hovered or chosen */
+.presets button:hover [data-preset="music"],
+.presets .preset-active [data-preset="music"] {
+  animation: thump 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
+}
+
+@keyframes thump {
+  0% {
+    transform: scaleX(0.35);
+  }
+  25% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0.35);
+  }
+}
+.presets button:hover [data-preset="focus"],
+.presets .preset-active [data-preset="focus"] {
+  animation: drift 6s ease-in-out infinite alternate;
+}
+.presets button:hover [data-preset="evening"],
+.presets .preset-active [data-preset="evening"] {
+  animation: flicker 1.6s steps(5, jump-none) infinite;
+}
+.presets button:hover [data-preset="party"],
+.presets .preset-active [data-preset="party"] {
+  animation: drift 2s linear infinite;
+}
+
+@keyframes drift {
+  from {
+    background-position: 0% 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.75;
+  }
+  70% {
+    opacity: 0.9;
+  }
+}
+
+.effects {
+  display: flex;
+  gap: 14px;
+}
+
+.effects button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+  font-size: 0.68rem;
+  color: var(--pomo-faint);
+  transition: color 0.2s var(--pomo-ease);
+}
+
+.effects button:hover {
+  color: var(--pomo-muted);
+}
+
+.effects button[aria-pressed="true"] {
+  color: var(--pomo-muted);
+}
+
+.effect-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--pomo-faint);
+  transition:
+    background-color 0.25s var(--pomo-ease),
+    box-shadow 0.25s var(--pomo-ease);
+}
+
+.effects button[aria-pressed="true"] .effect-dot {
+  background: var(--light);
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swatch {
+    animation: none !important;
+  }
+}

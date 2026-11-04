@@ -3,13 +3,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons";
 import Clock from "app/components/header/clock/clock.component";
+import { useOfficeStrip } from "app/hooks/use-office-strip.hook";
 import {
   DISPLAY_MODES,
   DisplayMode,
   PomoStatus,
   formatPomoTime,
-  useWledPomo,
-} from "app/hooks/use-wled-pomo.hook";
+} from "app/hooks/use-pomodoro.hook";
 import { ModeIcon, StripPreview } from "./led-strips";
 import Rounds from "./rounds";
 import RunningActions from "./running-actions";
@@ -38,7 +38,7 @@ const phaseText = (status: PomoStatus) => {
 /** The header clock, with the office pomodoro hidden in it. Only clickable
  * where the strip answers, i.e. on the office network. */
 const WledPomo: React.FC = () => {
-  const pomo = useWledPomo();
+  const { pomo, lights } = useOfficeStrip();
   const { status } = pomo;
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -55,6 +55,8 @@ const WledPomo: React.FC = () => {
   // Read through a ref so the listener isn't re-added on every tick
   const pomoRef = useRef(pomo);
   pomoRef.current = pomo;
+  const lightsRef = useRef(lights);
+  lightsRef.current = lights;
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -85,7 +87,7 @@ const WledPomo: React.FC = () => {
           : p.status.isRunning
             ? whileRunning[key]
             : key === "l"
-              ? p.toggleLights
+              ? lightsRef.current.toggle
               : undefined;
       if (action) {
         e.preventDefault();
@@ -144,7 +146,11 @@ const WledPomo: React.FC = () => {
           {status.isRunning ? (
             <RunningActions pomo={pomo} />
           ) : (
-            <StartOptions pomo={pomo} onStarted={() => setIsOpen(false)} />
+            <StartOptions
+              pomo={pomo}
+              lights={lights}
+              onStarted={() => setIsOpen(false)}
+            />
           )}
 
           <div className={styles["foot"]}>

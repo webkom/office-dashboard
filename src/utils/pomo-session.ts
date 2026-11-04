@@ -1,6 +1,5 @@
-// The shared pomodoro, stored in the strip's segment name so every browser
-// sees the same session. Phases that run out are rolled forward from the
-// settings, so the strip is only written when someone changes something.
+// Phases that run out are rolled forward from the settings, so the strip is
+// only written when someone changes something
 
 export type DisplayMode = "bar" | "quarters" | "solid";
 export const DISPLAY_MODES: DisplayMode[] = ["bar", "quarters", "solid"];
@@ -25,7 +24,6 @@ export type Session = {
   pausedLeftMs: number | null;
 };
 
-/** A forgotten session stops on its own after this long */
 export const MAX_SESSION_MS = 8 * 60 * 60 * 1000;
 
 // Older versions wrote just "Pomodoro", so any name starting with it means

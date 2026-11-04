@@ -1,9 +1,7 @@
 import React from "react";
-import { PHASE_NAME, useWledPomo } from "app/hooks/use-wled-pomo.hook";
+import { PHASE_NAME, Pomodoro } from "app/hooks/use-pomodoro.hook";
 import Row from "./row";
 import styles from "./wled-pomo.module.css";
-
-type Pomo = ReturnType<typeof useWledPomo>;
 
 const timeOfDay = (ms: number) =>
   new Date(ms).toLocaleTimeString("nb-NO", {
@@ -12,7 +10,7 @@ const timeOfDay = (ms: number) =>
     hour12: false,
   });
 
-const RunningActions: React.FC<{ pomo: Pomo }> = ({ pomo }) => {
+const RunningActions: React.FC<{ pomo: Pomodoro }> = ({ pomo }) => {
   const { status } = pomo;
 
   const next = status.next ? PHASE_NAME[status.next.phase] : "jobb";
