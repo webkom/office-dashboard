@@ -24,6 +24,17 @@ pip install -r requirements.txt # install dependencies (do this once)
 python main.py # run backend
 ```
 
+### Merged pull requests
+
+The office LED strip shows a green wave when a pull request is merged in lego or lego-webapp. GitHub tells the backend through a webhook:
+
+1. In the webkom organisation on GitHub, go to Settings → Webhooks → Add webhook.
+2. Payload URL: `https://dashboard-backend.webkom.dev/github-webhook`, content type `application/json`, and a random secret.
+3. Under "Let me select individual events", pick only "Pull requests".
+4. Give the backend the same secret as `APP_GITHUB_WEBHOOK_SECRET`.
+
+The dashboard asks the backend for new merges at `/merges` every 15 seconds.
+
 <details>
 <summary>Archived docs</summary>
 

@@ -1,14 +1,13 @@
 import { useEffect, useRef } from "react";
+import { DASHBOARD_API } from "app/config";
 
 const REPOS = ["lego", "lego-webapp"];
-const POLL_MS = 60_000;
-// GitHub answers "not changed" without counting it against the rate limit,
-// so checking every minute is free until something changes
-const LIMITED_POLL_MS = 10 * 60_000;
+// GitHub tells the backend about merges through a webhook; asking it is cheap
+const POLL_MS = 15_000;
 // Only fresh merges: not the ones from before the page was opened
 const FRESH_MS = 15 * 60_000;
 
-type Pull = { number: number; merged_at: string | null };
+type Merge = { repo: string; number: number; merged_at: string };
 
 /** Calls `onMerged` with "<repo>#<number>" for each newly merged pull request */
 export function useMergedPrs(
@@ -20,40 +19,32 @@ export function useMergedPrs(
 
   useEffect(() => {
     if (!enabled) return;
-    const seen = new Map<string, Set<number>>();
+    let seen: Set<string> | null = null;
     let timer = 0;
     let stopped = false;
 
     const check = async () => {
-      let delay = POLL_MS;
-      for (const repo of REPOS) {
-        try {
-          const res = await fetch(
-            `https://api.github.com/repos/webkom/${repo}/pulls?state=closed&sort=updated&direction=desc&per_page=10`,
-            { cache: "no-cache" },
+      try {
+        const res = await fetch(`${DASHBOARD_API}/merges`);
+        if (res.ok) {
+          const merges = ((await res.json()) as Merge[]).filter((m) =>
+            REPOS.includes(m.repo),
           );
-          if (res.status === 403 || res.status === 429) {
-            delay = LIMITED_POLL_MS;
-            continue;
-          }
-          if (!res.ok) continue;
-          const merged = ((await res.json()) as Pull[]).filter(
-            (p) => p.merged_at,
-          );
-          const known = seen.get(repo);
-          seen.set(repo, new Set(merged.map((p) => p.number)));
-          if (!known) continue; // first look: just learn what is there
-          const fresh = merged.find(
-            (p) =>
-              !known.has(p.number) &&
-              Date.now() - Date.parse(p.merged_at!) < FRESH_MS,
-          );
-          if (fresh) onMergedRef.current(`${repo}#${fresh.number}`);
-        } catch {
-          // Offline; try again next time
+          const keys = merges.map((m) => `${m.repo}#${m.number}`);
+          const fresh = seen
+            ? merges.find(
+                (m, i) =>
+                  !seen!.has(keys[i]) &&
+                  Date.now() - Date.parse(m.merged_at) < FRESH_MS,
+              )
+            : undefined; // first look: just learn what is there
+          seen = new Set(keys);
+          if (fresh) onMergedRef.current(`${fresh.repo}#${fresh.number}`);
         }
+      } catch {
+        // Offline; try again next time
       }
-      if (!stopped) timer = window.setTimeout(check, delay);
+      if (!stopped) timer = window.setTimeout(check, POLL_MS);
     };
 
     void check();

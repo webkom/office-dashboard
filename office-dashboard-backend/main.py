@@ -5,6 +5,7 @@ from flask_restful import Resource, Api
 import importlib
 from dotenv import load_dotenv
 from fallback_call import FallbackCall
+from merges import make_resources as make_merge_resources
 
 app = Flask(__name__)
 
@@ -68,6 +69,10 @@ class DetailedMemberData(Resource):
 
 api.add_resource(OfficeDashboard, "/")
 api.add_resource(DetailedMemberData, "/member/<string:gh_name>")
+
+GithubWebhook, Merges = make_merge_resources(app)
+api.add_resource(GithubWebhook, "/github-webhook")
+api.add_resource(Merges, "/merges")
 
 
 if __name__ == "__main__":
