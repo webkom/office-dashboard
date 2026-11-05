@@ -6,6 +6,7 @@ import importlib
 from dotenv import load_dotenv
 from fallback_call import FallbackCall
 import merges
+import presence_lights
 
 app = Flask(__name__)
 
@@ -94,6 +95,7 @@ api.add_resource(Presence, "/presence")
 api.add_resource(Uptime, "/uptime")
 
 merges.register(app, api)
+presence_lights.start(app, safe_get_office_times)
 
 
 if __name__ == "__main__":

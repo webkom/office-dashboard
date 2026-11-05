@@ -38,6 +38,15 @@ The frontend only talks to the backend, apart from the office LED strip, which i
 | `POST /github-webhook` | Called by GitHub | – |
 | `/ws` | Websocket that pushes each merged pull request | – |
 
+### Office lights
+
+The backend turns the office LED strip off 5 minutes after the last person checks out, and on when someone checks in, over MQTT. That way it works without a browser on the office network.
+
+1. In WLED, under Config → Sync Interfaces → MQTT, turn MQTT on and fill in the broker, its login and a device topic such as `wled/kontor`.
+2. Give the backend the same broker as `APP_MQTT_HOST`, `APP_MQTT_PORT`, `APP_MQTT_USER` and `APP_MQTT_PASSWORD`, and the topic as `APP_WLED_MQTT_TOPIC`.
+
+The strip has to be able to reach the broker from the office network.
+
 ### Merged pull requests
 
 The office LED strip shows a green wave when a pull request is merged in lego or lego-webapp. GitHub tells the backend through a webhook:
