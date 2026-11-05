@@ -42,8 +42,10 @@ The frontend only talks to the backend, apart from the office LED strip, which i
 
 The backend turns the office LED strip off 5 minutes after the last person checks out, and on when someone checks in, over MQTT. That way it works without a browser on the office network.
 
-1. In WLED, under Config → Sync Interfaces → MQTT, turn MQTT on and fill in the broker, its login and a device topic such as `wled/kontor`.
-2. Give the backend the same broker as `APP_MQTT_HOST`, `APP_MQTT_PORT`, `APP_MQTT_USER` and `APP_MQTT_PASSWORD`, and the topic as `APP_WLED_MQTT_TOPIC`.
+1. In WLED, under Config → Sync Interfaces → MQTT, turn MQTT on with broker `mqtt.abakus.no`, port `1883` (WLED can't encrypt), the strip's own login, and a device topic such as `wled/kontor`.
+2. Give the backend `APP_MQTT_HOST=mqtt.abakus.no`, its own login as `APP_MQTT_USER` and `APP_MQTT_PASSWORD`, and the same topic as `APP_WLED_MQTT_TOPIC`. It connects encrypted on port 8883.
+
+Logins for the broker (emqx) are kept in `emqx/emqx-cfg.yaml` in [kubernetes-abakus](https://github.com/webkom/kubernetes-abakus).
 
 The strip has to be able to reach the broker from the office network.
 

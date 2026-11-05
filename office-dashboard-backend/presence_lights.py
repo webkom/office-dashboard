@@ -50,10 +50,16 @@ def start(app, get_office_times):
     if not host or not topic:
         return
 
+    # Encrypted unless turned off: the backend reaches the broker over the
+    # internet. (The strip itself can't do this, so it uses plain 1883.)
+    tls = str(app.config.get("MQTT_TLS", "true")).lower() not in ("0", "false", "no")
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="office-dashboard-backend")
+    if tls:
+        client.tls_set()  # checks the broker's certificate against the system's
     if app.config.get("MQTT_USER"):
         client.username_pw_set(app.config["MQTT_USER"], app.config.get("MQTT_PASSWORD"))
-    client.connect_async(host, int(app.config.get("MQTT_PORT") or 1883))
+    client.on_connect = lambda c, u, flags, reason, props: print(f"MQTT: {reason}")
+    client.connect_async(host, int(app.config.get("MQTT_PORT") or (8883 if tls else 1883)))
     client.loop_start()  # keeps reconnecting on its own
 
     def send(command):
