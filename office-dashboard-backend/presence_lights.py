@@ -1,4 +1,5 @@
 import json
+import os
 import threading
 import time
 
@@ -41,25 +42,33 @@ class PresenceSwitch:
         return None
 
 
+def _env(name, default=""):
+    # Straight from the environment (Coolify, or .env locally): app.config
+    # parses values as JSON, which would turn a password like 123456 into a
+    # number
+    return os.environ.get(f"APP_{name}", default).strip()
+
+
 def start(app, get_office_times):
     """Switches the office strip over MQTT, so it works without any browser on
     the office network. Does nothing unless APP_MQTT_HOST is set."""
 
-    host = app.config.get("MQTT_HOST")
-    topic = app.config.get("WLED_MQTT_TOPIC")
+    host = _env("MQTT_HOST")
+    topic = _env("WLED_MQTT_TOPIC")
     if not host or not topic:
         return
 
     # Encrypted unless turned off: the backend reaches the broker over the
     # internet. (The strip itself can't do this, so it uses plain 1883.)
-    tls = str(app.config.get("MQTT_TLS", "true")).lower() not in ("0", "false", "no")
+    tls = _env("MQTT_TLS", "true").lower() not in ("0", "false", "no")
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="office-dashboard-backend")
     if tls:
         client.tls_set()  # checks the broker's certificate against the system's
-    if app.config.get("MQTT_USER"):
-        client.username_pw_set(app.config["MQTT_USER"], app.config.get("MQTT_PASSWORD"))
+    if _env("MQTT_USER"):
+        client.username_pw_set(_env("MQTT_USER"), _env("MQTT_PASSWORD") or None)
     client.on_connect = lambda c, u, flags, reason, props: print(f"MQTT: {reason}")
-    client.connect_async(host, int(app.config.get("MQTT_PORT") or (8883 if tls else 1883)))
+    client.connect_async(host, int(_env("MQTT_PORT") or (8883 if tls else 1883)))
+    print(f"MQTT: connecting to {host} ({'encrypted' if tls else 'plain'}), topic {topic}")
     client.loop_start()  # keeps reconnecting on its own
 
     def send(command):
