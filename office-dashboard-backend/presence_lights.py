@@ -19,7 +19,7 @@ class PresenceSwitch:
         self.grace_s = grace_s
         self.was = None
         self.empty_since = None
-        # Empty for longer than the grace, or empty when we started
+        # Empty for longer than the grace, and the lights were turned off
         self.away = False
 
     def update(self, present: bool, now: float):
@@ -31,9 +31,8 @@ class PresenceSwitch:
                 self.away = False
                 return "on"
             return None
-        if was is None:
-            self.away = True
-        elif was:
+        # Also when we start with the office already empty, e.g. after a deploy
+        if was is None or was:
             self.empty_since = now
         elif self.empty_since is not None and now - self.empty_since >= self.grace_s:
             self.empty_since = None
