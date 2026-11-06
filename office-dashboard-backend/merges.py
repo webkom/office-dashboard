@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import os
 from collections import deque
 from threading import Lock
 
@@ -42,7 +43,9 @@ def register(app, api):
 
     class GithubWebhook(Resource):
         def post(self):
-            secret = app.config.get("GITHUB_WEBHOOK_SECRET")
+            # Straight from the environment: app.config parses values as
+            # JSON, which would turn a secret like 1e5 into a number
+            secret = os.environ.get("APP_GITHUB_WEBHOOK_SECRET", "").strip()
             if not secret:
                 return {"error": "webhook secret not set"}, 503
             signature = request.headers.get("X-Hub-Signature-256", "")

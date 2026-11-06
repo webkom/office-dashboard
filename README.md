@@ -38,6 +38,17 @@ The frontend only talks to the backend, apart from the office LED strip, which i
 | `POST /github-webhook` | Called by GitHub | – |
 | `/ws` | Websocket that pushes each merged pull request | – |
 
+### Office lights
+
+The backend turns the office LED strip off 5 minutes after the last person checks out, and on when someone checks in, over MQTT. That way it works without a browser on the office network.
+
+1. In WLED, under Config → Sync Interfaces → MQTT, turn MQTT on with broker `mqtt.abakus.no`, port `1883` (WLED can't encrypt), the strip's own login, and a device topic such as `wled/kontor`.
+2. In Coolify, give the backend the environment variables `APP_MQTT_HOST=mqtt.abakus.no`, its own login as `APP_MQTT_USER` and `APP_MQTT_PASSWORD`, and the same topic as `APP_WLED_MQTT_TOPIC`, then redeploy. It connects encrypted on port 8883, and logs `MQTT: Success` once logged in.
+
+Logins for the broker (emqx) are kept in `emqx/emqx-cfg.yaml` in [kubernetes-abakus](https://github.com/webkom/kubernetes-abakus).
+
+The strip has to be able to reach the broker from the office network.
+
 ### Merged pull requests
 
 The office LED strip shows a green wave when a pull request is merged in lego or lego-webapp. GitHub tells the backend through a webhook:
