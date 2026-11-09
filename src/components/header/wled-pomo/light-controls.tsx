@@ -19,12 +19,51 @@ const EFFECTS: { key: keyof LightSettings; label: string; hint: string }[] = [
   { key: "evening", label: "kveld", hint: "Kveldslys fra 20 til 06" },
 ];
 
+/** The power switch and dimmer, also offered while a pomodoro runs */
+export const LightDimmer: React.FC<{ lights: RoomLights }> = ({ lights }) => {
+  const { status } = lights;
+  const level = status.isOn ? status.bri / 255 : 0;
+
+  return (
+    <div className={styles["light-line"]}>
+      <button
+        type="button"
+        className={styles["power"]}
+        onClick={lights.toggle}
+        aria-pressed={status.isOn}
+        aria-label="Lys av og på"
+        title="Lys av og på (L)"
+      >
+        <FontAwesomeIcon icon={faPowerOff as IconProp} />
+      </button>
+      <label className={styles["dimmer"]}>
+        <StripPreview
+          className={styles["bar"]}
+          ratio={level}
+          markerRatio={null}
+          cells={16}
+        />
+        <input
+          type="range"
+          min={1}
+          max={255}
+          value={status.bri}
+          onChange={(e) => lights.setBrightness(Number(e.target.value))}
+          aria-label="Lysstyrke"
+        />
+      </label>
+      <span className={styles["pct"]}>
+        {status.isOn ? `${Math.round(level * 100)}%` : "av"}
+      </span>
+    </div>
+  );
+};
+
 const LightControls: React.FC<{ lights: RoomLights; index: number }> = ({
   lights,
   index,
 }) => {
   const { status } = lights;
-  const level = status.isOn ? status.bri / 255 : 0;
 
   return (
     <li
@@ -37,37 +76,7 @@ const LightControls: React.FC<{ lights: RoomLights; index: number }> = ({
       }
       data-on={status.isOn || undefined}
     >
-      <div className={styles["light-line"]}>
-        <button
-          type="button"
-          className={styles["power"]}
-          onClick={lights.toggle}
-          aria-pressed={status.isOn}
-          aria-label="Lys av og på"
-          title="Lys av og på (L)"
-        >
-          <FontAwesomeIcon icon={faPowerOff as IconProp} />
-        </button>
-        <label className={styles["dimmer"]}>
-          <StripPreview
-            className={styles["bar"]}
-            ratio={level}
-            markerRatio={null}
-            cells={16}
-          />
-          <input
-            type="range"
-            min={1}
-            max={255}
-            value={status.bri}
-            onChange={(e) => lights.setBrightness(Number(e.target.value))}
-            aria-label="Lysstyrke"
-          />
-        </label>
-        <span className={styles["pct"]}>
-          {status.isOn ? `${Math.round(level * 100)}%` : "av"}
-        </span>
-      </div>
+      <LightDimmer lights={lights} />
 
       <div className={styles["presets"]}>
         {LIGHT_PRESETS.map((p) => (

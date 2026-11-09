@@ -1,5 +1,6 @@
 import {
   DisplayMode,
+  Phase,
   Session,
   durationOf,
   modeOf,
@@ -12,6 +13,7 @@ export type Rgb = [number, number, number];
 
 export const RED: Rgb = [255, 0, 0];
 export const BLUE: Rgb = [0, 0, 255];
+export const GREEN: Rgb = [0, 255, 60];
 export const WHITE: Rgb = [255, 255, 255];
 const YELLOW: Rgb = [255, 190, 0];
 const BLACK: Rgb = [0, 0, 0];
@@ -30,6 +32,10 @@ const frame = (i: (number | Rgb)[]) => ({
   seg: [{ id: 0, i }],
 });
 
+// The whole strip lit in solid colour draws a lot of current; at full
+// brightness enough to make the strip restart. Brighter is a dimmer away.
+export const POMO_BRI = 128;
+
 export function claimPayload(
   state: WledState | undefined,
   ledCount: number,
@@ -42,7 +48,7 @@ export function claimPayload(
     .map((s) => ({ id: s.id, stop: 0 }));
   return {
     on: true,
-    bri: 255,
+    bri: Math.min(state?.bri ?? POMO_BRI, POMO_BRI),
     transition: 0,
     mainseg: 0,
     seg: [
@@ -143,11 +149,13 @@ export function growPayload(ledCount: number, lit: number, col: Rgb) {
 export const solidPayload = (ledCount: number, col: Rgb) =>
   frame([0, ledCount, col]);
 
-/** Blue up to `blue`, red after, and a yellow marker at `markerAt` */
+/** `fill` up to `filled`, `rest` after, and a yellow marker at `markerAt` */
 export function progressPayload(
   ledCount: number,
-  blue: number,
+  filled: number,
   markerAt: number | null,
+  fill: Rgb = BLUE,
+  rest: Rgb = RED,
 ) {
   const width = Math.max(12, Math.round(ledCount * 0.03));
   const tip =
@@ -160,8 +168,8 @@ export function progressPayload(
 
   const parts: [number, number, Rgb][] = [];
   for (const [a, b, col] of [
-    [0, blue, BLUE],
-    [blue, ledCount, RED],
+    [0, filled, fill],
+    [filled, ledCount, rest],
   ] as [number, number, Rgb][]) {
     if (tip === null || b <= tip || a >= tip + width) {
       parts.push([a, b, col]);
@@ -180,15 +188,26 @@ export function shownProgress(progress: number, mode: DisplayMode): number {
   return progress;
 }
 
-/** Work fills the strip with blue, a break drains it */
+/** The colour that fills the strip in a phase, and the one it fills over.
+ * Work fills blue over red; a break fills green over the blue work left. */
+export const phaseColours = (phase: Phase): [Rgb, Rgb] =>
+  phase === "work" ? [BLUE, RED] : [GREEN, BLUE];
+
+/** Every phase fills the strip from the left; its colour tells which it is */
 export function frameFor(stored: Session, now: number, ledCount: number) {
   const { session } = sessionAt(stored, now);
   const duration = durationOf(session.config, session.phase);
   const left = remainingOf(session, now);
   const progress = Math.min(1, Math.max(0, (duration - left) / duration));
-  const isWork = session.phase === "work";
   const shown = shownProgress(progress, modeOf(session.config, session.phase));
-  const blue = Math.round((isWork ? shown : 1 - shown) * ledCount);
-  const raw = Math.round((isWork ? progress : 1 - progress) * ledCount);
-  return progressPayload(ledCount, blue, session.endsAt === null ? raw : null);
+  const filled = Math.round(shown * ledCount);
+  const raw = Math.round(progress * ledCount);
+  const [fill, rest] = phaseColours(session.phase);
+  return progressPayload(
+    ledCount,
+    filled,
+    session.endsAt === null ? raw : null,
+    fill,
+    rest,
+  );
 }

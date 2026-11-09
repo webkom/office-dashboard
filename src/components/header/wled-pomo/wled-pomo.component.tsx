@@ -92,11 +92,12 @@ const WledPomo: React.FC = () => {
         arrowdown: back,
         "-": back,
       };
-      const action = p.status.isRunning
-        ? whileRunning[key]
-        : key === "l"
+      const action =
+        key === "l"
           ? lightsRef.current.toggle
-          : undefined;
+          : p.status.isRunning
+            ? whileRunning[key]
+            : undefined;
       if (action) {
         e.preventDefault();
         action();
@@ -110,6 +111,7 @@ const WledPomo: React.FC = () => {
     <div
       className={styles["wrapper"]}
       data-tone={toneOf(status)}
+      data-colours={status.phase === "work" ? "work" : "break"}
       ref={wrapperRef}
     >
       <button
@@ -141,8 +143,8 @@ const WledPomo: React.FC = () => {
           }`}
         >
           <StripPreview
-            ratio={status.blueRatio}
-            markerRatio={status.isPaused ? status.rawBlueRatio : null}
+            ratio={status.fillRatio}
+            markerRatio={status.isPaused ? status.rawFillRatio : null}
             cells={16}
           />
         </span>
@@ -152,7 +154,7 @@ const WledPomo: React.FC = () => {
       {isOpen && status.isReachable && (
         <div className={styles["sheet"]} role="dialog" aria-label="Pomodoro">
           {status.isRunning ? (
-            <RunningActions pomo={pomo} />
+            <RunningActions pomo={pomo} lights={lights} />
           ) : (
             <StartOptions
               pomo={pomo}
@@ -173,6 +175,7 @@ const WledPomo: React.FC = () => {
                     <span
                       key={part}
                       className={`${styles["modes"]} ${isNow ? styles["modes-now"] : ""}`}
+                      data-colours={part}
                     >
                       <span className={styles["modes-label"]}>{label}</span>
                       {DISPLAY_MODES.map((mode) => (

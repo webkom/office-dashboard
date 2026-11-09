@@ -321,10 +321,7 @@ export function usePomodoro(strip: Strip) {
     : config.workMode;
   const elapsed = Math.min(durationMs, Math.max(0, durationMs - remainingMs));
   const progress = session ? elapsed / durationMs : 0;
-  const isWork = session?.phase === "work";
-  const shown = shownProgress(progress, displayMode);
-  const blueRatio = session ? (isWork ? shown : 1 - shown) : 0;
-  const rawBlueRatio = session ? (isWork ? progress : 1 - progress) : 0;
+  const fillRatio = session ? shownProgress(progress, displayMode) : 0;
   const upcoming = session ? nextPhase(session, 0) : null;
 
   const togglePause = useCallback(() => change(togglePauseAt), [change]);
@@ -382,9 +379,11 @@ export function usePomodoro(strip: Strip) {
       /** null when idle or paused */
       phaseEndsAt: session?.endsAt ?? null,
       ledCount: strip.ledCount,
-      blueLeds: Math.round(blueRatio * strip.ledCount),
-      blueRatio,
-      rawBlueRatio,
+      filledLeds: Math.round(fillRatio * strip.ledCount),
+      /** How far the phase's colour has filled the strip, as shown */
+      fillRatio,
+      /** The same, without the display mode's steps */
+      rawFillRatio: progress,
       displayMode,
     },
     config: activeConfig,

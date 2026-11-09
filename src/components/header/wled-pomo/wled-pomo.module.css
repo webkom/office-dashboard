@@ -1,5 +1,7 @@
 .wrapper {
   --pomo-blue: #4f7fe0;
+  --pomo-blue-dim: color-mix(in srgb, var(--pomo-blue) 45%, transparent);
+  --pomo-green: #3fbf7a;
   --pomo-red-dim: color-mix(in srgb, var(--secondary-dark) 70%, transparent);
   --pomo-amber: #e2a63b;
   --pomo-muted: rgba(255, 255, 255, 0.55);
@@ -15,7 +17,17 @@
   --tone: var(--secondary);
 }
 .wrapper[data-tone="break"] {
-  --tone: var(--pomo-blue);
+  --tone: var(--pomo-green);
+}
+
+/* What fills the strip, and what it fills over, as on the real strip */
+[data-colours="work"] {
+  --fill: var(--pomo-blue);
+  --rest: var(--pomo-red-dim);
+}
+[data-colours="break"] {
+  --fill: var(--pomo-green);
+  --rest: var(--pomo-blue-dim);
 }
 .wrapper[data-tone="paused"] {
   --tone: var(--pomo-amber);
@@ -77,12 +89,12 @@
 
 .cell {
   border-radius: 1px;
-  background: var(--cell-off, var(--pomo-red-dim));
+  background: var(--cell-off, var(--rest, var(--pomo-red-dim)));
   transition: background-color var(--cell-fade, 0.5s) var(--pomo-ease);
 }
 
 .cell-on {
-  background: var(--cell-on, var(--pomo-blue));
+  background: var(--cell-on, var(--fill, var(--pomo-blue)));
 }
 
 .wrapper[data-tone="idle"] {
@@ -500,11 +512,11 @@ button.option:active,
 }
 
 .mini-base {
-  fill: var(--pomo-red-dim);
+  fill: var(--rest, var(--pomo-red-dim));
 }
 
 .mini-fill {
-  fill: var(--pomo-blue);
+  fill: var(--fill, var(--pomo-blue));
   clip-path: inset(0 100% 0 0);
 }
 

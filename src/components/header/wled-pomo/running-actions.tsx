@@ -1,5 +1,9 @@
 import React from "react";
 import { PHASE_NAME, Pomodoro } from "app/hooks/use-pomodoro.hook";
+import { RoomLights } from "app/hooks/use-room-lights.hook";
+import { OFFICE_WHITE } from "app/utils/wled-payloads";
+import { LightDimmer } from "./light-controls";
+import lightStyles from "./light-controls.module.css";
 import Row from "./row";
 import styles from "./wled-pomo.module.css";
 
@@ -10,7 +14,10 @@ const timeOfDay = (ms: number) =>
     hour12: false,
   });
 
-const RunningActions: React.FC<{ pomo: Pomodoro }> = ({ pomo }) => {
+const RunningActions: React.FC<{ pomo: Pomodoro; lights: RoomLights }> = ({
+  pomo,
+  lights,
+}) => {
   const { status } = pomo;
 
   const next = status.next ? PHASE_NAME[status.next.phase] : "jobb";
@@ -25,7 +32,7 @@ const RunningActions: React.FC<{ pomo: Pomodoro }> = ({ pomo }) => {
         <span className={styles["dot"]} />
         <span>{statusText}</span>
         <span className={styles["leds"]}>
-          {status.blueLeds}/{status.ledCount}
+          {status.filledLeds}/{status.ledCount}
         </span>
       </div>
       <ul className={styles["options"]}>
@@ -62,8 +69,20 @@ const RunningActions: React.FC<{ pomo: Pomodoro }> = ({ pomo }) => {
             →
           </button>
         </li>
+        <li
+          className={lightStyles["lights"]}
+          style={
+            {
+              "--i": 4,
+              "--light": `rgb(${OFFICE_WHITE.join(",")})`,
+            } as React.CSSProperties
+          }
+          data-on={lights.status.isOn || undefined}
+        >
+          <LightDimmer lights={lights} />
+        </li>
         <Row
-          index={4}
+          index={5}
           hotkey="q"
           danger
           onClick={() => void pomo.stopSession()}
