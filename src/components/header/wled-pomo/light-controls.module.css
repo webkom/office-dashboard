@@ -143,7 +143,7 @@
 .swatch[data-preset="christmas"] {
   --red: #ff3b30;
   --gold: #ffc45e;
-  --green: #2fbf5a;
+  --green: #0f8a64;
   --off: rgba(255, 255, 255, 0.12);
   --wire: linear-gradient(
     transparent 2.5px,
