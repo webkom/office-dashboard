@@ -5,6 +5,13 @@ import time
 import requests
 
 POLL_S = 30
+# Where the dashboards keep the office look while a pomodoro runs
+OFFICE_LOOK_PRESET = 250
+# What the dashboards fall back to without it
+FALLBACK_LOOK = {
+    "bri": 230,
+    "seg": [{"id": 0, "frz": False, "fx": 0, "col": [[255, 244, 230]], "n": ""}],
+}
 # A phone dropping off the wifi for a moment shouldn't turn the lights off
 LEAVE_GRACE_S = 5 * 60
 
@@ -50,14 +57,30 @@ def start(app, get_office_times):
         return
     print(f"Office lights: switching {url}")
 
+    def post(state):
+        requests.post(f"{url}/json/state", json=state, timeout=5).raise_for_status()
+
+    def pomodoro_running():
+        state = requests.get(f"{url}/json/state", timeout=5).json()
+        return any(str(seg.get("n") or "").startswith("Pomodoro") for seg in state.get("seg", []))
+
+    def end_pomodoro():
+        """Ends a pomodoro the way the dashboards do, by bringing back the
+        office look. Left running, a dashboard would keep painting it, and its
+        end would turn the lights back on."""
+        if not pomodoro_running():
+            return
+        post({"ps": OFFICE_LOOK_PRESET})
+        time.sleep(1.5)  # WLED loads a preset a moment later
+        if pomodoro_running():
+            post(FALLBACK_LOOK)
+        print("Office lights: ended the pomodoro")
+
     def send(command, first_try):
         try:
-            res = requests.post(
-                f"{url}/json/state",
-                json={"on": command == "on", "transition": 20},
-                timeout=5,
-            )
-            res.raise_for_status()
+            if command == "off":
+                end_pomodoro()
+            post({"on": command == "on", "transition": 20})
         except requests.RequestException as e:
             if first_try:
                 print(f"Office lights: couldn't reach the strip ({type(e).__name__}), trying again")

@@ -23,8 +23,9 @@ const ranges = (parts: [number, number, Rgb][]) => {
   for (const [from, to, col] of parts) if (to > from) i.push(from, to, col);
   return i;
 };
+// Frames don't switch the strip on, so lights switched off stay off, even
+// with a pomodoro painting
 const frame = (i: (number | Rgb)[]) => ({
-  on: true,
   transition: 0,
   seg: [{ id: 0, i }],
 });
@@ -123,16 +124,20 @@ export function bandPayload(
   );
 }
 
+/** Turning on, lit from the centre outwards */
 export function growPayload(ledCount: number, lit: number, col: Rgb) {
   const a = Math.floor((ledCount - lit) / 2);
   const b = a + lit;
-  return frame(
-    ranges([
-      [0, a, BLACK],
-      [a, b, col],
-      [b, ledCount, BLACK],
-    ]),
-  );
+  return {
+    on: true,
+    ...frame(
+      ranges([
+        [0, a, BLACK],
+        [a, b, col],
+        [b, ledCount, BLACK],
+      ]),
+    ),
+  };
 }
 
 export const solidPayload = (ledCount: number, col: Rgb) =>
