@@ -19,7 +19,7 @@ const MODE_TEXT: Record<DisplayMode, { label: string; hint: string }> = {
   solid: { label: "slutt", hint: "Stripen skifter først når tiden er ute" },
   theme: {
     label: "tema",
-    hint: "Lyset fra før økten, rødt i jobb og grønt i pausen",
+    hint: "Som fyll, men blinkende, slik lyset før økten beveget seg",
   },
 };
 

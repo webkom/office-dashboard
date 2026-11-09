@@ -107,33 +107,13 @@ export function officeLookOf(presets: unknown): OfficeLook {
   return seg ? (seg as OfficeLook) : FALLBACK_OFFICE_LOOK;
 }
 
-/** Red twinkles in work, green in a break: the colour a theme phase shows */
-export const tintOf = (phase: Phase): Rgb => (phase === "work" ? RED : GREEN);
-
-/** The office look moving as usual, but in the phase's colour alone */
-export function themePayload(look: OfficeLook, phase: Phase) {
-  const keep = Object.fromEntries(
-    LOOK_SETTINGS.filter((k) => look[k] !== undefined).map((k) => [k, look[k]]),
-  );
-  return {
-    transition: 7,
-    seg: [
-      {
-        id: 0,
-        frz: false,
-        ...keep,
-        fx: look.fx,
-        pal: 2, // "* Color 1": the effect's own palette, in one colour
-        col: [tintOf(phase), look.col?.[1] ?? BLACK, look.col?.[2] ?? BLACK],
-      },
-    ],
-  };
-}
-
 export const fallbackLookPayload: WledState = {
   on: true,
   bri: 230,
-  seg: [{ id: 0, on: true, frz: false, fx: 0, col: [OFFICE_WHITE], n: "" }],
+  seg: [
+    { id: 0, on: true, frz: false, fx: 0, col: [OFFICE_WHITE], n: "" },
+    { id: 1, stop: 0 },
+  ],
 };
 
 // Fireworks Starburst on the Party palette
@@ -235,17 +215,25 @@ export function shownProgress(progress: number, mode: DisplayMode): number {
   return progress; // "bar", and "theme" in the dashboard
 }
 
-/** The colour that fills the strip in a phase, and the one it fills over.
- * Work fills blue over red; a break fills green over the blue work left. */
+/** Green eats the phase's colour: red in work, blue in a break */
 export const phaseColours = (phase: Phase): [Rgb, Rgb] =>
-  phase === "work" ? [BLUE, RED] : [GREEN, BLUE];
+  phase === "work" ? [GREEN, RED] : [GREEN, BLUE];
 
-/** Every phase fills the strip from the left; its colour tells which it is */
-export function frameFor(stored: Session, now: number, ledCount: number) {
+const progressAt = (stored: Session, now: number) => {
   const { session } = sessionAt(stored, now);
   const duration = durationOf(session.config, session.phase);
   const left = remainingOf(session, now);
   const progress = Math.min(1, Math.max(0, (duration - left) / duration));
+  return { session, progress };
+};
+
+// The twinkling part green has eaten, over segment 0
+const EATEN_SEG = 1;
+const noEatenSeg = { id: EATEN_SEG, stop: 0 };
+
+/** Every phase is eaten from the left by green */
+export function frameFor(stored: Session, now: number, ledCount: number) {
+  const { session, progress } = progressAt(stored, now);
   const shown = shownProgress(progress, modeOf(session.config, session.phase));
   const filled = Math.round(shown * ledCount);
   const raw = Math.round(progress * ledCount);
@@ -257,6 +245,48 @@ export function frameFor(stored: Session, now: number, ledCount: number) {
     fill,
     rest,
   );
-  // Solid again, after a phase in the office look's effect
-  return { ...payload, seg: [{ ...payload.seg[0], fx: 0 }] };
+  // Solid again, and one segment, after a twinkling phase
+  return {
+    ...payload,
+    seg: [{ ...payload.seg[0], fx: 0 }, noEatenSeg] as const,
+  };
+}
+
+/** Like frameFor, but each part twinkles in its colour, as the office look
+ * moves. A solid look twinkles like the Jul look instead. */
+export function themeFrameFor(
+  stored: Session,
+  now: number,
+  ledCount: number,
+  look: OfficeLook,
+) {
+  const { session, progress } = progressAt(stored, now);
+  const eaten = Math.round(progress * ledCount);
+  const moving = look.fx === 0 ? FALLBACK_OFFICE_LOOK : look;
+  const motion = Object.fromEntries(
+    LOOK_SETTINGS.filter((k) => moving[k] !== undefined).map((k) => [
+      k,
+      moving[k],
+    ]),
+  );
+  // "* Color 1" keeps the effect's own palette to one colour. As background
+  // (Twinklefox dims it) the same colour, so each part glows faintly in it.
+  const twinkle = (c: Rgb) => ({
+    on: true,
+    frz: false,
+    ...motion,
+    fx: moving.fx,
+    pal: 2,
+    col: [c, c, BLACK],
+  });
+  const [fill, rest] = phaseColours(session.phase);
+  const all = { id: 0, start: 0, stop: ledCount, ...twinkle(rest) };
+  const eatenPart =
+    eaten > 0
+      ? { id: EATEN_SEG, start: 0, stop: eaten, ...twinkle(fill) }
+      : noEatenSeg;
+  return {
+    transition: 0,
+    seg: [all, eatenPart] as [typeof all, typeof eatenPart],
+  };
 }

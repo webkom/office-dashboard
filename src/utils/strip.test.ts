@@ -24,7 +24,7 @@ import {
   Rgb,
   frameFor,
   officeLookOf,
-  themePayload,
+  themeFrameFor,
 } from "app/utils/wled-payloads";
 
 const T0 = 1_700_000_000_000; // a whole second, as stored on the strip
@@ -67,7 +67,7 @@ describe("the strip", () => {
     expect(at(250_000)).toMatchObject({ phase: "long-break", cycle: 2 });
   });
 
-  it("fills from the left in every phase, the break in green", () => {
+  it("lets green eat red in work and blue in a break, from the left", () => {
     // LEDs of a colour, and where the first of them is
     const ledsOf = (cfg: SessionConfig, ms: number, col: Rgb) => {
       const s = startSession(cfg, T0);
@@ -81,9 +81,10 @@ describe("the strip", () => {
         }
       return { count, from };
     };
-    expect(ledsOf(config, 0, BLUE).count).toBe(0);
-    expect(ledsOf(config, 50_000, BLUE)).toEqual({ count: 450, from: 0 });
-    // Halfway through the break, green has filled half, over the blue
+    expect(ledsOf(config, 0, RED).count).toBe(900);
+    expect(ledsOf(config, 50_000, GREEN)).toEqual({ count: 450, from: 0 });
+    expect(ledsOf(config, 50_000, RED)).toEqual({ count: 450, from: 450 });
+    // Halfway through the break, green has eaten half the blue
     const barBreak = { ...config, breakMode: "bar" as const };
     expect(ledsOf(barBreak, 125_000, GREEN)).toEqual({ count: 450, from: 0 });
     expect(ledsOf(barBreak, 125_000, BLUE)).toEqual({ count: 450, from: 450 });
@@ -103,27 +104,22 @@ describe("the office look during a pomodoro", () => {
     expect(encodeSession(old).split(":")[5][0]).toBe("b");
   });
 
-  it("twinkles the saved look in red for work and green for a break", () => {
+  it("twinkles while green eats, in the saved look's motion", () => {
     const look = officeLookOf({
-      250: {
-        seg: [
-          {
-            id: 0,
-            fx: 80,
-            sx: 90,
-            ix: 170,
-            pal: 31,
-            col: [RED, [255, 150, 70]],
-          },
-        ],
-      },
+      250: { seg: [{ id: 0, fx: 80, sx: 90, ix: 170, pal: 31, col: [RED] }] },
     });
-    const work = themePayload(look, "work").seg[0];
-    expect(work).toMatchObject({ fx: 80, sx: 90, ix: 170, pal: 2, frz: false });
-    expect(work.col[0]).toEqual(RED);
-    expect(work.col[1]).toEqual([255, 150, 70]);
-    expect(themePayload(look, "break").seg[0].col[0]).toEqual(GREEN);
-    // No preset saved: a twinkle anyway
+    const s = startSession({ ...config, workMode: "theme" }, T0);
+    const [all, eaten] = themeFrameFor(s, T0 + 50_000, 900, look).seg;
+    expect(all).toMatchObject({ id: 0, start: 0, stop: 900, fx: 80, sx: 90 });
+    expect(all).toMatchObject({ pal: 2, col: [RED, RED, [0, 0, 0]] });
+    expect(eaten).toMatchObject({ id: 1, start: 0, stop: 450, fx: 80 });
+    expect(eaten).toMatchObject({ col: [GREEN, GREEN, [0, 0, 0]] });
+    // Nothing eaten yet: no second segment
+    expect(themeFrameFor(s, T0, 900, look).seg[1]).toEqual({ id: 1, stop: 0 });
+    // The fill modes remove it again
+    expect(frameFor(s, T0, 900).seg[1]).toEqual({ id: 1, stop: 0 });
+    // A solid look, or none saved, twinkles anyway
+    expect(themeFrameFor(s, T0, 900, { fx: 0 }).seg[0].fx).toBe(80);
     expect(officeLookOf(null).fx).toBe(80);
   });
 });

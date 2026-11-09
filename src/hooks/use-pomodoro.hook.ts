@@ -37,8 +37,6 @@ import {
   sessionOnStrip,
 } from "app/utils/wled-names";
 import {
-  BLUE,
-  RED,
   OfficeLook,
   WHITE,
   claimPayload,
@@ -50,8 +48,8 @@ import {
   shownProgress,
   solidPayload,
   tagPayload,
-  themePayload,
-  tintOf,
+  phaseColours,
+  themeFrameFor,
   unfreezePayload,
 } from "app/utils/wled-payloads";
 
@@ -150,7 +148,9 @@ export function usePomodoro(strip: Strip) {
       return;
     }
     if (officeLookRef.current) {
-      frames.push(themePayload(officeLookRef.current, session.phase));
+      frames.push(
+        themeFrameFor(a, t, ledCountRef.current, officeLookRef.current),
+      );
       return;
     }
     // Read once; the next paint, within a second, shows it
@@ -326,14 +326,8 @@ export function usePomodoro(strip: Strip) {
     announcePhase(session, last.cycle);
     if (age > FLASH_WINDOW_MS || !paintingRef.current) return;
 
-    // In the office look, the phase's own tint; filling, the colour it
-    // starts from
-    const colour =
-      modeOf(session.config, session.phase) === "theme"
-        ? tintOf(session.phase)
-        : session.phase === "work"
-          ? RED
-          : BLUE;
+    // The colour the new phase starts in, before green eats it
+    const colour = phaseColours(session.phase)[1];
     const colours = [WHITE, colour, WHITE, colour, WHITE, colour];
     flashingRef.current = true;
     void (async () => {

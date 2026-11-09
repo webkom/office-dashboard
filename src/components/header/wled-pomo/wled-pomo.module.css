@@ -20,16 +20,14 @@
   --tone: var(--pomo-green);
 }
 
-/* What fills the strip, and what it fills over, as on the real strip */
+/* As on the real strip: green eats red in work, and blue in a break */
 [data-colours="work"] {
-  --fill: var(--pomo-blue);
+  --fill: var(--pomo-green);
   --rest: var(--pomo-red-dim);
-  --tint: var(--secondary);
 }
 [data-colours="break"] {
   --fill: var(--pomo-green);
   --rest: var(--pomo-blue-dim);
-  --tint: var(--pomo-green);
 }
 .wrapper[data-tone="paused"] {
   --tone: var(--pomo-amber);
@@ -541,23 +539,15 @@ button.option:active,
   animation-timing-function: steps(1, jump-end);
 }
 
-/* The office look: lights twinkling in the phase's colour, every other one
-   lit in turn */
-.mini[data-mode="theme"] .mini-fill {
-  clip-path: none;
-  fill: var(--tint);
-}
-.mini[data-mode="theme"] .mini-fill rect:nth-child(even) {
-  opacity: 0;
-}
+/* Filling like "fyll", with every other light lit in turn */
 .modes button:hover [data-mode="theme"] .mini-fill {
-  animation: none;
+  animation-timing-function: linear;
 }
-.modes button:hover [data-mode="theme"] .mini-fill rect {
-  animation: mini-twinkle 1.2s steps(1) infinite;
+.modes button:hover [data-mode="theme"] rect {
+  animation: mini-twinkle 0.8s steps(1) infinite;
 }
-.modes button:hover [data-mode="theme"] .mini-fill rect:nth-child(even) {
-  animation-delay: -0.6s;
+.modes button:hover [data-mode="theme"] rect:nth-child(even) {
+  animation-delay: -0.4s;
 }
 
 @keyframes mini-twinkle {

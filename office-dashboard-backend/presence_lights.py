@@ -10,7 +10,11 @@ OFFICE_LOOK_PRESET = 250
 # What the dashboards fall back to without it
 FALLBACK_LOOK = {
     "bri": 230,
-    "seg": [{"id": 0, "frz": False, "fx": 0, "col": [[255, 244, 230]], "n": ""}],
+    "seg": [
+        {"id": 0, "frz": False, "fx": 0, "col": [[255, 244, 230]], "n": ""},
+        # A twinkling pomodoro draws its eaten part in a second segment
+        {"id": 1, "stop": 0},
+    ],
 }
 # A phone dropping off the wifi for a moment shouldn't turn the lights off
 LEAVE_GRACE_S = 5 * 60
