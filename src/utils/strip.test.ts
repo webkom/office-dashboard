@@ -1,7 +1,14 @@
 // The few things that would quietly break the shared strip if they changed
 
 import { describe, expect, it } from "vitest";
-import { SessionConfig, sessionAt, startSession } from "app/utils/pomo-session";
+import {
+  DISPLAY_MODES,
+  SessionConfig,
+  decodeSession,
+  encodeSession,
+  sessionAt,
+  startSession,
+} from "app/utils/pomo-session";
 import {
   DEFAULT_NOTE,
   encodeNote,
@@ -10,7 +17,15 @@ import {
   painterOf,
   sessionOnStrip,
 } from "app/utils/wled-names";
-import { BLUE, GREEN, Rgb, frameFor } from "app/utils/wled-payloads";
+import {
+  BLUE,
+  GREEN,
+  RED,
+  Rgb,
+  frameFor,
+  officeLookOf,
+  themePayload,
+} from "app/utils/wled-payloads";
 
 const T0 = 1_700_000_000_000; // a whole second, as stored on the strip
 const config = {
@@ -74,5 +89,41 @@ describe("the strip", () => {
     expect(ledsOf(barBreak, 125_000, BLUE)).toEqual({ count: 450, from: 450 });
     // "slutt" during the break: still all blue until the break is over
     expect(ledsOf(config, 125_000, BLUE).count).toBe(900);
+  });
+});
+
+describe("the office look during a pomodoro", () => {
+  it("keeps every pair of modes in the name, and old letters for old pairs", () => {
+    for (const workMode of DISPLAY_MODES)
+      for (const breakMode of DISPLAY_MODES) {
+        const s = startSession({ ...config, workMode, breakMode }, T0);
+        expect(decodeSession(encodeSession(s))).toEqual(s);
+      }
+    const old = startSession({ ...config, breakMode: "bar" }, T0);
+    expect(encodeSession(old).split(":")[5][0]).toBe("b");
+  });
+
+  it("twinkles the saved look in red for work and green for a break", () => {
+    const look = officeLookOf({
+      250: {
+        seg: [
+          {
+            id: 0,
+            fx: 80,
+            sx: 90,
+            ix: 170,
+            pal: 31,
+            col: [RED, [255, 150, 70]],
+          },
+        ],
+      },
+    });
+    const work = themePayload(look, "work").seg[0];
+    expect(work).toMatchObject({ fx: 80, sx: 90, ix: 170, pal: 2, frz: false });
+    expect(work.col[0]).toEqual(RED);
+    expect(work.col[1]).toEqual([255, 150, 70]);
+    expect(themePayload(look, "break").seg[0].col[0]).toEqual(GREEN);
+    // No preset saved: a twinkle anyway
+    expect(officeLookOf(null).fx).toBe(80);
   });
 });

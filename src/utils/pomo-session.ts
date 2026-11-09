@@ -1,8 +1,15 @@
 // Phases that run out are rolled forward from the settings, so the strip is
 // only written when someone changes something
 
-export type DisplayMode = "bar" | "quarters" | "solid";
-export const DISPLAY_MODES: DisplayMode[] = ["bar", "quarters", "solid"];
+/** How the strip shows a phase. "theme" keeps the office look, tinted to
+ * the phase, instead of filling. */
+export type DisplayMode = "bar" | "quarters" | "solid" | "theme";
+export const DISPLAY_MODES: DisplayMode[] = [
+  "bar",
+  "quarters",
+  "solid",
+  "theme",
+];
 
 export type Phase = "work" | "break" | "long-break";
 
@@ -50,6 +57,13 @@ const MODES_CODE: Record<`${DisplayMode}/${DisplayMode}`, string> = {
   "quarters/solid": "t",
   "solid/bar": "u",
   "solid/quarters": "v",
+  "theme/theme": "h",
+  "bar/theme": "f",
+  "quarters/theme": "g",
+  "solid/theme": "i",
+  "theme/bar": "j",
+  "theme/quarters": "k",
+  "theme/solid": "m",
 };
 
 // Rounded down, so a fresh phase never shows more than its length

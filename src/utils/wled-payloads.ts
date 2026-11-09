@@ -83,6 +83,53 @@ export const saveOfficeLookPayload = {
 };
 export const loadOfficeLookPayload = { ps: OFFICE_PRESET };
 
+/** The office look's effect, as saved in its preset */
+export type OfficeLook = {
+  fx: number;
+  col?: Rgb[];
+  [setting: string]: unknown;
+};
+// What the look keeps when tinted: its motion, not its colours
+const LOOK_SETTINGS = ["sx", "ix", "c1", "c2", "c3", "o1", "o2", "o3"];
+// Twinklefox, as in the Jul look, when no office look is saved
+const FALLBACK_OFFICE_LOOK: OfficeLook = { fx: 80, sx: 90, ix: 170 };
+
+/** The office look from the strip's presets, or a twinkle without one */
+export function officeLookOf(presets: unknown): OfficeLook {
+  const preset = (presets as Record<string, { seg?: unknown }> | null)?.[
+    OFFICE_PRESET
+  ];
+  const seg = Array.isArray(preset?.seg)
+    ? (preset.seg as Partial<OfficeLook>[]).find(
+        (s) => typeof s?.fx === "number",
+      )
+    : undefined;
+  return seg ? (seg as OfficeLook) : FALLBACK_OFFICE_LOOK;
+}
+
+/** Red twinkles in work, green in a break: the colour a theme phase shows */
+export const tintOf = (phase: Phase): Rgb => (phase === "work" ? RED : GREEN);
+
+/** The office look moving as usual, but in the phase's colour alone */
+export function themePayload(look: OfficeLook, phase: Phase) {
+  const keep = Object.fromEntries(
+    LOOK_SETTINGS.filter((k) => look[k] !== undefined).map((k) => [k, look[k]]),
+  );
+  return {
+    transition: 7,
+    seg: [
+      {
+        id: 0,
+        frz: false,
+        ...keep,
+        fx: look.fx,
+        pal: 2, // "* Color 1": the effect's own palette, in one colour
+        col: [tintOf(phase), look.col?.[1] ?? BLACK, look.col?.[2] ?? BLACK],
+      },
+    ],
+  };
+}
+
 export const fallbackLookPayload: WledState = {
   on: true,
   bri: 230,
@@ -185,7 +232,7 @@ export function shownProgress(progress: number, mode: DisplayMode): number {
   if (progress >= 1) return 1;
   if (mode === "quarters") return Math.floor(progress * 4) / 4;
   if (mode === "solid") return 0;
-  return progress;
+  return progress; // "bar", and "theme" in the dashboard
 }
 
 /** The colour that fills the strip in a phase, and the one it fills over.
@@ -203,11 +250,13 @@ export function frameFor(stored: Session, now: number, ledCount: number) {
   const filled = Math.round(shown * ledCount);
   const raw = Math.round(progress * ledCount);
   const [fill, rest] = phaseColours(session.phase);
-  return progressPayload(
+  const payload = progressPayload(
     ledCount,
     filled,
     session.endsAt === null ? raw : null,
     fill,
     rest,
   );
+  // Solid again, after a phase in the office look's effect
+  return { ...payload, seg: [{ ...payload.seg[0], fx: 0 }] };
 }

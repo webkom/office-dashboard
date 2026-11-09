@@ -24,10 +24,12 @@
 [data-colours="work"] {
   --fill: var(--pomo-blue);
   --rest: var(--pomo-red-dim);
+  --tint: var(--secondary);
 }
 [data-colours="break"] {
   --fill: var(--pomo-green);
   --rest: var(--pomo-blue-dim);
+  --tint: var(--pomo-green);
 }
 .wrapper[data-tone="paused"] {
   --tone: var(--pomo-amber);
@@ -469,7 +471,7 @@ button.option:active,
 .modes {
   display: flex;
   align-items: flex-end;
-  gap: 12px;
+  gap: 10px;
   padding: 6px 0;
 }
 
@@ -537,6 +539,34 @@ button.option:active,
 }
 .modes button:hover [data-mode="solid"] .mini-fill {
   animation-timing-function: steps(1, jump-end);
+}
+
+/* The office look: lights twinkling in the phase's colour, every other one
+   lit in turn */
+.mini[data-mode="theme"] .mini-fill {
+  clip-path: none;
+  fill: var(--tint);
+}
+.mini[data-mode="theme"] .mini-fill rect:nth-child(even) {
+  opacity: 0;
+}
+.modes button:hover [data-mode="theme"] .mini-fill {
+  animation: none;
+}
+.modes button:hover [data-mode="theme"] .mini-fill rect {
+  animation: mini-twinkle 1.2s steps(1) infinite;
+}
+.modes button:hover [data-mode="theme"] .mini-fill rect:nth-child(even) {
+  animation-delay: -0.6s;
+}
+
+@keyframes mini-twinkle {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 @keyframes mini-fill {

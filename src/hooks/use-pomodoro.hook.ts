@@ -39,15 +39,19 @@ import {
 import {
   BLUE,
   RED,
+  OfficeLook,
   WHITE,
   claimPayload,
   fallbackLookPayload,
   frameFor,
   loadOfficeLookPayload,
+  officeLookOf,
   saveOfficeLookPayload,
   shownProgress,
   solidPayload,
   tagPayload,
+  themePayload,
+  tintOf,
   unfreezePayload,
 } from "app/utils/wled-payloads";
 
@@ -97,7 +101,8 @@ const isVisible = () => document.visibilityState === "visible";
 /** One pomodoro for the whole office, kept on the strip. Anyone can change it;
  * only the painter draws it, so browsers never paint over each other. */
 export function usePomodoro(strip: Strip) {
-  const { frames, lastWriteRef, read, write, setPollDelay } = strip;
+  const { frames, lastWriteRef, read, readPresets, write, setPollDelay } =
+    strip;
   const subscribe = strip.onRead;
   const [config, setConfig] = useState(DEFAULT_CONFIG);
   // Tagged by an older version, or holding a session we can't read
@@ -112,7 +117,12 @@ export function usePomodoro(strip: Strip) {
   const ledCountRef = useRef(strip.ledCount);
   ledCountRef.current = strip.ledCount;
 
+  // The look saved when the session started, for phases shown in it
+  const officeLookRef = useRef<OfficeLook | null>(null);
+  const lookPendingRef = useRef(false);
+
   const setAnchor = useCallback((next: Session | null) => {
+    if (!next) officeLookRef.current = null;
     anchorRef.current = next;
     setAnchorState(next);
     setNow(Date.now());
@@ -132,9 +142,26 @@ export function usePomodoro(strip: Strip) {
   const paint = useCallback(() => {
     const a = anchorRef.current;
     if (!a || !paintingRef.current || flashingRef.current) return;
-    if (isExpired(a, Date.now())) return;
-    frames.push(frameFor(a, Date.now(), ledCountRef.current));
-  }, [frames]);
+    const t = Date.now();
+    if (isExpired(a, t)) return;
+    const { session } = sessionAt(a, t);
+    if (modeOf(session.config, session.phase) !== "theme") {
+      frames.push(frameFor(a, t, ledCountRef.current));
+      return;
+    }
+    if (officeLookRef.current) {
+      frames.push(themePayload(officeLookRef.current, session.phase));
+      return;
+    }
+    // Read once; the next paint, within a second, shows it
+    if (lookPendingRef.current) return;
+    lookPendingRef.current = true;
+    void readPresets().then((presets) => {
+      lookPendingRef.current = false;
+      if (presets && anchorRef.current)
+        officeLookRef.current = officeLookOf(presets);
+    });
+  }, [frames, readPresets]);
 
   const endSession = useCallback(async () => {
     flashingRef.current = false;
@@ -299,7 +326,14 @@ export function usePomodoro(strip: Strip) {
     announcePhase(session, last.cycle);
     if (age > FLASH_WINDOW_MS || !paintingRef.current) return;
 
-    const colour = session.phase === "work" ? RED : BLUE;
+    // In the office look, the phase's own tint; filling, the colour it
+    // starts from
+    const colour =
+      modeOf(session.config, session.phase) === "theme"
+        ? tintOf(session.phase)
+        : session.phase === "work"
+          ? RED
+          : BLUE;
     const colours = [WHITE, colour, WHITE, colour, WHITE, colour];
     flashingRef.current = true;
     void (async () => {

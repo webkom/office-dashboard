@@ -15,8 +15,12 @@ import styles from "./wled-pomo.module.css";
 
 const MODE_TEXT: Record<DisplayMode, { label: string; hint: string }> = {
   bar: { label: "fyll", hint: "Stripen fylles jevnt" },
-  quarters: { label: "kvartaler", hint: "Stripen fylles i fire steg" },
+  quarters: { label: "steg", hint: "Stripen fylles i fire steg" },
   solid: { label: "slutt", hint: "Stripen skifter først når tiden er ute" },
+  theme: {
+    label: "tema",
+    hint: "Lyset fra før økten, rødt i jobb og grønt i pausen",
+  },
 };
 
 const MODE_PARTS = [
