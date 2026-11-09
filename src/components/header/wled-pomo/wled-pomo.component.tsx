@@ -1,7 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons";
 import Clock from "app/components/header/clock/clock.component";
 import { useOfficeStrip } from "app/hooks/use-office-strip.hook";
 import {
@@ -21,6 +18,11 @@ const MODE_TEXT: Record<DisplayMode, { label: string; hint: string }> = {
   quarters: { label: "kvartaler", hint: "Stripen fylles i fire steg" },
   solid: { label: "slutt", hint: "Stripen skifter først når tiden er ute" },
 };
+
+const MODE_PARTS = [
+  { part: "work", label: "jobb" },
+  { part: "break", label: "pause" },
+] as const;
 
 const toneOf = (status: PomoStatus) => {
   if (!status.isRunning) return "idle";
@@ -57,13 +59,20 @@ const WledPomo: React.FC = () => {
   pomoRef.current = pomo;
   const lightsRef = useRef(lights);
   lightsRef.current = lights;
+  // Shortcuts work anywhere on the page, not just with the menu open, but
+  // not while typing or together with the browser's own (Cmd/Ctrl/Alt)
   useEffect(() => {
-    if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const { target } = e;
+      const typing =
+        target instanceof Element &&
+        target.closest("input, textarea, select, [contenteditable]");
+      if (typing) return;
       const p = pomoRef.current;
+      if (!p.status.isReachable) return;
       const key = e.key.toLowerCase();
       if (key === "escape") return setIsOpen(false);
-      if ((e.target as HTMLElement | null)?.tagName === "INPUT") return;
 
       const forward = () => p.scrub(1);
       const back = () => p.scrub(-1);
@@ -73,6 +82,8 @@ const WledPomo: React.FC = () => {
         s: p.skipPhase,
         r: p.restartPhase,
         q: () => void p.stopSession(),
+        b: p.cycleMode,
+        m: p.cycleMode,
         arrowright: forward,
         arrowup: forward,
         "+": forward,
@@ -81,14 +92,11 @@ const WledPomo: React.FC = () => {
         arrowdown: back,
         "-": back,
       };
-      const action =
-        key === "b" || key === "m"
-          ? p.cycleMode
-          : p.status.isRunning
-            ? whileRunning[key]
-            : key === "l"
-              ? lightsRef.current.toggle
-              : undefined;
+      const action = p.status.isRunning
+        ? whileRunning[key]
+        : key === "l"
+          ? lightsRef.current.toggle
+          : undefined;
       if (action) {
         e.preventDefault();
         action();
@@ -96,7 +104,7 @@ const WledPomo: React.FC = () => {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen]);
+  }, []);
 
   return (
     <div
@@ -153,35 +161,40 @@ const WledPomo: React.FC = () => {
             />
           )}
 
-          <div className={styles["foot"]}>
-            <span className={styles["modes"]}>
-              {DISPLAY_MODES.map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  className={
-                    status.displayMode === mode ? styles["mode-active"] : ""
-                  }
-                  onClick={() => pomo.setDisplayMode(mode)}
-                  title={`${MODE_TEXT[mode].hint} (B)`}
-                >
-                  <ModeIcon mode={mode} />
-                  {MODE_TEXT[mode].label}
-                </button>
-              ))}
-            </span>
-            <button
-              type="button"
-              className={styles["icon"]}
-              onClick={pomo.toggleMute}
-              aria-label={status.mute ? "Slå på lyd" : "Slå av lyd"}
-              title={status.mute ? "Slå på lyd" : "Slå av lyd"}
-            >
-              <FontAwesomeIcon
-                icon={(status.mute ? faVolumeXmark : faVolumeHigh) as IconProp}
-              />
-            </button>
-          </div>
+          {/* How the strip fills, for work and for breaks. Only while one
+              runs, since that is when the strip shows it. */}
+          {status.isRunning && (
+            <div className={styles["foot"]}>
+              <span className={styles["mode-rows"]}>
+                {MODE_PARTS.map(({ part, label }) => {
+                  const current = pomo.config[`${part}Mode`];
+                  const isNow = (status.phase === "work") === (part === "work");
+                  return (
+                    <span
+                      key={part}
+                      className={`${styles["modes"]} ${isNow ? styles["modes-now"] : ""}`}
+                    >
+                      <span className={styles["modes-label"]}>{label}</span>
+                      {DISPLAY_MODES.map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          className={
+                            current === mode ? styles["mode-active"] : ""
+                          }
+                          onClick={() => pomo.setDisplayMode(part, mode)}
+                          title={`${MODE_TEXT[mode].hint}${isNow ? " (B)" : ""}`}
+                        >
+                          <ModeIcon mode={mode} />
+                          {MODE_TEXT[mode].label}
+                        </button>
+                      ))}
+                    </span>
+                  );
+                })}
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>

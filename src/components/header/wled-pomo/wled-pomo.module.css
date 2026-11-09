@@ -55,14 +55,8 @@
   cursor: default;
 }
 
-/* A faint hint on hover is the only clue the clock does something */
-.clock:not(:disabled):hover .clock-strip {
-  opacity: 0.45;
-  transform: scaleX(1);
-}
-
-.clock-strip-live,
-.clock:not(:disabled):hover .clock-strip-live {
+/* The fill level only shows while a pomodoro runs */
+.clock-strip-live {
   opacity: 1;
   transform: scaleX(1);
 }
@@ -442,24 +436,6 @@
   color: var(--secondary-light);
 }
 
-.icon {
-  display: inline-grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 4px;
-  color: var(--pomo-muted);
-  transition:
-    background-color 0.2s var(--pomo-ease),
-    color 0.2s var(--pomo-ease);
-}
-
-.icon:hover {
-  background: var(--pomo-hover);
-  color: var(--font-primary-color);
-}
-
-.icon:active,
 button.option:active,
 .kbd:active {
   transform: scale(0.97);
@@ -472,10 +448,29 @@ button.option:active,
   padding: 4px 10px 4px 18px;
 }
 
+.mode-rows {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
 .modes {
   display: flex;
-  gap: 16px;
-  padding: 8px 0;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.modes-label {
+  width: 34px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--pomo-faint);
+  transition: color 0.2s var(--pomo-ease);
+}
+
+.modes-now .modes-label {
+  color: var(--tone, var(--font-primary-color));
 }
 
 .modes button {

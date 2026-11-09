@@ -139,8 +139,46 @@
 .swatch[data-preset="evening"] {
   --swatch: linear-gradient(90deg, #ff6a1e, #ffa040, #ff6a1e);
 }
+/* A string of lights: five bulbs on a wire, lit in turn */
 .swatch[data-preset="christmas"] {
-  --swatch: linear-gradient(90deg, #e0322a, #ffb070, #2fa04a, #ffb070, #e0322a);
+  --red: #ff3b30;
+  --gold: #ffc45e;
+  --green: #2fbf5a;
+  --off: rgba(255, 255, 255, 0.12);
+  --wire: linear-gradient(
+    transparent 2.5px,
+    rgba(140, 160, 130, 0.55) 2.5px 3.5px,
+    transparent 3.5px
+  );
+  --swatch:
+    radial-gradient(
+      circle at 3px 50%,
+      var(--b1, var(--red)) 0 1.6px,
+      transparent 2.6px
+    ),
+    radial-gradient(
+      circle at 8.5px 50%,
+      var(--b2, var(--gold)) 0 1.6px,
+      transparent 2.6px
+    ),
+    radial-gradient(
+      circle at 14px 50%,
+      var(--b3, var(--green)) 0 1.6px,
+      transparent 2.6px
+    ),
+    radial-gradient(
+      circle at 19.5px 50%,
+      var(--b4, var(--red)) 0 1.6px,
+      transparent 2.6px
+    ),
+    radial-gradient(
+      circle at 25px 50%,
+      var(--b5, var(--gold)) 0 1.6px,
+      transparent 2.6px
+    ),
+    var(--wire);
+  background-size: 100% 100%;
+  border-radius: 0;
 }
 
 .swatch[data-preset="music"] {
@@ -182,7 +220,33 @@
 }
 .presets button:hover [data-preset="christmas"],
 .presets .preset-active [data-preset="christmas"] {
-  animation: drift 4s ease-in-out infinite alternate;
+  animation: twinkle-lights 2.4s infinite;
+}
+
+/* Every bulb is set in every step, so some are always lit */
+@keyframes twinkle-lights {
+  0%,
+  100% {
+    --b1: var(--red);
+    --b2: var(--off);
+    --b3: var(--green);
+    --b4: var(--off);
+    --b5: var(--gold);
+  }
+  33% {
+    --b1: var(--off);
+    --b2: var(--gold);
+    --b3: var(--green);
+    --b4: var(--red);
+    --b5: var(--off);
+  }
+  66% {
+    --b1: var(--red);
+    --b2: var(--gold);
+    --b3: var(--off);
+    --b4: var(--red);
+    --b5: var(--gold);
+  }
 }
 
 @keyframes drift {

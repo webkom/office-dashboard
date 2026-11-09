@@ -18,7 +18,8 @@ const config = {
   breakMs: 50_000,
   longBreakMs: 80_000,
   longBreakEvery: 2,
-  displayMode: "bar" as const,
+  workMode: "bar" as const,
+  breakMode: "solid" as const,
 };
 const named = (n: string) => ({ seg: [{ id: 0, n }] });
 
@@ -51,7 +52,7 @@ describe("the strip", () => {
     expect(at(250_000)).toMatchObject({ phase: "long-break", cycle: 2 });
   });
 
-  it("fills the bar during work and drains it during the break", () => {
+  it("fills the bar during work, and follows the break's own mode", () => {
     const s = startSession(config, T0);
     const blueOf = (ms: number) => {
       const i = frameFor(s, T0 + ms, 900).seg[0].i;
@@ -62,6 +63,7 @@ describe("the strip", () => {
     };
     expect(blueOf(0)).toBe(0);
     expect(blueOf(50_000)).toBe(450);
-    expect(blueOf(125_000)).toBe(450);
+    // "slutt" during the break: full until the break is over
+    expect(blueOf(125_000)).toBe(900);
   });
 });

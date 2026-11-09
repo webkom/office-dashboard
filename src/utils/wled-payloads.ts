@@ -2,6 +2,7 @@ import {
   DisplayMode,
   Session,
   durationOf,
+  modeOf,
   remainingOf,
   sessionAt,
 } from "app/utils/pomo-session";
@@ -181,7 +182,7 @@ export function frameFor(stored: Session, now: number, ledCount: number) {
   const left = remainingOf(session, now);
   const progress = Math.min(1, Math.max(0, (duration - left) / duration));
   const isWork = session.phase === "work";
-  const shown = shownProgress(progress, session.config.displayMode);
+  const shown = shownProgress(progress, modeOf(session.config, session.phase));
   const blue = Math.round((isWork ? shown : 1 - shown) * ledCount);
   const raw = Math.round((isWork ? progress : 1 - progress) * ledCount);
   return progressPayload(ledCount, blue, session.endsAt === null ? raw : null);
