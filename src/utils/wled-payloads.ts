@@ -2,6 +2,7 @@ import {
   DisplayMode,
   Session,
   durationOf,
+  modeOf,
   remainingOf,
   sessionAt,
 } from "app/utils/pomo-session";
@@ -22,8 +23,9 @@ const ranges = (parts: [number, number, Rgb][]) => {
   for (const [from, to, col] of parts) if (to > from) i.push(from, to, col);
   return i;
 };
+// Frames don't switch the strip on, so lights switched off stay off, even
+// with a pomodoro painting
 const frame = (i: (number | Rgb)[]) => ({
-  on: true,
   transition: 0,
   seg: [{ id: 0, i }],
 });
@@ -33,9 +35,11 @@ export function claimPayload(
   ledCount: number,
   tag: string,
 ) {
+  // Deleted, not turned off: an off segment still paints its LEDs black over
+  // ours. The office look keeps them, and brings them back afterwards.
   const extraSegs = (state?.seg ?? [])
     .filter((s) => s.id > 0)
-    .map((s) => ({ id: s.id, on: false }));
+    .map((s) => ({ id: s.id, stop: 0 }));
   return {
     on: true,
     bri: 255,
@@ -120,16 +124,20 @@ export function bandPayload(
   );
 }
 
+/** Turning on, lit from the centre outwards */
 export function growPayload(ledCount: number, lit: number, col: Rgb) {
   const a = Math.floor((ledCount - lit) / 2);
   const b = a + lit;
-  return frame(
-    ranges([
-      [0, a, BLACK],
-      [a, b, col],
-      [b, ledCount, BLACK],
-    ]),
-  );
+  return {
+    on: true,
+    ...frame(
+      ranges([
+        [0, a, BLACK],
+        [a, b, col],
+        [b, ledCount, BLACK],
+      ]),
+    ),
+  };
 }
 
 export const solidPayload = (ledCount: number, col: Rgb) =>
@@ -179,7 +187,7 @@ export function frameFor(stored: Session, now: number, ledCount: number) {
   const left = remainingOf(session, now);
   const progress = Math.min(1, Math.max(0, (duration - left) / duration));
   const isWork = session.phase === "work";
-  const shown = shownProgress(progress, session.config.displayMode);
+  const shown = shownProgress(progress, modeOf(session.config, session.phase));
   const blue = Math.round((isWork ? shown : 1 - shown) * ledCount);
   const raw = Math.round((isWork ? progress : 1 - progress) * ledCount);
   return progressPayload(ledCount, blue, session.endsAt === null ? raw : null);

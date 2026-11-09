@@ -11,7 +11,9 @@ export type SessionConfig = {
   breakMs: number;
   longBreakMs: number | null;
   longBreakEvery: number;
-  displayMode: DisplayMode;
+  /** How the strip fills during work, and during breaks */
+  workMode: DisplayMode;
+  breakMode: DisplayMode;
 };
 
 export type Session = {
@@ -36,10 +38,18 @@ const PHASE_CODE: Record<Phase, string> = {
   break: "b",
   "long-break": "l",
 };
-const MODE_CODE: Record<DisplayMode, string> = {
-  bar: "b",
-  quarters: "q",
-  solid: "s",
+// Work and break mode share one letter. The same mode for both keeps the
+// letter older versions use, so they still read those sessions.
+const MODES_CODE: Record<`${DisplayMode}/${DisplayMode}`, string> = {
+  "bar/bar": "b",
+  "quarters/quarters": "q",
+  "solid/solid": "s",
+  "bar/quarters": "c",
+  "bar/solid": "d",
+  "quarters/bar": "r",
+  "quarters/solid": "t",
+  "solid/bar": "u",
+  "solid/quarters": "v",
 };
 
 // Rounded down, so a fresh phase never shows more than its length
@@ -49,7 +59,7 @@ const keyOf = <T extends string>(map: Record<T, string>, code: string) =>
   (Object.keys(map) as T[]).find((k) => map[k] === code);
 
 /**
- * Pomodoro:1:<start>:<phase><round>:<end | p<left>>:<mode><every>:<work>:<break>:<long>
+ * Pomodoro:1:<start>:<phase><round>:<end | p<left>>:<modes><every>:<work>:<break>:<long>
  * Times are whole seconds in base 36, which keeps it under WLED's 64 chars.
  */
 export function encodeSession(s: Session): string {
@@ -60,7 +70,7 @@ export function encodeSession(s: Session): string {
     sec36(s.startedAt),
     PHASE_CODE[s.phase] + s.cycle.toString(36),
     s.endsAt === null ? `p${sec36(s.pausedLeftMs ?? 0)}` : sec36(s.endsAt),
-    MODE_CODE[c.displayMode] + c.longBreakEvery.toString(36),
+    MODES_CODE[`${c.workMode}/${c.breakMode}`] + c.longBreakEvery.toString(36),
     sec36(c.workMs),
     sec36(c.breakMs),
     c.longBreakMs ? sec36(c.longBreakMs) : "",
@@ -73,8 +83,10 @@ export function decodeSession(name: string | undefined): Session | null {
     return null;
   const [, , start, phaseCycle, end, modeEvery, work, brk, long] = parts;
   const phase = keyOf(PHASE_CODE, phaseCycle[0]);
-  const displayMode = keyOf(MODE_CODE, modeEvery[0]);
-  if (!phase || !displayMode) return null;
+  const modes = keyOf(MODES_CODE, modeEvery[0])?.split("/") as
+    | [DisplayMode, DisplayMode]
+    | undefined;
+  if (!phase || !modes) return null;
   const paused = end.startsWith("p");
   const s: Session = {
     config: {
@@ -82,7 +94,8 @@ export function decodeSession(name: string | undefined): Session | null {
       breakMs: fromSec36(brk),
       longBreakMs: long ? fromSec36(long) : null,
       longBreakEvery: parseInt(modeEvery.slice(1), 36),
-      displayMode,
+      workMode: modes[0],
+      breakMode: modes[1],
     },
     startedAt: fromSec36(start),
     phase,
@@ -112,6 +125,9 @@ export const durationOf = (c: SessionConfig, phase: Phase) =>
     : phase === "long-break"
       ? (c.longBreakMs ?? c.breakMs)
       : c.breakMs;
+
+export const modeOf = (c: SessionConfig, phase: Phase) =>
+  phase === "work" ? c.workMode : c.breakMode;
 
 export function nextPhase(s: Session, at: number): Session {
   const c = s.config;

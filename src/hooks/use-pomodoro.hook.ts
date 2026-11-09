@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Strip } from "app/hooks/use-strip.hook";
-import { announce, playCue } from "app/utils/pomo-sounds";
+import { notify } from "app/utils/pomo-notify";
 import {
   DISPLAY_MODES,
   DisplayMode,
@@ -11,6 +11,7 @@ import {
   durationOf,
   encodeSession,
   isExpired,
+  modeOf,
   nextPhase,
   remainingOf,
   restartPhase as restartAt,
@@ -67,7 +68,8 @@ const DEFAULT_CONFIG: PomoConfig = {
   breakMs: 10 * MIN,
   longBreakMs: null,
   longBreakEvery: 4,
-  displayMode: "bar",
+  workMode: "bar",
+  breakMode: "bar",
 };
 
 const POLL_IDLE_MS = 10_000;
@@ -92,22 +94,12 @@ const asStored = (s: Session) => decodeSession(encodeSession(s)) ?? s;
 
 const isVisible = () => document.visibilityState === "visible";
 
-const MUTE_KEY = "wled-pomo-mute";
-function loadMute() {
-  try {
-    return localStorage.getItem(MUTE_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
 /** One pomodoro for the whole office, kept on the strip. Anyone can change it;
  * only the painter draws it, so browsers never paint over each other. */
 export function usePomodoro(strip: Strip) {
   const { frames, lastWriteRef, read, write, setPollDelay } = strip;
   const subscribe = strip.onRead;
   const [config, setConfig] = useState(DEFAULT_CONFIG);
-  const [mute, setMute] = useState(loadMute);
   // Tagged by an older version, or holding a session we can't read
   const [orphaned, setOrphaned] = useState(false);
   const [anchor, setAnchorState] = useState<Session | null>(null);
@@ -150,11 +142,14 @@ export function usePomodoro(strip: Strip) {
     setAnchor(null);
     setOrphaned(false);
     await frames.settle();
+    const before = await read();
     await write(loadOfficeLookPayload);
     // WLED applies a preset a moment later. Without one saved, bright white.
     await steadySleep(400);
     const after = await read();
     if (after && isPomoState(after.state)) await write(fallbackLookPayload);
+    // The office look turns the strip on; switched off, it stays off
+    if (before?.state?.on === false) await write({ on: false });
   }, [frames, read, setAnchor, write]);
 
   const onRead = useCallback(
@@ -227,7 +222,6 @@ export function usePomodoro(strip: Strip) {
       const cfg = { ...config, ...overrides };
       setConfig(cfg);
       if (
-        !mute &&
         typeof Notification !== "undefined" &&
         Notification.permission === "default"
       ) {
@@ -253,9 +247,8 @@ export function usePomodoro(strip: Strip) {
       setAnchor(next);
       setOrphaned(false);
       paint();
-      if (!mute) playCue("start");
     },
-    [config, lastWriteRef, mute, paint, read, setAnchor, strip.ledCount, write],
+    [config, lastWriteRef, paint, read, setAnchor, strip.ledCount, write],
   );
 
   const session = anchor ? sessionAt(anchor, now).session : null;
@@ -281,28 +274,19 @@ export function usePomodoro(strip: Strip) {
     if (expired) void endSession();
   }, [expired, endSession]);
 
-  const announcePhase = useCallback(
-    (s: Session, finishedCycle: number) => {
-      if (mute) return;
-      const length = formatPomoTime(durationOf(s.config, s.phase));
-      if (s.phase === "work") {
-        announce(
-          "work",
-          "Tilbake til jobb",
-          `Runde ${s.cycle}: ${length} jobb.`,
-        );
-      } else {
-        announce(
-          "break",
-          s.phase === "long-break" ? "Lang pause" : "Pause",
-          `Runde ${finishedCycle} ferdig. ${length} pause.`,
-        );
-      }
-    },
-    [mute],
-  );
+  const announcePhase = useCallback((s: Session, finishedCycle: number) => {
+    const length = formatPomoTime(durationOf(s.config, s.phase));
+    if (s.phase === "work") {
+      notify("Tilbake til jobb", `Runde ${s.cycle}: ${length} jobb.`);
+    } else {
+      notify(
+        s.phase === "long-break" ? "Lang pause" : "Pause",
+        `Runde ${finishedCycle} ferdig. ${length} pause.`,
+      );
+    }
+  }, []);
 
-  // On a phase change every browser plays the sound; the painter flashes
+  // On a phase change every browser notifies; the painter flashes
   const lastPhaseRef = useRef<{ id: string; cycle: number } | null>(null);
   useEffect(() => {
     const last = lastPhaseRef.current;
@@ -332,7 +316,9 @@ export function usePomodoro(strip: Strip) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseId]);
 
-  const displayMode = session?.config.displayMode ?? config.displayMode;
+  const displayMode = session
+    ? modeOf(session.config, session.phase)
+    : config.workMode;
   const elapsed = Math.min(durationMs, Math.max(0, durationMs - remainingMs));
   const progress = session ? elapsed / durationMs : 0;
   const isWork = session?.phase === "work";
@@ -358,27 +344,19 @@ export function usePomodoro(strip: Strip) {
   );
 
   const setDisplayMode = useCallback(
-    (mode: DisplayMode) => updateConfig({ displayMode: mode }),
+    (part: "work" | "break", mode: DisplayMode) =>
+      updateConfig(part === "work" ? { workMode: mode } : { breakMode: mode }),
     [updateConfig],
   );
 
   const activeConfig = session?.config ?? config;
 
+  // The mode of the phase that is running
   const cycleMode = useCallback(() => {
-    const idx = DISPLAY_MODES.indexOf(activeConfig.displayMode);
-    setDisplayMode(DISPLAY_MODES[(idx + 1) % DISPLAY_MODES.length]);
-  }, [activeConfig.displayMode, setDisplayMode]);
-
-  // Sound is per browser, not part of the shared session
-  const toggleMute = useCallback(() => {
-    const next = !mute;
-    setMute(next);
-    try {
-      localStorage.setItem(MUTE_KEY, next ? "1" : "0");
-    } catch {
-      // Ignore
-    }
-  }, [mute]);
+    const part = !session || session.phase === "work" ? "work" : "break";
+    const idx = DISPLAY_MODES.indexOf(displayMode);
+    setDisplayMode(part, DISPLAY_MODES[(idx + 1) % DISPLAY_MODES.length]);
+  }, [displayMode, session, setDisplayMode]);
 
   const isRunningNow = useCallback(() => anchorRef.current !== null, []);
 
@@ -408,7 +386,6 @@ export function usePomodoro(strip: Strip) {
       blueRatio,
       rawBlueRatio,
       displayMode,
-      mute,
     },
     config: activeConfig,
     updateConfig,
@@ -422,7 +399,6 @@ export function usePomodoro(strip: Strip) {
     scrub,
     setDisplayMode,
     cycleMode,
-    toggleMute,
     isRunningNow,
   };
 }
