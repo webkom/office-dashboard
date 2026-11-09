@@ -6,6 +6,8 @@ export type LightPreset = {
   bri: number;
   fx: number;
   col: Rgb;
+  /** Second colour, which some effects use as the background */
+  bg?: Rgb;
   pal?: number;
   sx?: number;
   ix?: number;
@@ -44,15 +46,18 @@ export const LIGHT_PRESETS: LightPreset[] = [
     ix: 224,
     shown: [255, 120, 40],
   },
+  // Red and green twinkles (Twinklefox on the Jul palette) over a warm glow
   {
-    id: "party",
-    name: "Fest",
-    bri: 180,
-    fx: 9,
+    id: "christmas",
+    name: "Jul",
+    bri: 200,
+    fx: 80,
     col: [255, 0, 0],
-    sx: 110,
-    ix: 128,
-    shown: [230, 90, 255],
+    bg: [255, 150, 70],
+    pal: 31,
+    sx: 90,
+    ix: 170,
+    shown: [230, 60, 50],
   },
   // Needs sound: it is dark in a quiet room
   {
@@ -80,7 +85,7 @@ export const presetPayload = (p: LightPreset, transition = 7) => ({
       id: 0,
       frz: false,
       fx: p.fx,
-      col: [p.col],
+      col: p.bg ? [p.col, p.bg] : [p.col],
       pal: p.pal ?? 0,
       sx: p.sx ?? 128,
       ix: p.ix ?? 128,

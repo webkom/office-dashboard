@@ -33,9 +33,11 @@ export function claimPayload(
   ledCount: number,
   tag: string,
 ) {
+  // Deleted, not turned off: an off segment still paints its LEDs black over
+  // ours. The office look keeps them, and brings them back afterwards.
   const extraSegs = (state?.seg ?? [])
     .filter((s) => s.id > 0)
-    .map((s) => ({ id: s.id, on: false }));
+    .map((s) => ({ id: s.id, stop: 0 }));
   return {
     on: true,
     bri: 255,
