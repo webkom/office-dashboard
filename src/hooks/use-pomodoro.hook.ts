@@ -37,17 +37,19 @@ import {
   sessionOnStrip,
 } from "app/utils/wled-names";
 import {
-  BLUE,
-  RED,
+  OfficeLook,
   WHITE,
   claimPayload,
   fallbackLookPayload,
   frameFor,
   loadOfficeLookPayload,
+  officeLookOf,
   saveOfficeLookPayload,
   shownProgress,
   solidPayload,
   tagPayload,
+  phaseColours,
+  themeFrameFor,
   unfreezePayload,
 } from "app/utils/wled-payloads";
 
@@ -97,7 +99,8 @@ const isVisible = () => document.visibilityState === "visible";
 /** One pomodoro for the whole office, kept on the strip. Anyone can change it;
  * only the painter draws it, so browsers never paint over each other. */
 export function usePomodoro(strip: Strip) {
-  const { frames, lastWriteRef, read, write, setPollDelay } = strip;
+  const { frames, lastWriteRef, read, readPresets, write, setPollDelay } =
+    strip;
   const subscribe = strip.onRead;
   const [config, setConfig] = useState(DEFAULT_CONFIG);
   // Tagged by an older version, or holding a session we can't read
@@ -112,7 +115,12 @@ export function usePomodoro(strip: Strip) {
   const ledCountRef = useRef(strip.ledCount);
   ledCountRef.current = strip.ledCount;
 
+  // The look saved when the session started, for phases shown in it
+  const officeLookRef = useRef<OfficeLook | null>(null);
+  const lookPendingRef = useRef(false);
+
   const setAnchor = useCallback((next: Session | null) => {
+    if (!next) officeLookRef.current = null;
     anchorRef.current = next;
     setAnchorState(next);
     setNow(Date.now());
@@ -132,9 +140,28 @@ export function usePomodoro(strip: Strip) {
   const paint = useCallback(() => {
     const a = anchorRef.current;
     if (!a || !paintingRef.current || flashingRef.current) return;
-    if (isExpired(a, Date.now())) return;
-    frames.push(frameFor(a, Date.now(), ledCountRef.current));
-  }, [frames]);
+    const t = Date.now();
+    if (isExpired(a, t)) return;
+    const { session } = sessionAt(a, t);
+    if (modeOf(session.config, session.phase) !== "theme") {
+      frames.push(frameFor(a, t, ledCountRef.current));
+      return;
+    }
+    if (officeLookRef.current) {
+      frames.push(
+        themeFrameFor(a, t, ledCountRef.current, officeLookRef.current),
+      );
+      return;
+    }
+    // Read once; the next paint, within a second, shows it
+    if (lookPendingRef.current) return;
+    lookPendingRef.current = true;
+    void readPresets().then((presets) => {
+      lookPendingRef.current = false;
+      if (presets && anchorRef.current)
+        officeLookRef.current = officeLookOf(presets);
+    });
+  }, [frames, readPresets]);
 
   const endSession = useCallback(async () => {
     flashingRef.current = false;
@@ -299,7 +326,8 @@ export function usePomodoro(strip: Strip) {
     announcePhase(session, last.cycle);
     if (age > FLASH_WINDOW_MS || !paintingRef.current) return;
 
-    const colour = session.phase === "work" ? RED : BLUE;
+    // The colour the new phase starts in, before green eats it
+    const colour = phaseColours(session.phase)[1];
     const colours = [WHITE, colour, WHITE, colour, WHITE, colour];
     flashingRef.current = true;
     void (async () => {
@@ -321,10 +349,7 @@ export function usePomodoro(strip: Strip) {
     : config.workMode;
   const elapsed = Math.min(durationMs, Math.max(0, durationMs - remainingMs));
   const progress = session ? elapsed / durationMs : 0;
-  const isWork = session?.phase === "work";
-  const shown = shownProgress(progress, displayMode);
-  const blueRatio = session ? (isWork ? shown : 1 - shown) : 0;
-  const rawBlueRatio = session ? (isWork ? progress : 1 - progress) : 0;
+  const fillRatio = session ? shownProgress(progress, displayMode) : 0;
   const upcoming = session ? nextPhase(session, 0) : null;
 
   const togglePause = useCallback(() => change(togglePauseAt), [change]);
@@ -382,9 +407,11 @@ export function usePomodoro(strip: Strip) {
       /** null when idle or paused */
       phaseEndsAt: session?.endsAt ?? null,
       ledCount: strip.ledCount,
-      blueLeds: Math.round(blueRatio * strip.ledCount),
-      blueRatio,
-      rawBlueRatio,
+      filledLeds: Math.round(fillRatio * strip.ledCount),
+      /** How far the phase's colour has filled the strip, as shown */
+      fillRatio,
+      /** The same, without the display mode's steps */
+      rawFillRatio: progress,
       displayMode,
     },
     config: activeConfig,

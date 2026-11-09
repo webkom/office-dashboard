@@ -1,5 +1,7 @@
 .wrapper {
   --pomo-blue: #4f7fe0;
+  --pomo-blue-dim: color-mix(in srgb, var(--pomo-blue) 45%, transparent);
+  --pomo-green: #3fbf7a;
   --pomo-red-dim: color-mix(in srgb, var(--secondary-dark) 70%, transparent);
   --pomo-amber: #e2a63b;
   --pomo-muted: rgba(255, 255, 255, 0.55);
@@ -15,7 +17,17 @@
   --tone: var(--secondary);
 }
 .wrapper[data-tone="break"] {
-  --tone: var(--pomo-blue);
+  --tone: var(--pomo-green);
+}
+
+/* As on the real strip: green eats red in work, and blue in a break */
+[data-colours="work"] {
+  --fill: var(--pomo-green);
+  --rest: var(--pomo-red-dim);
+}
+[data-colours="break"] {
+  --fill: var(--pomo-green);
+  --rest: var(--pomo-blue-dim);
 }
 .wrapper[data-tone="paused"] {
   --tone: var(--pomo-amber);
@@ -77,12 +89,12 @@
 
 .cell {
   border-radius: 1px;
-  background: var(--cell-off, var(--pomo-red-dim));
+  background: var(--cell-off, var(--rest, var(--pomo-red-dim)));
   transition: background-color var(--cell-fade, 0.5s) var(--pomo-ease);
 }
 
 .cell-on {
-  background: var(--cell-on, var(--pomo-blue));
+  background: var(--cell-on, var(--fill, var(--pomo-blue)));
 }
 
 .wrapper[data-tone="idle"] {
@@ -457,7 +469,7 @@ button.option:active,
 .modes {
   display: flex;
   align-items: flex-end;
-  gap: 12px;
+  gap: 10px;
   padding: 6px 0;
 }
 
@@ -500,11 +512,11 @@ button.option:active,
 }
 
 .mini-base {
-  fill: var(--pomo-red-dim);
+  fill: var(--rest, var(--pomo-red-dim));
 }
 
 .mini-fill {
-  fill: var(--pomo-blue);
+  fill: var(--fill, var(--pomo-blue));
   clip-path: inset(0 100% 0 0);
 }
 
@@ -525,6 +537,26 @@ button.option:active,
 }
 .modes button:hover [data-mode="solid"] .mini-fill {
   animation-timing-function: steps(1, jump-end);
+}
+
+/* Filling like "fyll", with every other light lit in turn */
+.modes button:hover [data-mode="theme"] .mini-fill {
+  animation-timing-function: linear;
+}
+.modes button:hover [data-mode="theme"] rect {
+  animation: mini-twinkle 0.8s steps(1) infinite;
+}
+.modes button:hover [data-mode="theme"] rect:nth-child(even) {
+  animation-delay: -0.4s;
+}
+
+@keyframes mini-twinkle {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 @keyframes mini-fill {

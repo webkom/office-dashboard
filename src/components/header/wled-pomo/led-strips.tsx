@@ -36,6 +36,7 @@ const MODE_CELLS: Record<DisplayMode, { count: number; width: number }> = {
   bar: { count: 14, width: 3 },
   quarters: { count: 4, width: 12 },
   solid: { count: 1, width: 56 },
+  theme: { count: 7, width: 4 },
 };
 
 export const ModeIcon: React.FC<{ mode: DisplayMode }> = ({ mode }) => {
@@ -48,7 +49,7 @@ export const ModeIcon: React.FC<{ mode: DisplayMode }> = ({ mode }) => {
       className={styles["mini"]}
       data-mode={mode}
       viewBox="0 0 56 6"
-      width={56}
+      width={44}
       height={6}
       shapeRendering="crispEdges"
       aria-hidden

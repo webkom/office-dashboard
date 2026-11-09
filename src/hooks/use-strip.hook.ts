@@ -87,6 +87,11 @@ export function useStrip() {
     return found?.data ?? null;
   }, [client, isMock]);
 
+  const readPresets = useCallback(
+    () => client.readPresets().catch(() => null),
+    [client],
+  );
+
   const write = useCallback(
     async (payload: WledState) => {
       lastWriteRef.current = Date.now();
@@ -168,6 +173,7 @@ export function useStrip() {
     frames: client.frames,
     lastWriteRef,
     read,
+    readPresets,
     write,
     showLocally,
     onRead,

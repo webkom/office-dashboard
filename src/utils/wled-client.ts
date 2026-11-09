@@ -131,6 +131,16 @@ export class WledClient {
     return (await res.json()) as WledJson;
   }
 
+  /** The saved presets, by id */
+  async readPresets(): Promise<unknown> {
+    const res = await fetch(`${this.host}/presets.json`, {
+      signal: AbortSignal.timeout(2500),
+      targetAddressSpace: "local",
+    } as RequestInit);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
   protected async write(payload: object) {
     try {
       await fetch(`${this.host}/json/state`, {
@@ -196,6 +206,26 @@ export class MockWledClient extends WledClient {
       },
       info: { leds: { count: 900 } },
     });
+  }
+
+  // The look saved with the office preset, as the real strip would keep it
+  override readPresets(): Promise<unknown> {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(MockWledClient.PRESET_KEY) ?? "null",
+      ) as (string | null)[] | null;
+      const look = JSON.parse(saved?.[3] ?? "{}") as {
+        fx?: number;
+        col?: number[];
+      };
+      return Promise.resolve({
+        250: {
+          seg: [{ id: 0, fx: look.fx ?? 0, col: [look.col ?? OFFICE_WHITE] }],
+        },
+      });
+    } catch {
+      return Promise.resolve({});
+    }
   }
 
   protected override write(payload: {
