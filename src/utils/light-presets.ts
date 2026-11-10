@@ -56,7 +56,7 @@ export const LIGHT_PRESETS: LightPreset[] = [
     col: [255, 0, 0],
     more: [
       [255, 150, 70],
-      [0, 140, 95],
+      [0, 220, 35],
     ],
     pal: 5,
     sx: 90,

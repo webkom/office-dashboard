@@ -17,7 +17,6 @@ import {
   Rgb,
   growPayload,
   tagPayload,
-  unfreezePayload,
 } from "app/utils/wled-payloads";
 
 const GROW_MS = 700;
@@ -56,7 +55,13 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
       // Stop a turn-on animation, or its frames turn the strip back on
       growRef.current += 1;
       await frames.settle();
-      await write({ on: false, seg: [{ id: 0, frz: false }] });
+      await write({
+        on: false,
+        seg: [
+          { id: 0, start: 0, stop: ledCountRef.current, frz: false },
+          { id: 1, stop: 0 },
+        ],
+      });
     },
     [frames, write],
   );
@@ -82,7 +87,13 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
       () => growRef.current !== id || isRunningNow(),
     );
     await frames.idle();
-    if (done) await write(unfreezePayload);
+    if (done)
+      await write({
+        seg: [
+          { id: 0, start: 0, stop: ledCountRef.current, frz: false },
+          { id: 1, stop: 0 },
+        ],
+      });
   }, [frames, isRunningNow, lastWriteRef, showLocally, write]);
 
   // A session ends first, or its frames would turn the strip back on
@@ -115,7 +126,16 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
   );
 
   const applyPreset = useCallback(
-    (p: LightPreset) => void write(presetPayload(p)),
+    (p: LightPreset) => {
+      const payload = presetPayload(p);
+      void write({
+        ...payload,
+        seg: [
+          { ...payload.seg[0], start: 0, stop: ledCountRef.current },
+          { id: 1, stop: 0 },
+        ],
+      });
+    },
     [write],
   );
 

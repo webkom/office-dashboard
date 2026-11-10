@@ -43,6 +43,7 @@ import {
   fallbackLookPayload,
   frameFor,
   loadOfficeLookPayload,
+  noEatenSeg,
   officeLookOf,
   saveOfficeLookPayload,
   shownProgress,
@@ -170,11 +171,26 @@ export function usePomodoro(strip: Strip) {
     setOrphaned(false);
     await frames.settle();
     const before = await read();
-    await write(loadOfficeLookPayload);
+    await write({
+      ...loadOfficeLookPayload,
+      seg: [
+        { id: 0, start: 0, stop: ledCountRef.current, frz: false },
+        noEatenSeg,
+      ],
+    });
     // WLED applies a preset a moment later. Without one saved, bright white.
     await steadySleep(400);
     const after = await read();
-    if (after && isPomoState(after.state)) await write(fallbackLookPayload);
+    if (after && isPomoState(after.state)) {
+      await write(fallbackLookPayload);
+    } else {
+      await write({
+        seg: [
+          { id: 0, start: 0, stop: ledCountRef.current, frz: false },
+          noEatenSeg,
+        ],
+      });
+    }
     // The office look turns the strip on; switched off, it stays off
     if (before?.state?.on === false) await write({ on: false });
   }, [frames, read, setAnchor, write]);

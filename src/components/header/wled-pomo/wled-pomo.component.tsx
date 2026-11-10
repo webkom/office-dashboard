@@ -18,8 +18,8 @@ const MODE_TEXT: Record<DisplayMode, { label: string; hint: string }> = {
   quarters: { label: "steg", hint: "Stripen fylles i fire steg" },
   solid: { label: "slutt", hint: "Stripen skifter først når tiden er ute" },
   theme: {
-    label: "tema",
-    hint: "Som fyll, men blinkende, slik lyset før økten beveget seg",
+    label: "glitre",
+    hint: "Som fyll, men glitrende, slik lyset før økten beveget seg",
   },
 };
 

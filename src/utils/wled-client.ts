@@ -2,6 +2,8 @@ import { OFFICE_WHITE } from "app/utils/wled-payloads";
 
 export type WledSegment = {
   id: number;
+  start?: number;
+  stop?: number;
   n?: string;
   frz?: boolean;
   fx?: number;
