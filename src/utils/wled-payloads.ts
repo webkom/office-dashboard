@@ -73,6 +73,10 @@ export const tagPayload = (tag: string) => ({ seg: [{ id: 0, n: tag }] });
 
 export const unfreezePayload = { seg: [{ id: 0, frz: false }] };
 
+// A twinkling pomodoro draws its eaten part in a second segment
+const EATEN_SEG = 1;
+export const noEatenSeg = { id: EATEN_SEG, stop: 0 };
+
 // The office look waits on the strip as a preset during a pomodoro
 const OFFICE_PRESET = 250;
 export const saveOfficeLookPayload = {
@@ -81,7 +85,10 @@ export const saveOfficeLookPayload = {
   ib: true,
   sb: true,
 };
-export const loadOfficeLookPayload = { ps: OFFICE_PRESET };
+export const loadOfficeLookPayload = {
+  ps: OFFICE_PRESET,
+  seg: [{ id: 0, start: 0, frz: false }, noEatenSeg],
+};
 
 /** The office look's effect, as saved in its preset */
 export type OfficeLook = {
@@ -111,7 +118,7 @@ export const fallbackLookPayload: WledState = {
   on: true,
   bri: 230,
   seg: [
-    { id: 0, on: true, frz: false, fx: 0, col: [OFFICE_WHITE], n: "" },
+    { id: 0, start: 0, on: true, frz: false, fx: 0, col: [OFFICE_WHITE], n: "" },
     { id: 1, stop: 0 },
   ],
 };
@@ -173,8 +180,13 @@ export function growPayload(ledCount: number, lit: number, col: Rgb) {
   };
 }
 
-export const solidPayload = (ledCount: number, col: Rgb) =>
-  frame([0, ledCount, col]);
+export const solidPayload = (ledCount: number, col: Rgb) => ({
+  transition: 0,
+  seg: [
+    { id: 0, start: 0, stop: ledCount, i: [0, ledCount, col] },
+    noEatenSeg,
+  ],
+});
 
 /** `fill` up to `filled`, `rest` after, and a yellow marker at `markerAt` */
 export function progressPayload(
@@ -227,10 +239,6 @@ const progressAt = (stored: Session, now: number) => {
   return { session, progress };
 };
 
-// The twinkling part green has eaten, over segment 0
-const EATEN_SEG = 1;
-const noEatenSeg = { id: EATEN_SEG, stop: 0 };
-
 /** Every phase is eaten from the left by green */
 export function frameFor(stored: Session, now: number, ledCount: number) {
   const { session, progress } = progressAt(stored, now);
@@ -248,7 +256,10 @@ export function frameFor(stored: Session, now: number, ledCount: number) {
   // Solid again, and one segment, after a twinkling phase
   return {
     ...payload,
-    seg: [{ ...payload.seg[0], fx: 0 }, noEatenSeg] as const,
+    seg: [
+      { ...payload.seg[0], start: 0, stop: ledCount, fx: 0 },
+      noEatenSeg,
+    ] as const,
   };
 }
 
@@ -280,13 +291,24 @@ export function themeFrameFor(
     col: [c, c, BLACK],
   });
   const [fill, rest] = phaseColours(session.phase);
-  const all = { id: 0, start: 0, stop: ledCount, ...twinkle(rest) };
-  const eatenPart =
-    eaten > 0
-      ? { id: EATEN_SEG, start: 0, stop: eaten, ...twinkle(fill) }
-      : noEatenSeg;
+  if (eaten <= 0) {
+    const all = { id: 0, start: 0, stop: ledCount, ...twinkle(rest) };
+    return {
+      transition: 0,
+      seg: [all, noEatenSeg] as [typeof all, typeof noEatenSeg],
+    };
+  }
+  if (eaten >= ledCount) {
+    const all = { id: 0, start: 0, stop: ledCount, ...twinkle(fill) };
+    return {
+      transition: 0,
+      seg: [all, noEatenSeg] as [typeof all, typeof noEatenSeg],
+    };
+  }
+  const restPart = { id: 0, start: eaten, stop: ledCount, ...twinkle(rest) };
+  const eatenPart = { id: EATEN_SEG, start: 0, stop: eaten, ...twinkle(fill) };
   return {
     transition: 0,
-    seg: [all, eatenPart] as [typeof all, typeof eatenPart],
+    seg: [restPart, eatenPart] as [typeof restPart, typeof eatenPart],
   };
 }

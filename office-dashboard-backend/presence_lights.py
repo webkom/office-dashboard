@@ -11,7 +11,7 @@ OFFICE_LOOK_PRESET = 250
 FALLBACK_LOOK = {
     "bri": 230,
     "seg": [
-        {"id": 0, "frz": False, "fx": 0, "col": [[255, 244, 230]], "n": ""},
+        {"id": 0, "start": 0, "frz": False, "fx": 0, "col": [[255, 244, 230]], "n": ""},
         # A twinkling pomodoro draws its eaten part in a second segment
         {"id": 1, "stop": 0},
     ],
@@ -78,13 +78,24 @@ def start(app, get_office_times):
         time.sleep(1.5)  # WLED loads a preset a moment later
         if pomodoro_running():
             post(FALLBACK_LOOK)
+        else:
+            post({"seg": [{"id": 0, "start": 0, "frz": False}, {"id": 1, "stop": 0}]})
         print("Office lights: ended the pomodoro")
 
     def send(command, first_try):
         try:
             if command == "off":
                 end_pomodoro()
-            post({"on": command == "on", "transition": 20})
+                post({
+                    "on": False,
+                    "transition": 20,
+                    "seg": [
+                        {"id": 0, "start": 0, "frz": False},
+                        {"id": 1, "stop": 0},
+                    ],
+                })
+            else:
+                post({"on": True, "transition": 20})
         except requests.RequestException as e:
             if first_try:
                 print(f"Office lights: couldn't reach the strip ({type(e).__name__}), trying again")

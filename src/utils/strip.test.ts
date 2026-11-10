@@ -110,7 +110,7 @@ describe("the office look during a pomodoro", () => {
     });
     const s = startSession({ ...config, workMode: "theme" }, T0);
     const [all, eaten] = themeFrameFor(s, T0 + 50_000, 900, look).seg;
-    expect(all).toMatchObject({ id: 0, start: 0, stop: 900, fx: 80, sx: 90 });
+    expect(all).toMatchObject({ id: 0, start: 450, stop: 900, fx: 80, sx: 90 });
     expect(all).toMatchObject({ pal: 2, col: [RED, RED, [0, 0, 0]] });
     expect(eaten).toMatchObject({ id: 1, start: 0, stop: 450, fx: 80 });
     expect(eaten).toMatchObject({ col: [GREEN, GREEN, [0, 0, 0]] });

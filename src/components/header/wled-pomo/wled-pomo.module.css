@@ -539,23 +539,42 @@ button.option:active,
   animation-timing-function: steps(1, jump-end);
 }
 
-/* Filling like "fyll", with every other light lit in turn */
+/* Filling like "fyll", while each light sparkles softly */
 .modes button:hover [data-mode="theme"] .mini-fill {
   animation-timing-function: linear;
 }
 .modes button:hover [data-mode="theme"] rect {
-  animation: mini-twinkle 0.8s steps(1) infinite;
+  animation: mini-twinkle 1.4s ease-in-out infinite;
 }
-.modes button:hover [data-mode="theme"] rect:nth-child(even) {
-  animation-delay: -0.4s;
+.modes button:hover [data-mode="theme"] rect:nth-child(1) {
+  animation-delay: 0s;
+}
+.modes button:hover [data-mode="theme"] rect:nth-child(2) {
+  animation-delay: -0.8s;
+}
+.modes button:hover [data-mode="theme"] rect:nth-child(3) {
+  animation-delay: -0.3s;
+}
+.modes button:hover [data-mode="theme"] rect:nth-child(4) {
+  animation-delay: -1.1s;
+}
+.modes button:hover [data-mode="theme"] rect:nth-child(5) {
+  animation-delay: -0.5s;
+}
+.modes button:hover [data-mode="theme"] rect:nth-child(6) {
+  animation-delay: -0.9s;
+}
+.modes button:hover [data-mode="theme"] rect:nth-child(7) {
+  animation-delay: -0.2s;
 }
 
 @keyframes mini-twinkle {
-  0% {
-    opacity: 1;
+  0%,
+  100% {
+    opacity: 0.35;
   }
   50% {
-    opacity: 0;
+    opacity: 1;
   }
 }
 
@@ -575,7 +594,8 @@ button.option:active,
   .dot,
   .cell-tip,
   .dot-now,
-  .mini-fill {
+  .mini-fill,
+  [data-mode="theme"] rect {
     animation: none !important;
   }
 }
