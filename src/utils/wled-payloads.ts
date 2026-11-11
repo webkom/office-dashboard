@@ -69,7 +69,10 @@ export function claimPayload(
   };
 }
 
-export const tagPayload = (tag: string) => ({ seg: [{ id: 0, n: tag }] });
+export const tagPayload = (tag: string) => ({
+  transition: 0,
+  seg: [{ id: 0, n: tag }],
+});
 
 /** WLED forgets a segment's name when a write moves its start or stop without
  * one. Segment 0's name holds the session, so frames that may move it carry
@@ -82,7 +85,10 @@ export const withTag = <P extends { seg: readonly { id: number }[] }>(
   seg: payload.seg.map((s) => (s.id === 0 ? { ...s, n: tag } : s)),
 });
 
-export const unfreezePayload = { seg: [{ id: 0, frz: false }] };
+export const unfreezePayload = {
+  transition: 0,
+  seg: [{ id: 0, frz: false }],
+};
 
 // A twinkling pomodoro draws its eaten part in a second segment
 const EATEN_SEG = 1;
@@ -97,6 +103,7 @@ export const saveOfficeLookPayload = {
   sb: true,
 };
 export const loadOfficeLookPayload = {
+  transition: 0,
   ps: OFFICE_PRESET,
   seg: [{ id: 0, start: 0, frz: false, rev: false }, noEatenSeg],
 };

@@ -121,10 +121,12 @@ export function usePomodoro(strip: Strip) {
   // The look saved when the session started, for phases shown in it
   const officeLookRef = useRef<OfficeLook | null>(null);
   const lookPendingRef = useRef(false);
+  const lastPaintedRef = useRef<string | null>(null);
 
   const setAnchor = useCallback((next: Session | null) => {
     if (!next) officeLookRef.current = null;
     anchorRef.current = next;
+    lastPaintedRef.current = null;
     setAnchorState(next);
     setNow(Date.now());
   }, []);
@@ -159,13 +161,23 @@ export function usePomodoro(strip: Strip) {
     if (isExpired(a, t)) return;
     const { session } = sessionAt(a, t);
     if (modeOf(session.config, session.phase) !== "theme") {
-      frames.push(tagged(frameFor(a, t, ledCountRef.current)));
+      const payload = tagged(frameFor(a, t, ledCountRef.current));
+      const key = JSON.stringify(payload);
+      if (key !== lastPaintedRef.current) {
+        lastPaintedRef.current = key;
+        frames.push(payload);
+      }
       return;
     }
     if (officeLookRef.current) {
-      frames.push(
-        tagged(themeFrameFor(a, t, ledCountRef.current, officeLookRef.current)),
+      const payload = tagged(
+        themeFrameFor(a, t, ledCountRef.current, officeLookRef.current),
       );
+      const key = JSON.stringify(payload);
+      if (key !== lastPaintedRef.current) {
+        lastPaintedRef.current = key;
+        frames.push(payload);
+      }
       return;
     }
     // Read once; the next paint, within a second, shows it
@@ -182,6 +194,7 @@ export function usePomodoro(strip: Strip) {
     flashingRef.current = false;
     paintingRef.current = false;
     tagRef.current = null;
+    lastPaintedRef.current = null;
     setAnchor(null);
     setOrphaned(false);
     await frames.settle();
@@ -319,6 +332,7 @@ export function usePomodoro(strip: Strip) {
       paintingRef.current = true;
       const tag = encodeTag(next, newTurn());
       tagRef.current = tag;
+      lastPaintedRef.current = null;
       await write(claimPayload(data?.state, count, tag));
       setAnchor(next);
       setOrphaned(false);
@@ -388,6 +402,7 @@ export function usePomodoro(strip: Strip) {
         () => !flashingRef.current,
       );
       flashingRef.current = false;
+      lastPaintedRef.current = null;
       if (done) paint();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
