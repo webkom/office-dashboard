@@ -196,6 +196,7 @@ export function usePomodoro(strip: Strip) {
           start: 0,
           stop: ledCountRef.current,
           frz: false,
+          rev: false,
           n: firstSegment(before?.state)?.n ?? "",
         },
         noEatenSeg,
@@ -209,7 +210,13 @@ export function usePomodoro(strip: Strip) {
     } else {
       await write({
         seg: [
-          { id: 0, start: 0, stop: ledCountRef.current, frz: false },
+          {
+            id: 0,
+            start: 0,
+            stop: ledCountRef.current,
+            frz: false,
+            rev: false,
+          },
           noEatenSeg,
         ],
       });

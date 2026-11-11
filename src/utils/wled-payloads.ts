@@ -98,7 +98,7 @@ export const saveOfficeLookPayload = {
 };
 export const loadOfficeLookPayload = {
   ps: OFFICE_PRESET,
-  seg: [{ id: 0, start: 0, frz: false }, noEatenSeg],
+  seg: [{ id: 0, start: 0, frz: false, rev: false }, noEatenSeg],
 };
 
 /** The office look's effect, as saved in its preset */
@@ -134,6 +134,7 @@ export const fallbackLookPayload: WledState = {
       start: 0,
       on: true,
       frz: false,
+      rev: false,
       fx: 0,
       col: [OFFICE_WHITE],
       n: "",
@@ -201,7 +202,10 @@ export function growPayload(ledCount: number, lit: number, col: Rgb) {
 
 export const solidPayload = (ledCount: number, col: Rgb) => ({
   transition: 0,
-  seg: [{ id: 0, start: 0, stop: ledCount, i: [0, ledCount, col] }, noEatenSeg],
+  seg: [
+    { id: 0, start: 0, stop: ledCount, rev: false, i: [0, ledCount, col] },
+    noEatenSeg,
+  ],
 });
 
 /** `fill` up to `filled`, `rest` after, and a yellow marker at `markerAt` */
@@ -273,7 +277,7 @@ export function frameFor(stored: Session, now: number, ledCount: number) {
   return {
     ...payload,
     seg: [
-      { ...payload.seg[0], start: 0, stop: ledCount, fx: 0 },
+      { ...payload.seg[0], start: 0, stop: ledCount, fx: 0, rev: false },
       noEatenSeg,
     ] as const,
   };
@@ -307,18 +311,53 @@ export function themeFrameFor(
     col: [c, c, BLACK],
   });
   const [fill, rest] = phaseColours(session.phase);
-  const all = { id: 0, start: 0, stop: ledCount, ...twinkle(rest) };
-  const eatenPart =
-    eaten > 0
-      ? {
-          id: EATEN_SEG,
-          start: 0,
-          stop: Math.min(eaten, ledCount),
-          ...twinkle(fill),
-        }
-      : noEatenSeg;
+
+  if (eaten <= 0) {
+    const all = {
+      id: 0,
+      start: 0,
+      stop: ledCount,
+      rev: true,
+      ...twinkle(rest),
+    };
+    return {
+      transition: 0,
+      seg: [all, noEatenSeg] as [typeof all, typeof noEatenSeg],
+    };
+  }
+  if (eaten >= ledCount) {
+    const all = {
+      id: 0,
+      start: 0,
+      stop: ledCount,
+      rev: false,
+      ...twinkle(fill),
+    };
+    return {
+      transition: 0,
+      seg: [all, noEatenSeg] as [typeof all, typeof noEatenSeg],
+    };
+  }
+
+  // Non-overlapping segments prevent the green strip from flashing red.
+  // restPart is reversed so pixels are indexed from stop (ledCount), meaning
+  // moving start (eaten) never shifts the relative indices of remaining LEDs.
+  const restPart = {
+    id: 0,
+    start: eaten,
+    stop: ledCount,
+    rev: true,
+    ...twinkle(rest),
+  };
+  const eatenPart = {
+    id: EATEN_SEG,
+    start: 0,
+    stop: eaten,
+    rev: false,
+    ...twinkle(fill),
+  };
   return {
     transition: 0,
-    seg: [all, eatenPart] as [typeof all, typeof eatenPart],
+    seg: [restPart, eatenPart] as [typeof restPart, typeof eatenPart],
   };
 }
