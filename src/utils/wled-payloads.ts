@@ -71,6 +71,17 @@ export function claimPayload(
 
 export const tagPayload = (tag: string) => ({ seg: [{ id: 0, n: tag }] });
 
+/** WLED forgets a segment's name when a write moves its start or stop without
+ * one. Segment 0's name holds the session, so frames that may move it carry
+ * the tag along. */
+export const withTag = <P extends { seg: readonly { id: number }[] }>(
+  payload: P,
+  tag: string,
+) => ({
+  ...payload,
+  seg: payload.seg.map((s) => (s.id === 0 ? { ...s, n: tag } : s)),
+});
+
 export const unfreezePayload = { seg: [{ id: 0, frz: false }] };
 
 // A twinkling pomodoro draws its eaten part in a second segment
@@ -118,7 +129,15 @@ export const fallbackLookPayload: WledState = {
   on: true,
   bri: 230,
   seg: [
-    { id: 0, start: 0, on: true, frz: false, fx: 0, col: [OFFICE_WHITE], n: "" },
+    {
+      id: 0,
+      start: 0,
+      on: true,
+      frz: false,
+      fx: 0,
+      col: [OFFICE_WHITE],
+      n: "",
+    },
     { id: 1, stop: 0 },
   ],
 };
@@ -182,10 +201,7 @@ export function growPayload(ledCount: number, lit: number, col: Rgb) {
 
 export const solidPayload = (ledCount: number, col: Rgb) => ({
   transition: 0,
-  seg: [
-    { id: 0, start: 0, stop: ledCount, i: [0, ledCount, col] },
-    noEatenSeg,
-  ],
+  seg: [{ id: 0, start: 0, stop: ledCount, i: [0, ledCount, col] }, noEatenSeg],
 });
 
 /** `fill` up to `filled`, `rest` after, and a yellow marker at `markerAt` */
@@ -291,24 +307,18 @@ export function themeFrameFor(
     col: [c, c, BLACK],
   });
   const [fill, rest] = phaseColours(session.phase);
-  if (eaten <= 0) {
-    const all = { id: 0, start: 0, stop: ledCount, ...twinkle(rest) };
-    return {
-      transition: 0,
-      seg: [all, noEatenSeg] as [typeof all, typeof noEatenSeg],
-    };
-  }
-  if (eaten >= ledCount) {
-    const all = { id: 0, start: 0, stop: ledCount, ...twinkle(fill) };
-    return {
-      transition: 0,
-      seg: [all, noEatenSeg] as [typeof all, typeof noEatenSeg],
-    };
-  }
-  const restPart = { id: 0, start: eaten, stop: ledCount, ...twinkle(rest) };
-  const eatenPart = { id: EATEN_SEG, start: 0, stop: eaten, ...twinkle(fill) };
+  const all = { id: 0, start: 0, stop: ledCount, ...twinkle(rest) };
+  const eatenPart =
+    eaten > 0
+      ? {
+          id: EATEN_SEG,
+          start: 0,
+          stop: Math.min(eaten, ledCount),
+          ...twinkle(fill),
+        }
+      : noEatenSeg;
   return {
     transition: 0,
-    seg: [restPart, eatenPart] as [typeof restPart, typeof eatenPart],
+    seg: [all, eatenPart] as [typeof all, typeof eatenPart],
   };
 }
