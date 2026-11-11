@@ -110,10 +110,23 @@ describe("the office look during a pomodoro", () => {
       250: { seg: [{ id: 0, fx: 80, sx: 90, ix: 170, pal: 31, col: [RED] }] },
     });
     const s = startSession({ ...config, workMode: "theme" }, T0);
-    const [all, eaten] = themeFrameFor(s, T0 + 50_000, 900, look).seg;
-    expect(all).toMatchObject({ id: 0, start: 0, stop: 900, fx: 80, sx: 90 });
-    expect(all).toMatchObject({ pal: 2, col: [RED, RED, [0, 0, 0]] });
-    expect(eaten).toMatchObject({ id: 1, start: 0, stop: 450, fx: 80 });
+    const [rest, eaten] = themeFrameFor(s, T0 + 50_000, 900, look).seg;
+    expect(rest).toMatchObject({
+      id: 0,
+      start: 450,
+      stop: 900,
+      rev: true,
+      fx: 80,
+      sx: 90,
+    });
+    expect(rest).toMatchObject({ pal: 2, col: [RED, RED, [0, 0, 0]] });
+    expect(eaten).toMatchObject({
+      id: 1,
+      start: 0,
+      stop: 450,
+      rev: false,
+      fx: 80,
+    });
     expect(eaten).toMatchObject({ col: [GREEN, GREEN, [0, 0, 0]] });
     // Nothing eaten yet: no second segment
     expect(themeFrameFor(s, T0, 900, look).seg[1]).toEqual({ id: 1, stop: 0 });
@@ -129,7 +142,7 @@ describe("the office look during a pomodoro", () => {
     const s = startSession({ ...config, workMode: "theme" }, T0);
     const tag = encodeTag(s, { id: "ab12", until: T0 + 12_000 });
     const frame = withTag(themeFrameFor(s, T0 + 50_000, 900, look), tag);
-    expect(frame.seg[0]).toMatchObject({ id: 0, start: 0, n: tag });
+    expect(frame.seg[0]).toMatchObject({ id: 0, start: 450, n: tag });
     expect(frame.seg[1]).not.toHaveProperty("n");
     expect(sessionOnStrip(frame)).toEqual(s);
   });
