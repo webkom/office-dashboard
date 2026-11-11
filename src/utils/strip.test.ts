@@ -24,6 +24,7 @@ import {
   Rgb,
   frameFor,
   officeLookOf,
+  tagPayload,
   themeFrameFor,
   withTag,
 } from "app/utils/wled-payloads";
@@ -145,5 +146,12 @@ describe("the office look during a pomodoro", () => {
     expect(frame.seg[0]).toMatchObject({ id: 0, start: 450, n: tag });
     expect(frame.seg[1]).not.toHaveProperty("n");
     expect(sessionOnStrip(frame)).toEqual(s);
+  });
+
+  it("writes tags with transition 0 to prevent crossfade flicker", () => {
+    expect(tagPayload("test-tag")).toEqual({
+      transition: 0,
+      seg: [{ id: 0, n: "test-tag" }],
+    });
   });
 });
