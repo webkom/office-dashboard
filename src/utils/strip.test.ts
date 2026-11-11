@@ -25,6 +25,7 @@ import {
   frameFor,
   officeLookOf,
   themeFrameFor,
+  withTag,
 } from "app/utils/wled-payloads";
 
 const T0 = 1_700_000_000_000; // a whole second, as stored on the strip
@@ -110,7 +111,7 @@ describe("the office look during a pomodoro", () => {
     });
     const s = startSession({ ...config, workMode: "theme" }, T0);
     const [all, eaten] = themeFrameFor(s, T0 + 50_000, 900, look).seg;
-    expect(all).toMatchObject({ id: 0, start: 450, stop: 900, fx: 80, sx: 90 });
+    expect(all).toMatchObject({ id: 0, start: 0, stop: 900, fx: 80, sx: 90 });
     expect(all).toMatchObject({ pal: 2, col: [RED, RED, [0, 0, 0]] });
     expect(eaten).toMatchObject({ id: 1, start: 0, stop: 450, fx: 80 });
     expect(eaten).toMatchObject({ col: [GREEN, GREEN, [0, 0, 0]] });
@@ -121,5 +122,15 @@ describe("the office look during a pomodoro", () => {
     // A solid look, or none saved, twinkles anyway
     expect(themeFrameFor(s, T0, 900, { fx: 0 }).seg[0].fx).toBe(80);
     expect(officeLookOf(null).fx).toBe(80);
+  });
+
+  it("attaches the session tag to segment 0 of painted frames", () => {
+    const look = officeLookOf(null);
+    const s = startSession({ ...config, workMode: "theme" }, T0);
+    const tag = encodeTag(s, { id: "ab12", until: T0 + 12_000 });
+    const frame = withTag(themeFrameFor(s, T0 + 50_000, 900, look), tag);
+    expect(frame.seg[0]).toMatchObject({ id: 0, start: 0, n: tag });
+    expect(frame.seg[1]).not.toHaveProperty("n");
+    expect(sessionOnStrip(frame)).toEqual(s);
   });
 });

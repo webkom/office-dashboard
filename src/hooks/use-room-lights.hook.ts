@@ -52,6 +52,9 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
   const setLights = useCallback(
     async (on: boolean) => {
       if (on) return write({ on });
+      // A running session keeps its segments: moving segment 0 back would
+      // drop its name, and with it the session
+      if (isRunningNow()) return write({ on: false });
       // Stop a turn-on animation, or its frames turn the strip back on
       growRef.current += 1;
       await frames.settle();
@@ -63,7 +66,7 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
         ],
       });
     },
-    [frames, write],
+    [frames, isRunningNow, write],
   );
 
   // From off, the strip lights up from its centre outwards

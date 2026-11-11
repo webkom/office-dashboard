@@ -52,7 +52,9 @@ import {
   phaseColours,
   themeFrameFor,
   unfreezePayload,
+  withTag,
 } from "app/utils/wled-payloads";
+import { firstSegment } from "app/utils/wled-client";
 
 export { DISPLAY_MODES };
 export type { DisplayMode };
@@ -129,11 +131,23 @@ export function usePomodoro(strip: Strip) {
 
   const newTurn = () => ({ id: meRef.current, until: Date.now() + LEASE_MS });
 
+  // The tag last written or read on the strip. Frames carry it, since WLED
+  // drops segment 0's name when a frame moves its start (as "glitre" does).
+  const tagRef = useRef<string | null>(null);
+  /** A frame, keeping the session on the strip */
+  const tagged = useCallback(
+    <P extends { seg: readonly { id: number }[] }>(payload: P) =>
+      tagRef.current ? withTag(payload, tagRef.current) : payload,
+    [],
+  );
+
   /** Makes this browser the painter, writing `s` with its name on it */
   const writeTag = useCallback(
     (s: Session) => {
       paintingRef.current = true;
-      return write(tagPayload(encodeTag(s, newTurn())));
+      const tag = encodeTag(s, newTurn());
+      tagRef.current = tag;
+      return write(tagPayload(tag));
     },
     [write],
   );
@@ -145,12 +159,12 @@ export function usePomodoro(strip: Strip) {
     if (isExpired(a, t)) return;
     const { session } = sessionAt(a, t);
     if (modeOf(session.config, session.phase) !== "theme") {
-      frames.push(frameFor(a, t, ledCountRef.current));
+      frames.push(tagged(frameFor(a, t, ledCountRef.current)));
       return;
     }
     if (officeLookRef.current) {
       frames.push(
-        themeFrameFor(a, t, ledCountRef.current, officeLookRef.current),
+        tagged(themeFrameFor(a, t, ledCountRef.current, officeLookRef.current)),
       );
       return;
     }
@@ -162,19 +176,28 @@ export function usePomodoro(strip: Strip) {
       if (presets && anchorRef.current)
         officeLookRef.current = officeLookOf(presets);
     });
-  }, [frames, readPresets]);
+  }, [frames, readPresets, tagged]);
 
   const endSession = useCallback(async () => {
     flashingRef.current = false;
     paintingRef.current = false;
+    tagRef.current = null;
     setAnchor(null);
     setOrphaned(false);
     await frames.settle();
     const before = await read();
+    // The tag is kept, as moving segment 0 back would drop it, so it still
+    // tells whether the preset loaded
     await write({
       ...loadOfficeLookPayload,
       seg: [
-        { id: 0, start: 0, stop: ledCountRef.current, frz: false },
+        {
+          id: 0,
+          start: 0,
+          stop: ledCountRef.current,
+          frz: false,
+          n: firstSegment(before?.state)?.n ?? "",
+        },
         noEatenSeg,
       ],
     });
@@ -208,6 +231,7 @@ export function usePomodoro(strip: Strip) {
       const free =
         !painter || painter.until <= t - (isVisible() ? 0 : LEASE_MS);
       paintingRef.current = Boolean(onStrip) && mine;
+      tagRef.current = onStrip ? (firstSegment(state)?.n ?? null) : null;
       if (onStrip && (free || (mine && painter!.until - t < RENEW_MS)))
         await writeTag(onStrip);
 
@@ -286,7 +310,9 @@ export function usePomodoro(strip: Strip) {
       if (!isPomoState(data?.state) && !noteOf(data?.state).playing)
         await write(saveOfficeLookPayload);
       paintingRef.current = true;
-      await write(claimPayload(data?.state, count, encodeTag(next, newTurn())));
+      const tag = encodeTag(next, newTurn());
+      tagRef.current = tag;
+      await write(claimPayload(data?.state, count, tag));
       setAnchor(next);
       setOrphaned(false);
       paint();
@@ -351,7 +377,7 @@ export function usePomodoro(strip: Strip) {
         frames,
         colours.length,
         colours.length * FLASH_STEP_MS,
-        (_, k) => solidPayload(ledCountRef.current, colours[k]),
+        (_, k) => tagged(solidPayload(ledCountRef.current, colours[k])),
         () => !flashingRef.current,
       );
       flashingRef.current = false;
