@@ -1,9 +1,9 @@
-import type { LatestOnly } from "app/utils/wled-client";
+import type { FrameQueue } from "app/utils/wled-client";
 import { steadySleep } from "app/utils/steady-timer";
 
 /** `steps` frames evenly over `ms`; false if `stopped()` cut it short */
 export async function animate(
-  frames: LatestOnly,
+  frames: Pick<FrameQueue, "push">,
   steps: number,
   ms: number,
   frameAt: (t: number, step: number) => object,

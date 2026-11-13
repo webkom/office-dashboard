@@ -38,12 +38,13 @@ import {
 } from "app/utils/wled-names";
 import {
   OfficeLook,
+  ThemeSnapshot,
   WHITE,
   claimPayload,
+  extraSegsOff,
   fallbackLookPayload,
   frameFor,
   loadOfficeLookPayload,
-  noEatenSeg,
   officeLookOf,
   saveOfficeLookPayload,
   shownProgress,
@@ -51,6 +52,7 @@ import {
   tagPayload,
   phaseColours,
   themeFrameFor,
+  themePatchFor,
   unfreezePayload,
   withTag,
 } from "app/utils/wled-payloads";
@@ -82,6 +84,8 @@ const POLL_RUNNING_MS = 2000;
 const POLL_PAINTER_MS = 1000;
 const LEASE_MS = 12_000;
 const RENEW_MS = 6_000;
+const CLAIM_MS = 250;
+const END_WAIT_MS = 1000;
 const FLASH_STEP_MS = 160;
 // How late after a phase change we still flash and play the sound
 const FLASH_WINDOW_MS = 1500;
@@ -102,8 +106,16 @@ const isVisible = () => document.visibilityState === "visible";
 /** One pomodoro for the whole office, kept on the strip. Anyone can change it;
  * only the painter draws it, so browsers never paint over each other. */
 export function usePomodoro(strip: Strip) {
-  const { frames, lastWriteRef, read, readPresets, write, setPollDelay } =
-    strip;
+  const {
+    frames,
+    lastWriteRef,
+    markWrite,
+    pokePoll,
+    read,
+    readPresets,
+    write,
+    setPollDelay,
+  } = strip;
   const subscribe = strip.onRead;
   const [config, setConfig] = useState(DEFAULT_CONFIG);
   // Tagged by an older version, or holding a session we can't read
@@ -115,6 +127,13 @@ export function usePomodoro(strip: Strip) {
   const flashingRef = useRef(false);
   const meRef = useRef(Math.random().toString(36).slice(2, 6));
   const paintingRef = useRef(false);
+  const endingRef = useRef(false);
+  const claimingRef = useRef(false);
+  const observedPainterRef = useRef<{
+    id: string;
+    until: number;
+    seenAt: number;
+  } | null>(null);
   const ledCountRef = useRef(strip.ledCount);
   ledCountRef.current = strip.ledCount;
 
@@ -122,9 +141,13 @@ export function usePomodoro(strip: Strip) {
   const officeLookRef = useRef<OfficeLook | null>(null);
   const lookPendingRef = useRef(false);
   const lastPaintedRef = useRef<string | null>(null);
+  const themeSnapshotRef = useRef<ThemeSnapshot | null>(null);
 
   const setAnchor = useCallback((next: Session | null) => {
-    if (!next) officeLookRef.current = null;
+    if (!next) {
+      officeLookRef.current = null;
+      themeSnapshotRef.current = null;
+    }
     anchorRef.current = next;
     lastPaintedRef.current = null;
     setAnchorState(next);
@@ -133,8 +156,8 @@ export function usePomodoro(strip: Strip) {
 
   const newTurn = () => ({ id: meRef.current, until: Date.now() + LEASE_MS });
 
-  // The tag last written or read on the strip. Frames carry it, since WLED
-  // drops segment 0's name when a frame moves its start (as "glitre" does).
+  // The tag last written or read on the strip. Frames that change segment 0's
+  // bounds carry it along, since WLED drops segment 0's name when bounds move.
   const tagRef = useRef<string | null>(null);
   /** A frame, keeping the session on the strip */
   const tagged = useCallback(
@@ -145,11 +168,14 @@ export function usePomodoro(strip: Strip) {
 
   /** Makes this browser the painter, writing `s` with its name on it */
   const writeTag = useCallback(
-    (s: Session) => {
-      paintingRef.current = true;
+    async (s: Session): Promise<boolean> => {
       const tag = encodeTag(s, newTurn());
-      tagRef.current = tag;
-      return write(tagPayload(tag));
+      const ok = await write(tagPayload(tag));
+      if (ok) {
+        paintingRef.current = true;
+        tagRef.current = tag;
+      }
+      return ok;
     },
     [write],
   );
@@ -161,99 +187,147 @@ export function usePomodoro(strip: Strip) {
     if (isExpired(a, t)) return;
     const { session } = sessionAt(a, t);
     if (modeOf(session.config, session.phase) !== "theme") {
-      const payload = tagged(frameFor(a, t, ledCountRef.current));
-      const key = JSON.stringify(payload);
+      themeSnapshotRef.current = null;
+      const frame = frameFor(a, t, ledCountRef.current);
+      const key = JSON.stringify(frame);
       if (key !== lastPaintedRef.current) {
         lastPaintedRef.current = key;
-        frames.push(payload);
+        frames.push(tagged(frame));
       }
       return;
     }
+    lastPaintedRef.current = null;
     if (officeLookRef.current) {
-      const payload = tagged(
-        themeFrameFor(a, t, ledCountRef.current, officeLookRef.current),
+      const frame = themeFrameFor(
+        a,
+        t,
+        ledCountRef.current,
+        officeLookRef.current,
       );
-      const key = JSON.stringify(payload);
-      if (key !== lastPaintedRef.current) {
-        lastPaintedRef.current = key;
-        frames.push(payload);
+      const patch = themePatchFor(
+        themeSnapshotRef.current,
+        ledCountRef.current,
+        frame,
+      );
+      themeSnapshotRef.current = patch.snapshot;
+      if (patch.payload) {
+        frames.push(patch.needsTag ? tagged(patch.payload) : patch.payload);
       }
       return;
     }
-    // Read once; the next paint, within a second, shows it
+    // Read once; paint immediately when the presets arrive
     if (lookPendingRef.current) return;
     lookPendingRef.current = true;
     void readPresets().then((presets) => {
       lookPendingRef.current = false;
-      if (presets && anchorRef.current)
+      if (presets && anchorRef.current) {
         officeLookRef.current = officeLookOf(presets);
+        paint();
+      }
     });
   }, [frames, readPresets, tagged]);
 
   const endSession = useCallback(async () => {
-    flashingRef.current = false;
-    paintingRef.current = false;
-    tagRef.current = null;
-    lastPaintedRef.current = null;
-    setAnchor(null);
-    setOrphaned(false);
-    await frames.settle();
-    const before = await read();
-    // The tag is kept, as moving segment 0 back would drop it, so it still
-    // tells whether the preset loaded
-    await write({
-      ...loadOfficeLookPayload,
-      seg: [
-        {
-          id: 0,
-          start: 0,
-          stop: ledCountRef.current,
-          frz: false,
-          rev: false,
-          n: firstSegment(before?.state)?.n ?? "",
-        },
-        noEatenSeg,
-      ],
-    });
-    // WLED applies a preset a moment later. Without one saved, bright white.
-    await steadySleep(400);
-    const after = await read();
-    if (after && isPomoState(after.state)) {
-      await write(fallbackLookPayload);
-    } else {
-      await write({
-        seg: [
-          {
-            id: 0,
-            start: 0,
-            stop: ledCountRef.current,
-            frz: false,
-            rev: false,
-          },
-          noEatenSeg,
-        ],
-      });
+    if (endingRef.current) return;
+    endingRef.current = true;
+    try {
+      flashingRef.current = false;
+      paintingRef.current = false;
+      tagRef.current = null;
+      lastPaintedRef.current = null;
+      themeSnapshotRef.current = null;
+      observedPainterRef.current = null;
+      setAnchor(null);
+      setOrphaned(false);
+      markWrite();
+      await frames.settle();
+      const before = await read();
+      // Apply preset 250 without writing the Pomodoro tag back onto segment 0
+      await write(loadOfficeLookPayload);
+      // WLED applies a preset a moment later. Without one saved, bright white.
+      await steadySleep(END_WAIT_MS);
+      const after = await read();
+      if (after && isPomoState(after.state)) {
+        await write(fallbackLookPayload);
+      } else {
+        await write({
+          transition: 0,
+          seg: [
+            {
+              id: 0,
+              start: 0,
+              stop: ledCountRef.current,
+              frz: false,
+              rev: false,
+              n: firstSegment(after?.state)?.n ?? "",
+            },
+            ...extraSegsOff(after?.state),
+          ],
+        });
+      }
+      // The office look turns the strip on; switched off, it stays off
+      if (before?.state?.on === false)
+        await write({ on: false, transition: 0 });
+    } finally {
+      endingRef.current = false;
     }
-    // The office look turns the strip on; switched off, it stays off
-    if (before?.state?.on === false) await write({ on: false });
-  }, [frames, read, setAnchor, write]);
+  }, [frames, markWrite, read, setAnchor, write]);
 
   const onRead = useCallback(
     async (state: WledState | undefined) => {
+      if (endingRef.current) return;
       const onStrip = sessionOnStrip(state);
       setOrphaned(isPomoState(state) && !onStrip);
       if (onStrip && isExpired(onStrip, Date.now())) return endSession();
 
-      // A free turn goes to a visible browser first; background tabs wait
-      const painter = painterOf(state);
       const t = Date.now();
+      const painter = painterOf(state);
+      if (!onStrip || !painter || painter.id === meRef.current) {
+        observedPainterRef.current = null;
+      } else {
+        const prev = observedPainterRef.current;
+        if (!prev || prev.id !== painter.id || prev.until !== painter.until) {
+          observedPainterRef.current = { ...painter, seenAt: t };
+        }
+      }
+
+      // A free turn goes to a visible browser first; background tabs wait.
+      // Remote leases must also stop renewing for LEASE_MS so clock skew never
+      // causes two browsers to fight over the strip.
       const mine = painter?.id === meRef.current && painter.until > t;
-      const free =
-        !painter || painter.until <= t - (isVisible() ? 0 : LEASE_MS);
+      const remoteStale =
+        !painter ||
+        (painter.until <= t - (isVisible() ? 0 : LEASE_MS) &&
+          (!observedPainterRef.current ||
+            t - observedPainterRef.current.seenAt >= LEASE_MS));
+      const wasPainting = paintingRef.current;
       paintingRef.current = Boolean(onStrip) && mine;
       tagRef.current = onStrip ? (firstSegment(state)?.n ?? null) : null;
-      if (onStrip && (free || (mine && painter!.until - t < RENEW_MS)))
+
+      if (onStrip && mine && painter!.until - t < RENEW_MS) {
         await writeTag(onStrip);
+      } else if (onStrip && !mine && remoteStale && !claimingRef.current) {
+        claimingRef.current = true;
+        try {
+          const ok = await writeTag(onStrip);
+          if (ok) {
+            await steadySleep(CLAIM_MS);
+            const verify = await read();
+            const winner = painterOf(verify?.state);
+            const won = winner?.id === meRef.current;
+            paintingRef.current = won && Boolean(sessionOnStrip(verify?.state));
+            if (paintingRef.current) {
+              tagRef.current = firstSegment(verify?.state)?.n ?? tagRef.current;
+              themeSnapshotRef.current = null;
+              lastPaintedRef.current = null;
+            }
+          }
+        } finally {
+          claimingRef.current = false;
+        }
+      }
+
+      if (paintingRef.current !== wasPainting) pokePoll();
 
       const had = anchorRef.current;
       if (!sameSession(had, onStrip)) {
@@ -266,10 +340,15 @@ export function usePomodoro(strip: Strip) {
       if (had && !onStrip) {
         await frames.settle();
         const after = await read();
-        if (isLeftoverFrame(after?.state)) await write(unfreezePayload);
+        if (isLeftoverFrame(after?.state)) {
+          await write({
+            ...unfreezePayload,
+            seg: [...unfreezePayload.seg, ...extraSegsOff(after?.state)],
+          });
+        }
       }
     },
-    [endSession, frames, paint, read, setAnchor, write, writeTag],
+    [endSession, frames, paint, pokePoll, read, setAnchor, write, writeTag],
   );
   useEffect(() => subscribe(onRead), [subscribe, onRead]);
 
@@ -290,6 +369,7 @@ export function usePomodoro(strip: Strip) {
     (fn: (s: Session, now: number) => Session) => {
       if (!anchorRef.current || flashingRef.current) return;
       changesRef.current = changesRef.current.then(async () => {
+        markWrite();
         const data = await read();
         if (data && !sessionOnStrip(data.state)) return; // stopped meanwhile
         const base = sessionOnStrip(data?.state) ?? anchorRef.current;
@@ -297,11 +377,10 @@ export function usePomodoro(strip: Strip) {
         const t = Date.now();
         const next = asStored(fn(sessionAt(base, t).session, t));
         setAnchor(next);
-        await writeTag(next);
-        paint();
+        if (await writeTag(next)) paint();
       });
     },
-    [paint, read, setAnchor, writeTag],
+    [markWrite, paint, read, setAnchor, writeTag],
   );
 
   const startSession = useCallback(
@@ -315,6 +394,7 @@ export function usePomodoro(strip: Strip) {
         void Notification.requestPermission().catch(() => {});
       }
 
+      markWrite();
       // Read first, for the office look and in case someone just started one
       const askedAt = Date.now();
       const data = await read();
@@ -327,18 +407,40 @@ export function usePomodoro(strip: Strip) {
 
       // An event's look is not the office look
       const next = asStored(startAt(cfg, Date.now()));
-      if (!isPomoState(data?.state) && !noteOf(data?.state).playing)
+      const isTheme = modeOf(next.config, next.phase) === "theme";
+      if (!isPomoState(data?.state) && !noteOf(data?.state).playing) {
         await write(saveOfficeLookPayload);
-      paintingRef.current = true;
+        const seg0 = firstSegment(data?.state);
+        if (typeof seg0?.fx === "number") {
+          officeLookRef.current = officeLookOf({ 250: { seg: [seg0] } });
+        }
+      } else if (isTheme && !officeLookRef.current) {
+        const presets = await readPresets();
+        if (presets) officeLookRef.current = officeLookOf(presets);
+      }
       const tag = encodeTag(next, newTurn());
-      tagRef.current = tag;
       lastPaintedRef.current = null;
-      await write(claimPayload(data?.state, count, tag));
+      themeSnapshotRef.current = null;
+      const ok = await write(claimPayload(data?.state, count, tag, !isTheme));
+      paintingRef.current = ok;
+      tagRef.current = ok ? tag : null;
       setAnchor(next);
       setOrphaned(false);
+      pokePoll();
       paint();
     },
-    [config, lastWriteRef, paint, read, setAnchor, strip.ledCount, write],
+    [
+      config,
+      lastWriteRef,
+      markWrite,
+      paint,
+      pokePoll,
+      read,
+      readPresets,
+      setAnchor,
+      strip.ledCount,
+      write,
+    ],
   );
 
   const session = anchor ? sessionAt(anchor, now).session : null;
@@ -401,9 +503,11 @@ export function usePomodoro(strip: Strip) {
         (_, k) => tagged(solidPayload(ledCountRef.current, colours[k])),
         () => !flashingRef.current,
       );
+      await frames.idle();
       flashingRef.current = false;
       lastPaintedRef.current = null;
-      if (done) paint();
+      themeSnapshotRef.current = null;
+      if (done && paintingRef.current) paint();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseId]);

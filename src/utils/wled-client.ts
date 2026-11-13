@@ -60,69 +60,116 @@ export function applyWrite(
   return next;
 }
 
-type Send = (payload: object) => Promise<void>;
+type Send = (payload: object) => Promise<boolean>;
 
-export class InOrder {
-  private pending = 0;
-  private last: Promise<void> = Promise.resolve();
-
-  constructor(private readonly send: Send) {}
-
-  get busy() {
-    return this.pending > 0;
-  }
-
-  push(payload: object): Promise<void> {
-    this.pending += 1;
-    this.last = this.last
-      .then(() => this.send(payload))
-      .finally(() => {
-        this.pending -= 1;
-      });
-    return this.last;
-  }
-}
-
-/** Sends one payload at a time; while one is in flight only the newest waits */
-export class LatestOnly {
-  private next: object | null = null;
+/**
+ * Serializes all writes to the strip so at most one POST is in flight at a
+ * time. State transitions run FIFO; brightness and LED frames coalesce to the
+ * latest value without clobbering each other or delaying state writes.
+ */
+export class SerialTransport {
+  private queue: { payload: object; resolve: (ok: boolean) => void }[] = [];
+  private pendingBri: object | null = null;
+  private pendingFrame: object | null = null;
   private running: Promise<void> | null = null;
 
   constructor(private readonly send: Send) {}
 
-  push(payload: object) {
-    this.next = payload;
+  get busy() {
+    return (
+      this.queue.length > 0 ||
+      this.pendingBri !== null ||
+      this.pendingFrame !== null ||
+      this.running !== null
+    );
+  }
+
+  pushState(payload: object): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.queue.push({ payload, resolve });
+      this.kick();
+    });
+  }
+
+  pushBri(payload: object) {
+    this.pendingBri = payload;
+    this.kick();
+  }
+
+  pushFrame(payload: object) {
+    this.pendingFrame = payload;
+    this.kick();
+  }
+
+  async idle() {
+    while (this.running) await this.running;
+  }
+
+  async settle() {
+    this.pendingFrame = null;
+    await this.idle();
+  }
+
+  private kick() {
     this.running ??= this.drain().finally(() => {
       this.running = null;
     });
   }
 
-  async idle() {
-    await this.running;
-  }
-
-  async settle() {
-    this.next = null;
-    await this.running;
-  }
-
   private async drain() {
-    while (this.next !== null) {
-      const payload = this.next;
-      this.next = null;
-      await this.send(payload);
+    while (
+      this.queue.length > 0 ||
+      this.pendingBri !== null ||
+      this.pendingFrame !== null
+    ) {
+      if (this.queue.length > 0) {
+        const item = this.queue.shift()!;
+        item.resolve(await this.send(item.payload));
+        continue;
+      }
+      if (this.pendingBri !== null) {
+        const payload = this.pendingBri;
+        this.pendingBri = null;
+        await this.send(payload);
+        continue;
+      }
+      if (this.pendingFrame !== null) {
+        const payload = this.pendingFrame;
+        this.pendingFrame = null;
+        await this.send(payload);
+      }
     }
   }
 }
 
+export type FrameQueue = {
+  push: (payload: object) => void;
+  idle: () => Promise<void>;
+  settle: () => Promise<void>;
+};
+
 // Writes go as text/plain, which skips the CORS preflight. targetAddressSpace
 // lets Chrome reach the strip from an https page.
 export class WledClient {
-  readonly state = new InOrder((p) => this.write(p));
+  private readonly transport = new SerialTransport((p) => this.write(p));
+  readonly state = {
+    push: (payload: object) => this.transport.pushState(payload),
+  };
+  readonly bri = {
+    push: (payload: object) => this.transport.pushBri(payload),
+  };
   /** LED frames; dropping one is fine, the next repaints everything */
-  readonly frames = new LatestOnly((p) => this.write(p));
+  readonly frames: FrameQueue = {
+    push: (payload: object) => this.transport.pushFrame(payload),
+    idle: () => this.transport.idle(),
+    settle: () => this.transport.settle(),
+  };
 
   constructor(public host: string) {}
+
+  get busy() {
+    return this.transport.busy;
+  }
 
   async read(): Promise<WledJson> {
     const res = await fetch(`${this.host}/json/si`, {
@@ -143,16 +190,18 @@ export class WledClient {
     return res.json();
   }
 
-  protected async write(payload: object) {
+  protected async write(payload: object): Promise<boolean> {
     try {
-      await fetch(`${this.host}/json/state`, {
+      const res = await fetch(`${this.host}/json/state`, {
         method: "POST",
         body: JSON.stringify({ v: false, ...payload }),
         signal: AbortSignal.timeout(1500),
         targetAddressSpace: "local",
       } as RequestInit);
+      return res.ok;
     } catch {
       // The next write or poll catches up
+      return false;
     }
   }
 }
@@ -243,7 +292,7 @@ export class MockWledClient extends WledClient {
       if (payload.psave) {
         const saved = keys.map((k) => localStorage.getItem(k));
         localStorage.setItem(MockWledClient.PRESET_KEY, JSON.stringify(saved));
-        return Promise.resolve();
+        return Promise.resolve(true);
       }
       if (payload.ps) {
         const saved = JSON.parse(
@@ -254,7 +303,7 @@ export class MockWledClient extends WledClient {
             ? localStorage.removeItem(keys[i])
             : localStorage.setItem(keys[i], v),
         );
-        return Promise.resolve();
+        return Promise.resolve(true);
       }
       if (
         typeof payload.bri === "number" ||
@@ -279,6 +328,6 @@ export class MockWledClient extends WledClient {
     } catch {
       // Ignore
     }
-    return Promise.resolve();
+    return Promise.resolve(true);
   }
 }
