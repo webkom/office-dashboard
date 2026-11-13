@@ -40,12 +40,8 @@ export function claimPayload(
   state: WledState | undefined,
   ledCount: number,
   tag: string,
+  withFx = true,
 ) {
-  // Deleted, not turned off: an off segment still paints its LEDs black over
-  // ours. The office look keeps them, and brings them back afterwards.
-  const extraSegs = (state?.seg ?? [])
-    .filter((s) => s.id > 0)
-    .map((s) => ({ id: s.id, stop: 0 }));
   return {
     on: true,
     bri: Math.min(state?.bri ?? POMO_BRI, POMO_BRI),
@@ -61,10 +57,10 @@ export function claimPayload(
         of: 0,
         on: true,
         bri: 255,
-        fx: 0,
+        ...(withFx ? { fx: 0 } : {}),
         n: tag,
       },
-      ...extraSegs,
+      ...extraSegsOff(state),
     ],
   };
 }
@@ -90,12 +86,21 @@ export const unfreezePayload = {
   seg: [{ id: 0, frz: false }],
 };
 
-// A twinkling pomodoro draws its eaten part in a second segment
-const EATEN_SEG = 1;
-export const noEatenSeg = { id: EATEN_SEG, stop: 0 };
+// A twinkling pomodoro uses up to THEME_SEGMENTS fixed segments (0..15) so
+// segment bounds never move mid-phase and WLED never resets the running effect.
+export const THEME_SEGMENTS = 16;
+export const noExtraSegs = Array.from(
+  { length: THEME_SEGMENTS - 1 },
+  (_, k) => ({ id: k + 1, stop: 0 }),
+);
+export function extraSegsOff(state?: WledState | null) {
+  const ids = new Set<number>(noExtraSegs.map((s) => s.id));
+  for (const s of state?.seg ?? []) if (s.id > 0) ids.add(s.id);
+  return Array.from(ids, (id) => ({ id, stop: 0 }));
+}
 
 // The office look waits on the strip as a preset during a pomodoro
-const OFFICE_PRESET = 250;
+export const OFFICE_PRESET = 250;
 export const saveOfficeLookPayload = {
   psave: OFFICE_PRESET,
   n: "Kontorlys (pomodoro)",
@@ -105,7 +110,6 @@ export const saveOfficeLookPayload = {
 export const loadOfficeLookPayload = {
   transition: 0,
   ps: OFFICE_PRESET,
-  seg: [{ id: 0, start: 0, frz: false, rev: false }, noEatenSeg],
 };
 
 /** The office look's effect, as saved in its preset */
@@ -135,6 +139,7 @@ export function officeLookOf(presets: unknown): OfficeLook {
 export const fallbackLookPayload: WledState = {
   on: true,
   bri: 230,
+  transition: 0,
   seg: [
     {
       id: 0,
@@ -146,7 +151,7 @@ export const fallbackLookPayload: WledState = {
       col: [OFFICE_WHITE],
       n: "",
     },
-    { id: 1, stop: 0 },
+    ...noExtraSegs,
   ],
 };
 
@@ -211,7 +216,7 @@ export const solidPayload = (ledCount: number, col: Rgb) => ({
   transition: 0,
   seg: [
     { id: 0, start: 0, stop: ledCount, rev: false, i: [0, ledCount, col] },
-    noEatenSeg,
+    ...noExtraSegs,
   ],
 });
 
@@ -285,21 +290,38 @@ export function frameFor(stored: Session, now: number, ledCount: number) {
     ...payload,
     seg: [
       { ...payload.seg[0], start: 0, stop: ledCount, fx: 0, rev: false },
-      noEatenSeg,
+      ...noExtraSegs,
     ] as const,
   };
 }
 
-/** Like frameFor, but each part twinkles in its colour, as the office look
- * moves. A solid look twinkles like the Jul look instead. */
+export type ThemeSegment = {
+  id: number;
+  start: number;
+  stop: number;
+  rev: boolean;
+  bri: number;
+  on: boolean;
+  frz: boolean;
+  fx: number;
+  pal: number;
+  col: [Rgb, Rgb, Rgb];
+  [setting: string]: unknown;
+};
+
+/** Like frameFor, but splits the strip into fixed segments that twinkle in
+ * their colours, as the office look moves. A solid look twinkles like the Jul
+ * look instead. Fixed segment bounds mean WLED never resets the effect. */
 export function themeFrameFor(
   stored: Session,
   now: number,
   ledCount: number,
   look: OfficeLook,
+  segmentCount = THEME_SEGMENTS,
 ) {
   const { session, progress } = progressAt(stored, now);
-  const eaten = Math.round(progress * ledCount);
+  const count = Math.max(1, Math.min(segmentCount, Math.max(1, ledCount)));
+  const eaten = progress >= 1 ? count : Math.floor(progress * count);
   const moving = look.fx === 0 ? FALLBACK_OFFICE_LOOK : look;
   const motion = Object.fromEntries(
     LOOK_SETTINGS.filter((k) => moving[k] !== undefined).map((k) => [
@@ -312,59 +334,78 @@ export function themeFrameFor(
   const twinkle = (c: Rgb) => ({
     on: true,
     frz: false,
+    bri: 255,
     ...motion,
     fx: moving.fx,
     pal: 2,
-    col: [c, c, BLACK],
+    col: [c, c, BLACK] as [Rgb, Rgb, Rgb],
   });
   const [fill, rest] = phaseColours(session.phase);
-
-  if (eaten <= 0) {
-    const all = {
-      id: 0,
-      start: 0,
-      stop: ledCount,
-      rev: true,
-      ...twinkle(rest),
-    };
-    return {
-      transition: 0,
-      seg: [all, noEatenSeg] as [typeof all, typeof noEatenSeg],
-    };
-  }
-  if (eaten >= ledCount) {
-    const all = {
-      id: 0,
-      start: 0,
-      stop: ledCount,
-      rev: false,
-      ...twinkle(fill),
-    };
-    return {
-      transition: 0,
-      seg: [all, noEatenSeg] as [typeof all, typeof noEatenSeg],
-    };
-  }
-
-  // Non-overlapping segments prevent the green strip from flashing red.
-  // restPart is reversed so pixels are indexed from stop (ledCount), meaning
-  // moving start (eaten) never shifts the relative indices of remaining LEDs.
-  const restPart = {
-    id: 0,
-    start: eaten,
-    stop: ledCount,
-    rev: true,
-    ...twinkle(rest),
-  };
-  const eatenPart = {
-    id: EATEN_SEG,
-    start: 0,
-    stop: eaten,
+  const seg: ThemeSegment[] = Array.from({ length: count }, (_, id) => ({
+    id,
+    start: Math.round((id * ledCount) / count),
+    stop: Math.round(((id + 1) * ledCount) / count),
     rev: false,
-    ...twinkle(fill),
-  };
+    ...twinkle(id < eaten ? fill : rest),
+  }));
   return {
     transition: 0,
-    seg: [restPart, eatenPart] as [typeof restPart, typeof eatenPart],
+    seg,
+  };
+}
+
+export type ThemeSnapshot = {
+  setupKey: string;
+  colors: string[];
+};
+
+function themeSetupKey(
+  ledCount: number,
+  frame: ReturnType<typeof themeFrameFor>,
+) {
+  const first = frame.seg[0];
+  return JSON.stringify({
+    ledCount,
+    count: frame.seg.length,
+    fx: first.fx,
+    motion: LOOK_SETTINGS.map((k) => first[k]),
+  });
+}
+
+/**
+ * Returns the minimal update needed for `frame`: the full setup payload when
+ * segments aren't initialized yet (requiring the session tag on segment 0), or
+ * a color-only diff when only eaten progress/phase colors changed, or `null`
+ * when nothing on the strip changed.
+ */
+export function themePatchFor(
+  prev: ThemeSnapshot | null,
+  ledCount: number,
+  frame: ReturnType<typeof themeFrameFor>,
+): {
+  payload: { transition: number; seg: readonly { id: number }[] } | null;
+  snapshot: ThemeSnapshot;
+  needsTag: boolean;
+} {
+  const setupKey = themeSetupKey(ledCount, frame);
+  const colors = frame.seg.map((s) => s.col[0].join(","));
+  const snapshot = { setupKey, colors };
+  if (
+    !prev ||
+    prev.setupKey !== setupKey ||
+    prev.colors.length !== colors.length
+  ) {
+    return { payload: frame, snapshot, needsTag: true };
+  }
+  const changed = frame.seg
+    .filter((_, idx) => colors[idx] !== prev.colors[idx])
+    .map((s) => ({ id: s.id, col: s.col }));
+  if (changed.length === 0) {
+    return { payload: null, snapshot, needsTag: false };
+  }
+  return {
+    payload: { transition: 0, seg: changed },
+    snapshot,
+    needsTag: false,
   };
 }

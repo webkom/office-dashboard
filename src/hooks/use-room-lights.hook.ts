@@ -3,6 +3,7 @@ import type { Pomodoro } from "app/hooks/use-pomodoro.hook";
 import { usePresenceLights } from "app/hooks/use-presence-lights.hook";
 import type { Strip } from "app/hooks/use-strip.hook";
 import { LightPreset, presetOf, presetPayload } from "app/utils/light-presets";
+import { steadySleep } from "app/utils/steady-timer";
 import { animate, easeOutCubic } from "app/utils/strip-animation";
 import { lookOf } from "app/utils/wled-client";
 import {
@@ -15,16 +16,19 @@ import {
 import {
   OFFICE_WHITE,
   Rgb,
+  extraSegsOff,
   growPayload,
   tagPayload,
 } from "app/utils/wled-payloads";
 
 const GROW_MS = 700;
 const GROW_STEPS = 14;
+const CLAIM_MS = 300;
 
 /** The room's light switch, read from and written to the strip */
 export function useRoomLights(strip: Strip, pomo: Pomodoro) {
-  const { frames, lastWriteRef, read, write, showLocally } = strip;
+  const { frames, lastWriteRef, pushBri, read, state, write, showLocally } =
+    strip;
   const { isRunningNow, stopSession } = pomo;
 
   const isOn = strip.state?.on !== false;
@@ -48,6 +52,9 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
   const ledCountRef = useRef(strip.ledCount);
   ledCountRef.current = strip.ledCount;
 
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   const growRef = useRef(0);
   const setLights = useCallback(
     async (on: boolean) => {
@@ -60,9 +67,10 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
       await frames.settle();
       await write({
         on: false,
+        transition: 0,
         seg: [
           { id: 0, start: 0, stop: ledCountRef.current, frz: false },
-          { id: 1, stop: 0 },
+          ...extraSegsOff(stateRef.current),
         ],
       });
     },
@@ -92,9 +100,10 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
     await frames.idle();
     if (done)
       await write({
+        transition: 0,
         seg: [
           { id: 0, start: 0, stop: ledCountRef.current, frz: false },
-          { id: 1, stop: 0 },
+          ...extraSegsOff(stateRef.current),
         ],
       });
   }, [frames, isRunningNow, lastWriteRef, showLocally, write]);
@@ -104,13 +113,29 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
     if (isRunningNow()) await stopSession();
     await setLights(false);
   }, [isRunningNow, setLights, stopSession]);
-  // Every browser notices an arrival; the first one turns the lights on
+  // Every browser notices an arrival; claim on the strip so only one animates
   const switchOn = useCallback(async () => {
     const data = await read();
-    if (data?.state?.on !== false) return;
+    if (data?.state?.on !== false || isPomoState(data?.state)) return;
+    const current = noteOf(data?.state);
+    if (current.playing) return;
+    const claim = `on~${Math.random().toString(36).slice(2, 5)}`;
+    const ok = await write(
+      tagPayload(encodeNote({ ...current, event: claim, playing: true })),
+    );
+    if (!ok) return;
+    await steadySleep(CLAIM_MS);
+    const after = await read();
+    if (
+      after?.state?.on !== false ||
+      isPomoState(after?.state) ||
+      noteOf(after?.state).event !== claim
+    )
+      return;
     isOnRef.current = false;
     await turnOn();
-  }, [read, turnOn]);
+    await write(tagPayload(encodeNote({ ...current, playing: false })));
+  }, [read, turnOn, write]);
   const present = usePresenceLights(switchOff, switchOn);
 
   // Only presence changes switch the strip, so this choice sticks
@@ -123,9 +148,9 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
     (value: number) => {
       const payload = { on: true, bri: value, transition: 0 };
       showLocally(payload);
-      frames.push(payload);
+      pushBri(payload);
     },
-    [frames, showLocally],
+    [pushBri, showLocally],
   );
 
   const applyPreset = useCallback(
@@ -135,7 +160,7 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
         ...payload,
         seg: [
           { ...payload.seg[0], start: 0, stop: ledCountRef.current },
-          { id: 1, stop: 0 },
+          ...extraSegsOff(stateRef.current),
         ],
       });
     },

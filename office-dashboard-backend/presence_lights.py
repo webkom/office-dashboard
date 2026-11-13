@@ -7,13 +7,15 @@ import requests
 POLL_S = 30
 # Where the dashboards keep the office look while a pomodoro runs
 OFFICE_LOOK_PRESET = 250
+# A twinkling pomodoro splits the strip into up to 16 fixed segments (0..15)
+EXTRA_SEGS_OFF = [{"id": i, "stop": 0} for i in range(1, 16)]
 # What the dashboards fall back to without it
 FALLBACK_LOOK = {
     "bri": 230,
+    "transition": 0,
     "seg": [
         {"id": 0, "start": 0, "frz": False, "fx": 0, "col": [[255, 244, 230]], "n": ""},
-        # A twinkling pomodoro draws its eaten part in a second segment
-        {"id": 1, "stop": 0},
+        *EXTRA_SEGS_OFF,
     ],
 }
 # A phone dropping off the wifi for a moment shouldn't turn the lights off
@@ -74,12 +76,12 @@ def start(app, get_office_times):
         end would turn the lights back on."""
         if not pomodoro_running():
             return
-        post({"ps": OFFICE_LOOK_PRESET})
+        post({"transition": 0, "ps": OFFICE_LOOK_PRESET})
         time.sleep(1.5)  # WLED loads a preset a moment later
         if pomodoro_running():
             post(FALLBACK_LOOK)
         else:
-            post({"seg": [{"id": 0, "start": 0, "frz": False}, {"id": 1, "stop": 0}]})
+            post({"transition": 0, "seg": [{"id": 0, "start": 0, "frz": False}, *EXTRA_SEGS_OFF]})
         print("Office lights: ended the pomodoro")
 
     def send(command, first_try):
@@ -91,7 +93,7 @@ def start(app, get_office_times):
                     "transition": 20,
                     "seg": [
                         {"id": 0, "start": 0, "frz": False},
-                        {"id": 1, "stop": 0},
+                        *EXTRA_SEGS_OFF,
                     ],
                 })
             else:

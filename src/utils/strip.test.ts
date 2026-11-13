@@ -22,12 +22,17 @@ import {
   GREEN,
   RED,
   Rgb,
+  THEME_SEGMENTS,
   frameFor,
+  noExtraSegs,
   officeLookOf,
+  solidPayload,
   tagPayload,
   themeFrameFor,
+  themePatchFor,
   withTag,
 } from "app/utils/wled-payloads";
+import { SerialTransport } from "app/utils/wled-client";
 
 const T0 = 1_700_000_000_000; // a whole second, as stored on the strip
 const config = {
@@ -106,36 +111,77 @@ describe("the office look during a pomodoro", () => {
     expect(encodeSession(old).split(":")[5][0]).toBe("b");
   });
 
-  it("twinkles while green eats, in the saved look's motion", () => {
+  it("twinkles across fixed segments while green eats, without moving segment bounds", () => {
     const look = officeLookOf({
       250: { seg: [{ id: 0, fx: 80, sx: 90, ix: 170, pal: 31, col: [RED] }] },
     });
     const s = startSession({ ...config, workMode: "theme" }, T0);
-    const [rest, eaten] = themeFrameFor(s, T0 + 50_000, 900, look).seg;
-    expect(rest).toMatchObject({
-      id: 0,
-      start: 450,
-      stop: 900,
-      rev: true,
-      fx: 80,
-      sx: 90,
-    });
-    expect(rest).toMatchObject({ pal: 2, col: [RED, RED, [0, 0, 0]] });
-    expect(eaten).toMatchObject({
-      id: 1,
-      start: 0,
-      stop: 450,
+    const startSegs = themeFrameFor(s, T0, 900, look).seg;
+    const midSegs = themeFrameFor(s, T0 + 50_000, 900, look).seg;
+    const endSegs = themeFrameFor(s, T0 + 100_000, 900, look).seg;
+
+    expect(midSegs).toHaveLength(THEME_SEGMENTS);
+    // Bounds never move between 0%, 50%, and 100%
+    const bounds = (segs: typeof startSegs) =>
+      segs.map(({ id, start, stop, rev, fx, sx }) => ({
+        id,
+        start,
+        stop,
+        rev,
+        fx,
+        sx,
+      }));
+    expect(bounds(midSegs)).toEqual(bounds(startSegs));
+    expect(bounds(endSegs)).toEqual(bounds(startSegs));
+    expect(startSegs[0].start).toBe(0);
+    expect(startSegs[THEME_SEGMENTS - 1].stop).toBe(900);
+
+    // At 50% progress, first half of segments are green and rest are red
+    expect(midSegs[0]).toMatchObject({
+      pal: 2,
       rev: false,
       fx: 80,
+      sx: 90,
+      col: [GREEN, GREEN, [0, 0, 0]],
     });
-    expect(eaten).toMatchObject({ col: [GREEN, GREEN, [0, 0, 0]] });
-    // Nothing eaten yet: no second segment
-    expect(themeFrameFor(s, T0, 900, look).seg[1]).toEqual({ id: 1, stop: 0 });
-    // The fill modes remove it again
-    expect(frameFor(s, T0, 900).seg[1]).toEqual({ id: 1, stop: 0 });
+    expect(midSegs[THEME_SEGMENTS / 2]).toMatchObject({
+      pal: 2,
+      rev: false,
+      fx: 80,
+      sx: 90,
+      col: [RED, RED, [0, 0, 0]],
+    });
+
+    // The fill and solid modes remove all extra theme segments
+    expect(frameFor(s, T0, 900).seg.slice(1)).toEqual(noExtraSegs);
+    expect(solidPayload(900, RED).seg.slice(1)).toEqual(noExtraSegs);
     // A solid look, or none saved, twinkles anyway
     expect(themeFrameFor(s, T0, 900, { fx: 0 }).seg[0].fx).toBe(80);
     expect(officeLookOf(null).fx).toBe(80);
+  });
+
+  it("sends color-only diffs in glitre mode once segments are set up", () => {
+    const look = officeLookOf(null);
+    const s = startSession({ ...config, workMode: "theme" }, T0);
+    const f0 = themeFrameFor(s, T0, 900, look);
+    const p0 = themePatchFor(null, 900, f0);
+    expect(p0.needsTag).toBe(true);
+    expect(p0.payload?.seg).toHaveLength(THEME_SEGMENTS);
+
+    // Same bucket: nothing sent
+    const fSame = themeFrameFor(s, T0 + 1_000, 900, look);
+    const pSame = themePatchFor(p0.snapshot, 900, fSame);
+    expect(pSame.payload).toBeNull();
+
+    // Crosses 1/16th: only segment 0 updates its colour, without moving bounds
+    const stepMs = config.workMs / THEME_SEGMENTS;
+    const f1 = themeFrameFor(s, T0 + stepMs, 900, look);
+    const p1 = themePatchFor(pSame.snapshot, 900, f1);
+    expect(p1.needsTag).toBe(false);
+    expect(p1.payload).toEqual({
+      transition: 0,
+      seg: [{ id: 0, col: [GREEN, GREEN, [0, 0, 0]] }],
+    });
   });
 
   it("attaches the session tag to segment 0 of painted frames", () => {
@@ -143,7 +189,7 @@ describe("the office look during a pomodoro", () => {
     const s = startSession({ ...config, workMode: "theme" }, T0);
     const tag = encodeTag(s, { id: "ab12", until: T0 + 12_000 });
     const frame = withTag(themeFrameFor(s, T0 + 50_000, 900, look), tag);
-    expect(frame.seg[0]).toMatchObject({ id: 0, start: 450, n: tag });
+    expect(frame.seg[0]).toMatchObject({ id: 0, start: 0, n: tag });
     expect(frame.seg[1]).not.toHaveProperty("n");
     expect(sessionOnStrip(frame)).toEqual(s);
   });
@@ -153,5 +199,46 @@ describe("the office look during a pomodoro", () => {
       transition: 0,
       seg: [{ id: 0, n: "test-tag" }],
     });
+  });
+
+  it("serializes WLED writes and keeps brightness updates separate from frames", async () => {
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const sent: object[] = [];
+    const resolvers: (() => void)[] = [];
+
+    const transport = new SerialTransport(
+      (payload) =>
+        new Promise<boolean>((resolve) => {
+          inFlight += 1;
+          maxInFlight = Math.max(maxInFlight, inFlight);
+          sent.push(payload);
+          resolvers.push(() => {
+            inFlight -= 1;
+            resolve(true);
+          });
+        }),
+    );
+
+    const p1 = transport.pushState({ step: "state-1" });
+    transport.pushFrame({ step: "frame-dropped" });
+    transport.pushBri({ bri: 200 });
+    transport.pushFrame({ step: "frame-kept" });
+    const p2 = transport.pushState({ step: "state-2" });
+
+    while (resolvers.length > 0 || transport.busy) {
+      resolvers.shift()?.();
+      await Promise.resolve();
+      await Promise.resolve();
+    }
+    await Promise.all([p1, p2, transport.idle()]);
+
+    expect(maxInFlight).toBe(1);
+    expect(sent).toEqual([
+      { step: "state-1" },
+      { step: "state-2" },
+      { bri: 200 },
+      { step: "frame-kept" },
+    ]);
   });
 });

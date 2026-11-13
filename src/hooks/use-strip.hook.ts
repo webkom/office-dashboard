@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WLED_URLS } from "app/config";
 import { clearSteadyTimeout, steadyTimeout } from "app/utils/steady-timer";
 import {
+  FrameQueue,
   MockWledClient,
   WledClient,
   WledJson,
@@ -93,20 +94,45 @@ export function useStrip() {
   );
 
   const write = useCallback(
-    async (payload: WledState) => {
+    async (payload: WledState): Promise<boolean> => {
       lastWriteRef.current = Date.now();
       setState((s) => applyWrite(s, payload));
-      await client.state.push(payload);
+      const ok = await client.state.push(payload);
       lastWriteRef.current = Date.now();
+      return ok;
     },
     [client],
   );
 
-  // For writes sent as frames, such as a brightness drag
+  // For writes sent outside `state` (brightness drags and animation frames)
   const showLocally = useCallback((payload: WledState) => {
     lastWriteRef.current = Date.now();
     setState((s) => applyWrite(s, payload));
   }, []);
+
+  const markWrite = useCallback(() => {
+    lastWriteRef.current = Date.now();
+  }, []);
+
+  const frames = useMemo<FrameQueue>(
+    () => ({
+      push: (payload: object) => {
+        lastWriteRef.current = Date.now();
+        client.frames.push(payload);
+      },
+      idle: () => client.frames.idle(),
+      settle: () => client.frames.settle(),
+    }),
+    [client],
+  );
+
+  const pushBri = useCallback(
+    (payload: object) => {
+      lastWriteRef.current = Date.now();
+      client.bri.push(payload);
+    },
+    [client],
+  );
 
   const sync = useCallback(async () => {
     const askedAt = Date.now();
@@ -124,19 +150,34 @@ export function useStrip() {
 
     // Skip reads that are older than one already used, or than our own writes
     if (askedAt < lastReadRef.current) return;
-    if (askedAt < lastWriteRef.current || client.state.busy) return;
+    if (askedAt < lastWriteRef.current || client.busy) return;
     lastReadRef.current = askedAt;
 
     setState(data.state);
     for (const listener of listenersRef.current) await listener(data.state);
   }, [client, read]);
 
+  const rescheduleRef = useRef<() => void>(() => {});
+
   useEffect(() => {
     let timer = 0;
     let stopped = false;
-    const loop = async () => {
-      await sync();
+    let polling = false;
+    const schedule = () => {
+      clearSteadyTimeout(timer);
       if (!stopped) timer = steadyTimeout(loop, pollDelayRef.current());
+    };
+    const loop = async () => {
+      polling = true;
+      try {
+        await sync();
+      } finally {
+        polling = false;
+      }
+      schedule();
+    };
+    rescheduleRef.current = () => {
+      if (!polling) schedule();
     };
     void loop();
     const onWake = () => void sync();
@@ -148,6 +189,7 @@ export function useStrip() {
     window.addEventListener("storage", onStorage);
     return () => {
       stopped = true;
+      rescheduleRef.current = () => {};
       clearSteadyTimeout(timer);
       window.removeEventListener("focus", onWake);
       window.removeEventListener("online", onWake);
@@ -165,19 +207,26 @@ export function useStrip() {
     pollDelayRef.current = delay;
   }, []);
 
+  const pokePoll = useCallback(() => {
+    rescheduleRef.current();
+  }, []);
+
   return {
     isMock,
     isReachable,
     ledCount,
     state,
-    frames: client.frames,
+    frames,
+    pushBri,
     lastWriteRef,
+    markWrite,
     read,
     readPresets,
     write,
     showLocally,
     onRead,
     setPollDelay,
+    pokePoll,
   };
 }
 
