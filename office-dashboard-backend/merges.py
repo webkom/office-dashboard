@@ -33,7 +33,7 @@ def _broadcast(message: dict):
                 _sockets.discard(ws)
 
 
-def register(app, api):
+def register(app, api, on_merge=None):
     """Adds the GitHub webhook, /merges, and /ws, which pushes each merge to
     every open dashboard"""
 
@@ -64,6 +64,8 @@ def register(app, api):
                 with _lock:
                     _recent.appendleft(merge)
                 _broadcast({"type": "merge", **merge})
+                if on_merge is not None:
+                    on_merge(merge["repo"], merge["number"])
             return "", 204
 
     class Merges(Resource):

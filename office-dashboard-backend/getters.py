@@ -12,8 +12,11 @@ def get_public_members(app: Flask):
     url = f'https://{app.config["MEMBERS_URI"]}'
 
     members_res = requests.get(
-        url=url, auth=(app.config["MEMBERS_USER"], app.config["MEMBERS_PASSWORD"])
+        url=url,
+        auth=(app.config["MEMBERS_USER"], app.config["MEMBERS_PASSWORD"]),
+        timeout=10,
     )
+    members_res.raise_for_status()
     members_json = members_res.json()
 
     return [
@@ -163,7 +166,7 @@ def get_repo_stats(app: Flask):
     """
 
     repo_stats_res = requests.post(
-        url=url, json={"query": query_string}, headers=headers
+        url=url, json={"query": query_string}, headers=headers, timeout=10
     )
     repo_stats_res.raise_for_status()
     repo_stats_json = repo_stats_res.json()
@@ -184,7 +187,8 @@ def get_brus_users(app: Flask):
 
     url = f'https://{app.config["BRUS_URI"]}'
 
-    brus_res = requests.get(url=url)
+    brus_res = requests.get(url=url, timeout=10)
+    brus_res.raise_for_status()
     brus_json = brus_res.json()
 
     return  [{
@@ -206,10 +210,12 @@ def get_office_times(app: Flask):
 
     base_url = f'https://{app.config["PALANTIR_URI"]}'
 
-    members_res = requests.get(url=f"{base_url}/members")
+    members_res = requests.get(url=f"{base_url}/members", timeout=10)
+    members_res.raise_for_status()
     members_json = members_res.json()
 
-    leaderboard_res = requests.get(url=f"{base_url}/stats/leaderboard")
+    leaderboard_res = requests.get(url=f"{base_url}/stats/leaderboard", timeout=10)
+    leaderboard_res.raise_for_status()
     leaderboard_json = leaderboard_res.json()
 
     total_hours_by_member = {
@@ -240,7 +246,7 @@ def get_detailed_member_data(app: Flask, member: str):
     """
     base_url = f'https://{app.config["PALANTIR_URI"]}'
 
-    member_res = requests.get(url=f"{base_url}/member/{member}")
+    member_res = requests.get(url=f"{base_url}/member/{member}", timeout=10)
     member_res.raise_for_status()
     member_data = member_res.json()
     
@@ -252,7 +258,7 @@ HELPERS
 
 
 def fetch_contributor_stats(url, headers):
-    res = requests.get(url=url, headers=headers)
+    res = requests.get(url=url, headers=headers, timeout=10)
     res.raise_for_status()
 
     # GitHub answers 202 with an empty body while it computes the stats in the background

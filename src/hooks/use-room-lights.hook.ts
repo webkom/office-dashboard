@@ -108,11 +108,14 @@ export function useRoomLights(strip: Strip, pomo: Pomodoro) {
       });
   }, [frames, isRunningNow, lastWriteRef, showLocally, write]);
 
-  // A session ends first, or its frames would turn the strip back on
+  // A session ends first, or its frames would turn the strip back on.
+  // Skip if the backend already switched the strip off and ended any session.
   const switchOff = useCallback(async () => {
+    const data = await read();
+    if (data?.state?.on === false && !isPomoState(data?.state)) return;
     if (isRunningNow()) await stopSession();
     await setLights(false);
-  }, [isRunningNow, setLights, stopSession]);
+  }, [isRunningNow, read, setLights, stopSession]);
   // Every browser notices an arrival; claim on the strip so only one animates
   const switchOn = useCallback(async () => {
     const data = await read();

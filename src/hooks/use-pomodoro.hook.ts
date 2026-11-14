@@ -26,7 +26,6 @@ import {
   steadySleep,
   steadyTimeout,
 } from "app/utils/steady-timer";
-import { animate } from "app/utils/strip-animation";
 import type { WledState } from "app/utils/wled-client";
 import {
   encodeTag,
@@ -38,11 +37,12 @@ import {
 } from "app/utils/wled-names";
 import {
   OfficeLook,
+  THEME_SEGMENTS,
   ThemeSnapshot,
   WHITE,
   claimPayload,
   extraSegsOff,
-  fallbackLookPayload,
+  fallbackLookFor,
   frameFor,
   loadOfficeLookPayload,
   officeLookOf,
@@ -81,10 +81,11 @@ const DEFAULT_CONFIG: PomoConfig = {
 
 const POLL_IDLE_MS = 10_000;
 const POLL_RUNNING_MS = 2000;
-const POLL_PAINTER_MS = 1000;
+const POLL_PAINTER_MS = 3000;
 const LEASE_MS = 12_000;
 const RENEW_MS = 6_000;
 const CLAIM_MS = 250;
+const SAVE_PRESET_WAIT_MS = 250;
 const END_WAIT_MS = 1000;
 const FLASH_STEP_MS = 160;
 // How late after a phase change we still flash and play the sound
@@ -141,12 +142,16 @@ export function usePomodoro(strip: Strip) {
   const officeLookRef = useRef<OfficeLook | null>(null);
   const lookPendingRef = useRef(false);
   const lastPaintedRef = useRef<string | null>(null);
+  const solidSetupKeyRef = useRef<string | null>(null);
+  const setupInFlightRef = useRef(false);
   const themeSnapshotRef = useRef<ThemeSnapshot | null>(null);
+  const themeWriteInFlightRef = useRef(false);
 
   const setAnchor = useCallback((next: Session | null) => {
     if (!next) {
       officeLookRef.current = null;
       themeSnapshotRef.current = null;
+      solidSetupKeyRef.current = null;
     }
     anchorRef.current = next;
     lastPaintedRef.current = null;
@@ -161,7 +166,7 @@ export function usePomodoro(strip: Strip) {
   const tagRef = useRef<string | null>(null);
   /** A frame, keeping the session on the strip */
   const tagged = useCallback(
-    <P extends { seg: readonly { id: number }[] }>(payload: P) =>
+    <P extends { seg: { id: number }[] }>(payload: P) =>
       tagRef.current ? withTag(payload, tagRef.current) : payload,
     [],
   );
@@ -186,46 +191,62 @@ export function usePomodoro(strip: Strip) {
     const t = Date.now();
     if (isExpired(a, t)) return;
     const { session } = sessionAt(a, t);
-    if (modeOf(session.config, session.phase) !== "theme") {
+    const mode = modeOf(session.config, session.phase);
+    const count = ledCountRef.current;
+
+    if (mode !== "theme") {
       themeSnapshotRef.current = null;
-      const frame = frameFor(a, t, ledCountRef.current);
+      const setupKey = `${count}:${session.cycle}:${session.phase}:${mode}`;
+      if (solidSetupKeyRef.current !== setupKey) {
+        if (setupInFlightRef.current) return;
+        setupInFlightRef.current = true;
+        const fullFrame = frameFor(a, t, count, true);
+        const diffKey = JSON.stringify(frameFor(a, t, count, false));
+        void write(tagged(fullFrame)).then((ok) => {
+          setupInFlightRef.current = false;
+          if (ok && anchorRef.current && paintingRef.current) {
+            solidSetupKeyRef.current = setupKey;
+            lastPaintedRef.current = diffKey;
+          }
+        });
+        return;
+      }
+      const frame = frameFor(a, t, count, false);
       const key = JSON.stringify(frame);
       if (key !== lastPaintedRef.current) {
         lastPaintedRef.current = key;
-        frames.push(tagged(frame));
+        frames.push(frame);
       }
       return;
     }
+
+    solidSetupKeyRef.current = null;
     lastPaintedRef.current = null;
     if (officeLookRef.current) {
-      const frame = themeFrameFor(
-        a,
-        t,
-        ledCountRef.current,
-        officeLookRef.current,
-      );
-      const patch = themePatchFor(
-        themeSnapshotRef.current,
-        ledCountRef.current,
-        frame,
-      );
-      themeSnapshotRef.current = patch.snapshot;
-      if (patch.payload) {
-        frames.push(patch.needsTag ? tagged(patch.payload) : patch.payload);
-      }
+      const frame = themeFrameFor(a, t, count, officeLookRef.current);
+      const patch = themePatchFor(themeSnapshotRef.current, count, frame);
+      if (!patch.payload || themeWriteInFlightRef.current) return;
+      themeWriteInFlightRef.current = true;
+      const payload = patch.needsTag ? tagged(patch.payload) : patch.payload;
+      void write(payload).then((ok) => {
+        themeWriteInFlightRef.current = false;
+        if (ok && anchorRef.current && paintingRef.current) {
+          themeSnapshotRef.current = patch.snapshot;
+        }
+      });
       return;
     }
-    // Read once; paint immediately when the presets arrive
+    // Read once; fall back to default look even if /presets.json fails
     if (lookPendingRef.current) return;
     lookPendingRef.current = true;
     void readPresets().then((presets) => {
       lookPendingRef.current = false;
-      if (presets && anchorRef.current) {
+      if (anchorRef.current) {
         officeLookRef.current = officeLookOf(presets);
         paint();
       }
     });
-  }, [frames, readPresets, tagged]);
+  }, [frames, readPresets, tagged, write]);
 
   const endSession = useCallback(async () => {
     if (endingRef.current) return;
@@ -235,6 +256,7 @@ export function usePomodoro(strip: Strip) {
       paintingRef.current = false;
       tagRef.current = null;
       lastPaintedRef.current = null;
+      solidSetupKeyRef.current = null;
       themeSnapshotRef.current = null;
       observedPainterRef.current = null;
       setAnchor(null);
@@ -248,7 +270,7 @@ export function usePomodoro(strip: Strip) {
       await steadySleep(END_WAIT_MS);
       const after = await read();
       if (after && isPomoState(after.state)) {
-        await write(fallbackLookPayload);
+        await write(fallbackLookFor(ledCountRef.current));
       } else {
         await write({
           transition: 0,
@@ -319,6 +341,7 @@ export function usePomodoro(strip: Strip) {
             if (paintingRef.current) {
               tagRef.current = firstSegment(verify?.state)?.n ?? tagRef.current;
               themeSnapshotRef.current = null;
+              solidSetupKeyRef.current = null;
               lastPaintedRef.current = null;
             }
           }
@@ -328,6 +351,30 @@ export function usePomodoro(strip: Strip) {
       }
 
       if (paintingRef.current !== wasPainting) pokePoll();
+
+      // Reconcile strip segment layout against expected mode (skip for mock)
+      if (onStrip && paintingRef.current && !strip.isMock && state?.seg) {
+        const curSession = sessionAt(onStrip, Date.now()).session;
+        const curMode = modeOf(curSession.config, curSession.phase);
+        const activeSegs = state.seg.filter(
+          (s) => (s.stop ?? 0) > (s.start ?? 0),
+        );
+        if (curMode === "theme") {
+          const expected = Math.min(
+            THEME_SEGMENTS,
+            Math.max(1, ledCountRef.current),
+          );
+          if (activeSegs.length !== expected && !themeWriteInFlightRef.current) {
+            themeSnapshotRef.current = null;
+          }
+        } else if (
+          (activeSegs.some((s) => s.id > 0) ||
+            firstSegment(state)?.fx !== 0) &&
+          !setupInFlightRef.current
+        ) {
+          solidSetupKeyRef.current = null;
+        }
+      }
 
       const had = anchorRef.current;
       if (!sameSession(had, onStrip)) {
@@ -348,7 +395,17 @@ export function usePomodoro(strip: Strip) {
         }
       }
     },
-    [endSession, frames, paint, pokePoll, read, setAnchor, write, writeTag],
+    [
+      endSession,
+      frames,
+      paint,
+      pokePoll,
+      read,
+      setAnchor,
+      strip.isMock,
+      write,
+      writeTag,
+    ],
   );
   useEffect(() => subscribe(onRead), [subscribe, onRead]);
 
@@ -410,16 +467,20 @@ export function usePomodoro(strip: Strip) {
       const isTheme = modeOf(next.config, next.phase) === "theme";
       if (!isPomoState(data?.state) && !noteOf(data?.state).playing) {
         await write(saveOfficeLookPayload);
+        // WLED persists psave to flash asynchronously; wait briefly before
+        // overwriting segment 0 with the Pomodoro claim.
+        await steadySleep(SAVE_PRESET_WAIT_MS);
         const seg0 = firstSegment(data?.state);
         if (typeof seg0?.fx === "number") {
           officeLookRef.current = officeLookOf({ 250: { seg: [seg0] } });
         }
       } else if (isTheme && !officeLookRef.current) {
         const presets = await readPresets();
-        if (presets) officeLookRef.current = officeLookOf(presets);
+        officeLookRef.current = officeLookOf(presets);
       }
       const tag = encodeTag(next, newTurn());
       lastPaintedRef.current = null;
+      solidSetupKeyRef.current = null;
       themeSnapshotRef.current = null;
       const ok = await write(claimPayload(data?.state, count, tag, !isTheme));
       paintingRef.current = ok;
@@ -455,11 +516,14 @@ export function usePomodoro(strip: Strip) {
   useEffect(() => {
     if (!isRunning || paused) return;
     const t = steadyTimeout(
-      () => setNow(Date.now()),
+      () => {
+        setNow(Date.now());
+        paint();
+      },
       remainingMs % 1000 || 1000,
     );
     return () => clearSteadyTimeout(t);
-  }, [isRunning, paused, remainingMs]);
+  }, [isRunning, paint, paused, remainingMs]);
 
   const expired = session ? isExpired(session, now) : false;
   useEffect(() => {
@@ -495,17 +559,23 @@ export function usePomodoro(strip: Strip) {
     const colour = phaseColours(session.phase)[1];
     const colours = [WHITE, colour, WHITE, colour, WHITE, colour];
     flashingRef.current = true;
+    solidSetupKeyRef.current = null;
+    themeSnapshotRef.current = null;
     void (async () => {
-      const done = await animate(
-        frames,
-        colours.length,
-        colours.length * FLASH_STEP_MS,
-        (_, k) => tagged(solidPayload(ledCountRef.current, colours[k])),
-        () => !flashingRef.current,
-      );
-      await frames.idle();
+      for (let k = 0; k < colours.length; k++) {
+        if (!flashingRef.current) break;
+        const stepStart = Date.now();
+        const payload = solidPayload(ledCountRef.current, colours[k], k === 0);
+        frames.push(k === 0 ? tagged(payload) : payload);
+        await frames.idle();
+        if (!flashingRef.current) break;
+        const left = FLASH_STEP_MS - (Date.now() - stepStart);
+        if (left > 0) await steadySleep(left);
+      }
+      const done = flashingRef.current;
       flashingRef.current = false;
       lastPaintedRef.current = null;
+      solidSetupKeyRef.current = null;
       themeSnapshotRef.current = null;
       if (done && paintingRef.current) paint();
     })();

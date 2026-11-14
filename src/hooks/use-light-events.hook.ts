@@ -134,9 +134,9 @@ export function useLightEvents(
         ...payload,
         seg: [{ ...payload.seg[0], n: encodeNote({ ...note, dayLook }) }],
       };
-      // Setting bri would turn the strip on
+      // Keeping on: false updates the preset/brightness without turning on
       return data.state?.on === false
-        ? { ...named, on: undefined, bri: undefined }
+        ? { ...named, on: false, transition: 0 }
         : named;
     };
 

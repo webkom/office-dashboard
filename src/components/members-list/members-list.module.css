@@ -2,15 +2,29 @@
   font-size: 1.5rem;
   box-sizing: border-box;
   background-color: var(--background-color-light);
-  --member-columns: 2fr 1fr 0.7fr 0.9fr 0.9fr 2.5rem;
+  --member-columns: minmax(0, 1.8fr) minmax(0, 1.5fr) minmax(0, 0.55fr)
+    minmax(0, 0.85fr) minmax(0, 0.9fr) 2rem;
+  --member-gap: 1.25rem;
+  --member-padding-x: 1.5rem;
 }
 
 .members-header {
   display: grid;
   grid-template-columns: var(--member-columns);
-  padding: 0.75rem 1rem;
+  align-items: center;
+  gap: var(--member-gap);
+  padding: 0.75rem var(--member-padding-x);
+  border-left: 3px solid transparent;
   font-weight: 600;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.members-header > span {
+  min-width: 0;
+}
+
+.brus-balance {
+  text-align: right;
 }
 
 .members-body {
@@ -18,15 +32,37 @@
   flex-direction: column;
 }
 
+@media screen and (max-width: 1150px) {
+  .members-list {
+    font-size: 1.05rem;
+    --member-columns: minmax(0, 1.6fr) minmax(0, 1.5fr) minmax(0, 0.55fr)
+      minmax(0, 0.9fr) minmax(0, 0.95fr) 1.5rem;
+    --member-gap: 0.75rem;
+    --member-padding-x: 1rem;
+  }
+}
+
+@media screen and (max-width: 820px) {
+  .members-list {
+    font-size: 0.9rem;
+    --member-gap: 0.5rem;
+    --member-padding-x: 0.75rem;
+  }
+}
+
 @media screen and (max-width: 600px) {
   .members-list {
     padding: 0;
     font-size: 1rem;
-    --member-columns: 43% 13% 18% 22% 1.5rem;
+    --member-columns: minmax(0, 2fr) minmax(0, 0.7fr) minmax(0, 1fr)
+      minmax(0, 1.1fr) 1.25rem;
+    --member-gap: 0.4rem;
+    --member-padding-x: 0.5rem;
   }
 
   .members-header {
-    padding: 0.3rem 0.35rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
     font-size: 0.8rem;
   }
 
