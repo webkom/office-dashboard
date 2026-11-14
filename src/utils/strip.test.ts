@@ -23,6 +23,9 @@ import {
   RED,
   Rgb,
   THEME_SEGMENTS,
+  claimPayload,
+  dimRgb,
+  fallbackLookFor,
   frameFor,
   noExtraSegs,
   officeLookOf,
@@ -78,7 +81,7 @@ describe("the strip", () => {
     // LEDs of a colour, and where the first of them is
     const ledsOf = (cfg: SessionConfig, ms: number, col: Rgb) => {
       const s = startSession(cfg, T0);
-      const i = frameFor(s, T0 + ms, 900).seg[0].i;
+      const i = (frameFor(s, T0 + ms, 900).seg[0] as { i: (number | Rgb)[] }).i;
       let count = 0;
       let from = Infinity;
       for (let k = 0; k < i.length; k += 3)
@@ -136,28 +139,40 @@ describe("the office look during a pomodoro", () => {
     expect(startSegs[0].start).toBe(0);
     expect(startSegs[THEME_SEGMENTS - 1].stop).toBe(900);
 
-    // At 50% progress, first half of segments are green and rest are red
+    // At 50% progress, first half of segments are green and rest are red,
+    // with a dimmed background glow so twinkles stay visible
     expect(midSegs[0]).toMatchObject({
       pal: 2,
       rev: false,
       fx: 80,
       sx: 90,
-      col: [GREEN, GREEN, [0, 0, 0]],
+      col: [GREEN, dimRgb(GREEN), [0, 0, 0]],
     });
     expect(midSegs[THEME_SEGMENTS / 2]).toMatchObject({
       pal: 2,
       rev: false,
       fx: 80,
       sx: 90,
-      col: [RED, RED, [0, 0, 0]],
+      col: [RED, dimRgb(RED), [0, 0, 0]],
     });
+    expect(midSegs[0].col[0]).not.toEqual(midSegs[0].col[1]);
 
-    // The fill and solid modes remove all extra theme segments
+    // The fill and solid modes remove all extra theme segments on full setup,
+    // and send minimal pixel-only diffs afterwards
     expect(frameFor(s, T0, 900).seg.slice(1)).toEqual(noExtraSegs);
+    expect(frameFor(s, T0, 900, false).seg).toHaveLength(1);
+    expect(frameFor(s, T0, 900, false).seg[0]).not.toHaveProperty("fx");
     expect(solidPayload(900, RED).seg.slice(1)).toEqual(noExtraSegs);
-    // A solid look, or none saved, twinkles anyway
+    expect(solidPayload(900, RED, false).seg).toHaveLength(1);
+    // A solid or sound-reactive look, or none saved, twinkles anyway
     expect(themeFrameFor(s, T0, 900, { fx: 0 }).seg[0].fx).toBe(80);
+    expect(themeFrameFor(s, T0, 900, { fx: 156 }).seg[0].fx).toBe(80);
     expect(officeLookOf(null).fx).toBe(80);
+    // claimPayload unfreezes segment 0 even in theme mode, and fallbackLookFor sets stop
+    expect(claimPayload(undefined, 900, "t", false).seg[0]).toMatchObject({
+      frz: false,
+    });
+    expect(fallbackLookFor(900).seg?.[0].stop).toBe(900);
   });
 
   it("sends color-only diffs in glitre mode once segments are set up", () => {
@@ -180,7 +195,7 @@ describe("the office look during a pomodoro", () => {
     expect(p1.needsTag).toBe(false);
     expect(p1.payload).toEqual({
       transition: 0,
-      seg: [{ id: 0, col: [GREEN, GREEN, [0, 0, 0]] }],
+      seg: [{ id: 0, col: [GREEN, dimRgb(GREEN), [0, 0, 0]] }],
     });
   });
 

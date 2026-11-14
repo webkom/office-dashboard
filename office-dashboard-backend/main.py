@@ -94,8 +94,8 @@ api.add_resource(DetailedMemberData, "/member/<string:gh_name>")
 api.add_resource(Presence, "/presence")
 api.add_resource(Uptime, "/uptime")
 
-merges.register(app, api)
-presence_lights.start(app, safe_get_office_times)
+on_merge = presence_lights.start(app, safe_get_office_times, safe_get_public_members)
+merges.register(app, api, on_merge=on_merge)
 
 
 if __name__ == "__main__":

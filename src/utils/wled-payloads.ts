@@ -56,6 +56,7 @@ export function claimPayload(
         spc: 0,
         of: 0,
         on: true,
+        frz: false,
         bri: 255,
         ...(withFx ? { fx: 0 } : {}),
         n: tag,
@@ -73,7 +74,7 @@ export const tagPayload = (tag: string) => ({
 /** WLED forgets a segment's name when a write moves its start or stop without
  * one. Segment 0's name holds the session, so frames that may move it carry
  * the tag along. */
-export const withTag = <P extends { seg: readonly { id: number }[] }>(
+export const withTag = <P extends { seg: { id: number }[] }>(
   payload: P,
   tag: string,
 ) => ({
@@ -136,7 +137,7 @@ export function officeLookOf(presets: unknown): OfficeLook {
   return seg ? (seg as OfficeLook) : FALLBACK_OFFICE_LOOK;
 }
 
-export const fallbackLookPayload: WledState = {
+export const fallbackLookFor = (ledCount: number): WledState => ({
   on: true,
   bri: 230,
   transition: 0,
@@ -144,6 +145,7 @@ export const fallbackLookPayload: WledState = {
     {
       id: 0,
       start: 0,
+      stop: ledCount,
       on: true,
       frz: false,
       rev: false,
@@ -153,7 +155,9 @@ export const fallbackLookPayload: WledState = {
     },
     ...noExtraSegs,
   ],
-};
+});
+
+export const fallbackLookPayload: WledState = fallbackLookFor(900);
 
 // Fireworks Starburst on the Party palette
 export const fireworksPayload = {
@@ -212,12 +216,21 @@ export function growPayload(ledCount: number, lit: number, col: Rgb) {
   };
 }
 
-export const solidPayload = (ledCount: number, col: Rgb) => ({
+export const solidPayload = (ledCount: number, col: Rgb, fullSetup = true) => ({
   transition: 0,
-  seg: [
-    { id: 0, start: 0, stop: ledCount, rev: false, i: [0, ledCount, col] },
-    ...noExtraSegs,
-  ],
+  seg: fullSetup
+    ? [
+        {
+          id: 0,
+          start: 0,
+          stop: ledCount,
+          fx: 0,
+          rev: false,
+          i: [0, ledCount, col],
+        },
+        ...noExtraSegs,
+      ]
+    : [{ id: 0, i: [0, ledCount, col] }],
 });
 
 /** `fill` up to `filled`, `rest` after, and a yellow marker at `markerAt` */
@@ -271,8 +284,14 @@ const progressAt = (stored: Session, now: number) => {
   return { session, progress };
 };
 
-/** Every phase is eaten from the left by green */
-export function frameFor(stored: Session, now: number, ledCount: number) {
+/** Every phase is eaten from the left by green. When `fullSetup` is false, only
+ * the pixel buffer `i` is sent so WLED never re-applies `fx: 0` or flashes. */
+export function frameFor(
+  stored: Session,
+  now: number,
+  ledCount: number,
+  fullSetup = true,
+) {
   const { session, progress } = progressAt(stored, now);
   const shown = shownProgress(progress, modeOf(session.config, session.phase));
   const filled = Math.round(shown * ledCount);
@@ -285,15 +304,23 @@ export function frameFor(stored: Session, now: number, ledCount: number) {
     fill,
     rest,
   );
+  if (!fullSetup) return payload;
   // Solid again, and one segment, after a twinkling phase
   return {
     ...payload,
     seg: [
       { ...payload.seg[0], start: 0, stop: ledCount, fx: 0, rev: false },
       ...noExtraSegs,
-    ] as const,
+    ],
   };
 }
+
+/** Dimmed colour used as resting background so twinkles have clear contrast */
+export const dimRgb = (c: Rgb, factor = 0.12): Rgb => [
+  Math.round(c[0] * factor),
+  Math.round(c[1] * factor),
+  Math.round(c[2] * factor),
+];
 
 export type ThemeSegment = {
   id: number;
@@ -310,8 +337,9 @@ export type ThemeSegment = {
 };
 
 /** Like frameFor, but splits the strip into fixed segments that twinkle in
- * their colours, as the office look moves. A solid look twinkles like the Jul
- * look instead. Fixed segment bounds mean WLED never resets the effect. */
+ * their colours, as the office look moves. A solid or sound-reactive look
+ * twinkles like the Jul look instead. Fixed segment bounds mean WLED never
+ * resets the effect. */
 export function themeFrameFor(
   stored: Session,
   now: number,
@@ -322,15 +350,17 @@ export function themeFrameFor(
   const { session, progress } = progressAt(stored, now);
   const count = Math.max(1, Math.min(segmentCount, Math.max(1, ledCount)));
   const eaten = progress >= 1 ? count : Math.floor(progress * count);
-  const moving = look.fx === 0 ? FALLBACK_OFFICE_LOOK : look;
+  // Solid (0) and sound-reactive Musikk (156) fall back to Twinklefox
+  const moving =
+    look.fx === 0 || look.fx === 156 ? FALLBACK_OFFICE_LOOK : look;
   const motion = Object.fromEntries(
     LOOK_SETTINGS.filter((k) => moving[k] !== undefined).map((k) => [
       k,
       moving[k],
     ]),
   );
-  // "* Color 1" keeps the effect's own palette to one colour. As background
-  // (Twinklefox dims it) the same colour, so each part glows faintly in it.
+  // "* Color 1" keeps the effect's palette to col[0], while col[1] is a dimmed
+  // background glow so twinkles remain visible instead of washing out solid.
   const twinkle = (c: Rgb) => ({
     on: true,
     frz: false,
@@ -338,7 +368,7 @@ export function themeFrameFor(
     ...motion,
     fx: moving.fx,
     pal: 2,
-    col: [c, c, BLACK] as [Rgb, Rgb, Rgb],
+    col: [c, dimRgb(c), BLACK] as [Rgb, Rgb, Rgb],
   });
   const [fill, rest] = phaseColours(session.phase);
   const seg: ThemeSegment[] = Array.from({ length: count }, (_, id) => ({
@@ -383,7 +413,7 @@ export function themePatchFor(
   ledCount: number,
   frame: ReturnType<typeof themeFrameFor>,
 ): {
-  payload: { transition: number; seg: readonly { id: number }[] } | null;
+  payload: { transition: number; seg: WledSegment[] } | null;
   snapshot: ThemeSnapshot;
   needsTag: boolean;
 } {
